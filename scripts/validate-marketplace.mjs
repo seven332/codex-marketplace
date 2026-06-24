@@ -269,16 +269,21 @@ function readFrontmatterValues(lines) {
   };
 }
 
-function validateSkillFile(pluginName, skillDirName, skillPath, fail) {
+function skillFileLabel(skillsPath, skillDirName) {
+  return `${skillsPath.replace(/[\\/]+$/u, "")}/${skillDirName}/SKILL.md`;
+}
+
+function validateSkillFile(pluginName, skillsPath, skillDirName, skillPath, fail) {
+  const label = skillFileLabel(skillsPath, skillDirName);
   if (!existsSync(skillPath) || !statSync(skillPath).isFile()) {
-    fail(`${pluginName}: missing skills/${skillDirName}/SKILL.md`);
+    fail(`${pluginName}: missing ${label}`);
     return false;
   }
 
   const content = readFileSync(skillPath, "utf8");
   const frontmatter = extractSkillFrontmatter(content);
   if (!frontmatter) {
-    fail(`${pluginName}: skills/${skillDirName}/SKILL.md is missing YAML frontmatter`);
+    fail(`${pluginName}: ${label} is missing YAML frontmatter`);
     return false;
   }
 
@@ -286,15 +291,15 @@ function validateSkillFile(pluginName, skillDirName, skillPath, fail) {
 
   let isValid = true;
   if (skillName !== skillDirName) {
-    fail(`${pluginName}: skills/${skillDirName}/SKILL.md frontmatter name must match directory`);
+    fail(`${pluginName}: ${label} frontmatter name must match directory`);
     isValid = false;
   }
   if (!description) {
-    fail(`${pluginName}: skills/${skillDirName}/SKILL.md frontmatter description is required`);
+    fail(`${pluginName}: ${label} frontmatter description is required`);
     isValid = false;
   }
   if (!frontmatter.body.trim()) {
-    fail(`${pluginName}: skills/${skillDirName}/SKILL.md body is required`);
+    fail(`${pluginName}: ${label} body is required`);
     isValid = false;
   }
 
@@ -336,7 +341,7 @@ function validateSkillRoot(pluginName, pluginRoot, skillsPath, fail) {
   let validSkillCount = 0;
   for (const skillDirName of skillDirectories) {
     const skillPath = join(skillsRoot, skillDirName, "SKILL.md");
-    if (validateSkillFile(pluginName, skillDirName, skillPath, fail)) {
+    if (validateSkillFile(pluginName, skillsPath, skillDirName, skillPath, fail)) {
       validSkillCount += 1;
     }
   }

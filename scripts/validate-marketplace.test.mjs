@@ -436,6 +436,21 @@ Run the other workflow.
   });
 });
 
+test("reports missing skills under their configured skill root", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.skills = ["./skills/", "./more-skills/"];
+    writeJson(manifestPath, manifest);
+    mkdirSync(join(root, "plugins/demo-plugin/more-skills/other-skill"), { recursive: true });
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join("\n"), /\.\/more-skills\/other-skill\/SKILL\.md/);
+  });
+});
+
 test("accepts default prompt strings and dark logos", () => {
   withFixture((root) => {
     const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
