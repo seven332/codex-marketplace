@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://seven332.github.io/codex-marketplace/schemas/marketplace.schema.json",
+  "$id": "https://github.com/seven332/codex-marketplace/schemas/marketplace.schema.json",
   "title": "Codex Marketplace",
   "type": "object",
   "required": [

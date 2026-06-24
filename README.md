@@ -52,7 +52,9 @@ or:
 npm run validate
 ```
 
-Marketplace entries and plugin manifests are checked against JSON Schemas in `schemas/`.
+Marketplace entries and plugin manifests are checked against project-owned JSON Schemas in `schemas/`.
+These schemas are not official Codex schemas; they encode this repository's supported marketplace
+shape plus additional safety checks.
 Marketplace entries should keep `source.path` relative to the repository root, start with `./`, and
 stay inside this repository. Pull requests run the same validation in GitHub Actions.
 
