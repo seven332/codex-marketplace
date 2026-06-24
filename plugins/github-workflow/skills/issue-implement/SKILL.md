@@ -31,9 +31,10 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
 8. Implement the approved plan in small steps. Do not silently diverge from the approved direction.
 9. Add or update tests for behavior changes.
 10. Run documented validation commands.
-11. Commit with Conventional Commits.
-12. Push and create a PR. If the `pull-request` skill is installed, use its `create` workflow for
-    PR creation. Include the issue link and validation commands in the PR body.
+11. Commit, push, and create a PR. If the `pull-request` skill is installed, use its `create`
+    workflow for these steps instead of running a separate PR flow. Otherwise commit with
+    Conventional Commits, push the branch, and create a PR. Include the issue link and validation
+    commands in the PR body.
 
 If implementation becomes blocked, post a concise issue comment explaining the blocker, create the
 `pending` label if needed, add it, and stop:
