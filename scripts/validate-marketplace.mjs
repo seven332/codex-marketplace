@@ -330,7 +330,16 @@ function validateSkillRoot(pluginName, pluginRoot, skillsPath, fail) {
   }
 
   const skillDirectories = readdirSync(skillsRoot, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
+    .filter((entry) => !entry.name.startsWith("."))
+    .filter((entry) => {
+      const entryPath = join(skillsRoot, entry.name);
+      if (entry.isSymbolicLink() && existsSync(entryPath) && statSync(entryPath).isDirectory()) {
+        fail(
+          `${pluginName}: skill directory symlink is not allowed at ${skillFileLabel(skillsPath, entry.name)}`
+        );
+      }
+      return entry.isDirectory();
+    })
     .map((entry) => entry.name)
     .sort();
 

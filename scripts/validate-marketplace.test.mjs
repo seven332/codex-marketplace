@@ -451,6 +451,48 @@ test("reports missing skills under their configured skill root", () => {
   });
 });
 
+test("ignores hidden directories under skill roots", () => {
+  withFixture((root) => {
+    mkdirSync(join(root, "plugins/demo-plugin/skills/.template"), { recursive: true });
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+    assert.equal(result.skillCount, 1);
+  });
+});
+
+test("rejects symlinked skill directories", () => {
+  withFixture((root) => {
+    const outsideRoot = mkdtempSync(join(tmpdir(), "codex-marketplace-skill-outside-"));
+    try {
+      mkdirSync(join(outsideRoot, "linked-skill"), { recursive: true });
+      writeFileSync(
+        join(outsideRoot, "linked-skill/SKILL.md"),
+        `---
+name: linked-skill
+description: Linked skill.
+---
+
+Run the linked workflow.
+`
+      );
+      symlinkSync(
+        join(outsideRoot, "linked-skill"),
+        join(root, "plugins/demo-plugin/skills/linked-skill"),
+        "dir"
+      );
+
+      const result = validateRepository(root);
+
+      assert.equal(result.ok, false);
+      assert.match(result.errors.join("\n"), /skill directory symlink is not allowed/);
+    } finally {
+      rmSync(outsideRoot, { recursive: true, force: true });
+    }
+  });
+});
+
 test("accepts default prompt strings and dark logos", () => {
   withFixture((root) => {
     const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
