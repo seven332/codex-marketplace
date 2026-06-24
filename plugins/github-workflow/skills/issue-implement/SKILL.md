@@ -22,7 +22,7 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    `pending`, and stop.
 5. Remove `pending` when resuming approved work:
    ```bash
-   gh issue edit <issue-number> --remove-label pending
+   gh issue edit <issue-number> --remove-label pending 2>/dev/null || true
    ```
 6. Create or switch to a feature branch, for example `feat/issue-<number>-short-name`.
 7. Implement the approved plan in small steps. Do not silently diverge from the approved direction.
@@ -31,5 +31,10 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
 10. Commit with Conventional Commits.
 11. Push and create a PR. Include the issue link and validation commands in the PR body.
 
-If implementation becomes blocked, post a concise issue comment explaining the blocker, add
-`pending`, and stop.
+If implementation becomes blocked, post a concise issue comment explaining the blocker, create the
+`pending` label if needed, add it, and stop:
+
+```bash
+gh label create pending --description "Waiting for human input" --color FFA500 2>/dev/null || true
+gh issue edit <issue-number> --add-label pending
+```

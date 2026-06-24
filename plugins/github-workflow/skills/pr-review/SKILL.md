@@ -31,7 +31,7 @@ Use this skill when the user asks to review a GitHub pull request.
    - `P0`: data loss, security, release blocker, or missing tests for critical feature/fix.
    - `P1`: likely user-visible bug, broken workflow, important missing test, or serious test convention violation.
    - `P2`: maintainability risk, unclear API, or follow-up cleanup.
-6. Prepare a concise PR comment:
+6. Prepare a concise PR comment in `/tmp/pr-review-<number>.md`:
    ```markdown
    ## Code Review: PR #<number>
 
@@ -51,7 +51,7 @@ Use this skill when the user asks to review a GitHub pull request.
    ```
 7. Ask before posting unless the user explicitly requested posting. Post with:
    ```bash
-   gh pr comment <pr-number> --body "<review-comment>"
+   gh pr comment <pr-number> --body-file /tmp/pr-review-<number>.md
    ```
 
 Keep PR comments focused on actionable findings. If there are no findings, say so and include any

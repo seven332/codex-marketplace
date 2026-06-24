@@ -25,17 +25,21 @@ request, investigation, or task.
 3. Draft an issue title using a Conventional Commit-style prefix when appropriate:
    - `feat:`, `bug:`, `docs:`, `refactor:`, `test:`, `chore:`, `perf:`
    - Use lowercase description and no trailing period.
-4. Draft the body. Adapt structure to the issue, but prefer:
+4. Draft the body in `/tmp/issue-create.md`. Adapt structure to the issue, but prefer:
    - Background
    - Problem or requirement
    - Acceptance criteria or reproduction steps
    - Relevant files, links, logs, screenshots, or decisions
    - Open questions
 5. Choose labels if they exist in the repository, such as `bug`, `enhancement`, `documentation`,
-   `tech-debt`, or `question`.
-6. Create the issue:
+   `tech-debt`, or `question`. Omit labels when no suitable label exists.
+6. Create the issue with exactly one of these forms:
    ```bash
-   gh issue create --title "<title>" --body "<body>" --label "<labels>"
+   # Without labels
+   gh issue create --title "<title>" --body-file /tmp/issue-create.md
+
+   # With selected labels
+   gh issue create --title "<title>" --body-file /tmp/issue-create.md --label "<label-1>,<label-2>"
    ```
 7. Return the issue URL.
 

@@ -1,6 +1,6 @@
 ---
 name: main
-description: Switch to the main branch and pull the latest remote changes.
+description: Switch to the repository default branch and pull the latest remote changes.
 ---
 
 # Main Branch
@@ -12,8 +12,12 @@ a clean base after PR work.
 
 1. Check working-tree state with `git status --short --branch`.
 2. If there are uncommitted changes, stop and ask how to handle them.
-3. Switch to `main` with `git switch main`.
-4. Pull the latest remote changes with `git pull`.
-5. Report the latest commit and whether the pull fast-forwarded.
+3. Detect the default branch:
+   ```bash
+   DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' 2>/dev/null || echo main)
+   ```
+4. Switch to the default branch with `git switch "$DEFAULT_BRANCH"`.
+5. Pull the latest remote changes with `git pull`.
+6. Report the latest commit and whether the pull fast-forwarded.
 
 Do not stash, discard, amend, reset, or force-push unless the user explicitly asks.

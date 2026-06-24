@@ -35,6 +35,7 @@ Use this skill when the user asks to start planning work for a GitHub issue.
    ```
 8. Add or create a `pending` label when waiting for human approval:
    ```bash
+   gh label create pending --description "Waiting for human input" --color FFA500 2>/dev/null || true
    gh issue edit <issue-number> --add-label pending
    ```
 

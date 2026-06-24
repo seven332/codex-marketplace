@@ -16,12 +16,18 @@ Use this skill when the user asks to check a PR, inspect CI, or fix straightforw
    - `gh pr checks <pr-number>`
    - `gh pr view <pr-number> --json mergeable,mergeStateStatus,headRefName,title,url`
 3. Classify the result:
-   - Merge conflict or dirty merge state: report conflict and recommend rebase/merge from main.
+   - Merge conflict or dirty merge state: report conflict and recommend rebasing or merging from
+     the repository default branch.
    - All checks passed or skipped: report success.
    - Pending checks only: report pending checks and do not loop unless the user asks to watch.
    - Failed checks: inspect the failed run logs.
 4. For lint/format failures only, run documented format/lint fix commands if the repository has
-   them. Commit and push fixes only when they are mechanical and clearly scoped.
+   them. Before changing files:
+   - Check `git status --short --branch`.
+   - Confirm the current branch matches the PR head branch.
+   - Stop if unrelated uncommitted changes are present.
+   After auto-fix commands run, inspect the diff, stage only mechanical lint/format changes, commit
+   them, and push to the PR branch.
 5. For type, test, build, or product failures, report the failing job, relevant log excerpt, and
    likely next investigation step.
 
