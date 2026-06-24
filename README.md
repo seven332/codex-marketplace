@@ -47,3 +47,9 @@ npm run validate
 ```
 
 Marketplace entries should keep `source.path` relative to the repository root and start with `./`.
+
+## Plugins
+
+- `marketplace-starter` - Example plugin for validating this marketplace scaffold.
+- `code-quality` - General-purpose review and cleanup workflows that start from each repository's
+  own quality and testing documentation.

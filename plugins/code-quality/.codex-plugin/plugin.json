@@ -1,0 +1,35 @@
+{
+  "name": "code-quality",
+  "version": "0.1.0",
+  "description": "General-purpose code review and quality analysis workflows for Codex.",
+  "author": {
+    "name": "codex-marketplace maintainers"
+  },
+  "license": "MIT",
+  "keywords": [
+    "code-review",
+    "quality",
+    "testing",
+    "refactoring"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Code Quality",
+    "shortDescription": "Review code changes and identify quality issues.",
+    "longDescription": "A general-purpose Codex plugin for reviewing pull requests, commit ranges, working-tree changes, and targeted code paths across correctness, tests, maintainability, security, and performance.",
+    "developerName": "codex-marketplace maintainers",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Review",
+      "Refactoring",
+      "Testing"
+    ],
+    "defaultPrompt": [
+      "Review this PR for code quality issues.",
+      "Audit the current diff for bugs and missing tests.",
+      "Clean up avoidable defensive error handling."
+    ],
+    "brandColor": "#2563EB",
+    "screenshots": []
+  }
+}
