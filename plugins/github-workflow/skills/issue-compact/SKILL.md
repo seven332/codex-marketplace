@@ -27,17 +27,19 @@ Use this skill when the user asks to compact or consolidate a GitHub issue discu
    ---
    > Compacted on YYYY-MM-DD from N comments.
    ```
-6. Write the draft to `/tmp/issue-<number>-compact.md`.
+6. Create `ISSUE_COMPACT_FILE=$(mktemp "${TMPDIR:-/tmp}/issue-compact.XXXXXX.md")` and write the
+   draft there.
 7. Show the draft path and a concise summary of what will be preserved. Ask for explicit user
    confirmation before updating the issue body unless the user already explicitly approved the
    compacted body update.
 8. Update the issue body only after confirmation:
    ```bash
-   gh issue edit <issue-number> --body-file /tmp/issue-<number>-compact.md
+   gh issue edit <issue-number> --body-file "$ISSUE_COMPACT_FILE"
    ```
-9. Before deleting comments, ask for separate explicit confirmation unless the user already
-   explicitly requested comment deletion. If confirmed, delete superseded comments through the
-   GitHub API. Report how many comments were removed.
+9. Before deleting comments, list the exact comment IDs, authors, timestamps, and one-line summaries
+   that would be deleted. Ask for separate explicit confirmation unless the user already explicitly
+   requested deletion of those exact comments. If confirmed, delete only the listed superseded
+   comments through the GitHub API. Report how many comments were removed.
 
 Do not lose requirements, decisions, or blockers. If the issue has no comments, report that there
 is nothing to compact.

@@ -26,8 +26,10 @@ Use this skill when the user asks to check a PR, inspect CI, or fix straightforw
    - Check `git status --short --branch`.
    - Confirm the current branch matches the PR head branch.
    - Stop if unrelated uncommitted changes are present.
-   After auto-fix commands run, inspect the diff, stage only mechanical lint/format changes, commit
-   them, and push to the PR branch.
+   After auto-fix commands run, rerun the failed lint/format command and relevant repository
+   validation. If validation still fails, stop and report the remaining failure. If it passes,
+   inspect the diff, stage only mechanical lint/format changes, commit them, and push to the PR
+   branch.
 5. For type, test, build, or product failures, report the failing job, relevant log excerpt, and
    likely next investigation step.
 

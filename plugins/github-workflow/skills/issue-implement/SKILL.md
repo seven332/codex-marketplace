@@ -15,9 +15,10 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    gh issue view <issue-number> --json title,body,comments,labels,url
    ```
 3. Read planning artifacts if present:
-   - `/tmp/github-workflow/<task>/research.md`
-   - `/tmp/github-workflow/<task>/innovate.md`
-   - `/tmp/github-workflow/<task>/plan.md`
+   - `/tmp/github-workflow/<issue-task>/research.md`
+   - `/tmp/github-workflow/<issue-task>/innovate.md`
+   - `/tmp/github-workflow/<issue-task>/plan.md`
+   Only use sanitized planning directories under `/tmp/github-workflow/`.
 4. If comments request plan changes or ask questions, update the plan or answer on the issue, add
    `pending`, and stop.
 5. Remove `pending` when resuming approved work:
