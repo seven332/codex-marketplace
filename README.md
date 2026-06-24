@@ -8,9 +8,9 @@ Repo-local marketplace scaffold for Codex plugins.
 .
 ├── .agents/plugins/marketplace.json
 ├── plugins/
-│   └── marketplace-starter/
+│   └── code-quality/
 │       ├── .codex-plugin/plugin.json
-│       └── skills/marketplace-starter/SKILL.md
+│       └── skills/code-quality/SKILL.md
 └── scripts/validate-marketplace.mjs
 ```
 
@@ -24,7 +24,7 @@ codex plugin marketplace list
 ```
 
 Then restart Codex, open the plugin directory, select `Codex Marketplace`, and install
-`Marketplace Starter`.
+`Code Quality`.
 
 For development, edit files under `plugins/<plugin-name>/`, then reinstall the plugin or refresh
 the marketplace from Codex.
@@ -50,6 +50,5 @@ Marketplace entries should keep `source.path` relative to the repository root an
 
 ## Plugins
 
-- `marketplace-starter` - Example plugin for validating this marketplace scaffold.
 - `code-quality` - General-purpose review and cleanup workflows that start from each repository's
   own quality and testing documentation.
