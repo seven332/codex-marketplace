@@ -283,11 +283,24 @@ test("accepts local source shorthand strings", () => {
   });
 });
 
-test("rejects non-normal local marketplace source paths", () => {
+test("accepts local source paths with normalized dot components", () => {
   withFixture((root) => {
     const marketplacePath = join(root, ".agents/plugins/marketplace.json");
     const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
     marketplace.plugins[0].source.path = "./plugins/demo-plugin/.";
+    writeJson(marketplacePath, marketplace);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+  });
+});
+
+test("rejects root-equivalent local marketplace source paths", () => {
+  withFixture((root) => {
+    const marketplacePath = join(root, ".agents/plugins/marketplace.json");
+    const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
+    marketplace.plugins[0].source.path = "././plugins/demo-plugin";
     writeJson(marketplacePath, marketplace);
 
     const result = validateRepository(root);
@@ -321,7 +334,7 @@ test("accepts supported git marketplace source urls", () => {
         source: {
           source: "git-subdir",
           url: "example/marketplace",
-          path: "./plugins/shorthand-plugin"
+          path: "./plugins/./shorthand-plugin"
         }
       },
       {
@@ -343,20 +356,22 @@ test("accepts supported git marketplace source urls", () => {
 });
 
 test("rejects unsupported git marketplace source urls", () => {
-  withFixture((root) => {
-    const marketplacePath = join(root, ".agents/plugins/marketplace.json");
-    const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
-    marketplace.plugins[0].source = {
-      source: "url",
-      url: "not a url"
-    };
-    writeJson(marketplacePath, marketplace);
+  for (const url of ["not a url", "example/.git"]) {
+    withFixture((root) => {
+      const marketplacePath = join(root, ".agents/plugins/marketplace.json");
+      const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
+      marketplace.plugins[0].source = {
+        source: "url",
+        url
+      };
+      writeJson(marketplacePath, marketplace);
 
-    const result = validateRepository(root);
+      const result = validateRepository(root);
 
-    assert.equal(result.ok, false);
-    assert.match(result.errors.join("\n"), /marketplace\.json\/plugins\/0\/source/);
-  });
+      assert.equal(result.ok, false);
+      assert.match(result.errors.join("\n"), /marketplace\.json\/plugins\/0\/source/);
+    });
+  }
 });
 
 test("rejects empty git marketplace source urls", () => {
@@ -377,21 +392,23 @@ test("rejects empty git marketplace source urls", () => {
 });
 
 test("rejects non-normal git subdirectory paths", () => {
-  withFixture((root) => {
-    const marketplacePath = join(root, ".agents/plugins/marketplace.json");
-    const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
-    marketplace.plugins[0].source = {
-      source: "git-subdir",
-      url: "example/marketplace",
-      path: "."
-    };
-    writeJson(marketplacePath, marketplace);
+  for (const path of [".", "././plugins/example", " /plugins/example", " C:/plugins/example"]) {
+    withFixture((root) => {
+      const marketplacePath = join(root, ".agents/plugins/marketplace.json");
+      const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
+      marketplace.plugins[0].source = {
+        source: "git-subdir",
+        url: "example/marketplace",
+        path
+      };
+      writeJson(marketplacePath, marketplace);
 
-    const result = validateRepository(root);
+      const result = validateRepository(root);
 
-    assert.equal(result.ok, false);
-    assert.match(result.errors.join("\n"), /marketplace\.json\/plugins\/0\/source/);
-  });
+      assert.equal(result.ok, false);
+      assert.match(result.errors.join("\n"), /marketplace\.json\/plugins\/0\/source/);
+    });
+  }
 });
 
 test("accepts multiple skill roots", () => {
@@ -459,6 +476,19 @@ test("rejects whitespace-only default prompts ignored by Codex", () => {
 
     assert.equal(result.ok, false);
     assert.match(result.errors.join("\n"), /plugin\.json\/interface\/defaultPrompt/);
+  });
+});
+
+test("accepts empty hook arrays ignored by Codex", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.hooks = [];
+    writeJson(manifestPath, manifest);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
   });
 });
 

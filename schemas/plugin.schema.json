@@ -40,7 +40,7 @@
       ]
     },
     "hooks": {
-      "oneOf": [
+      "anyOf": [
         {
           "$ref": "#/definitions/pluginRelativePath"
         },
