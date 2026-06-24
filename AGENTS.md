@@ -6,8 +6,9 @@ This repository is a Codex plugin marketplace. Marketplace metadata lives in
 `.agents/plugins/marketplace.json`. Installable plugins live under
 `plugins/<plugin-name>/`, and each plugin must include
 `plugins/<plugin-name>/.codex-plugin/plugin.json`. Plugin skills belong in
-`plugins/<plugin-name>/skills/<skill-name>/SKILL.md`. Validation tooling is in
-`scripts/`, currently `scripts/validate-marketplace.mjs`.
+`plugins/<plugin-name>/skills/<skill-name>/SKILL.md`. JSON Schemas live in
+`schemas/`. Validation tooling is in `scripts/`, currently
+`scripts/validate-marketplace.mjs` and `scripts/validate-marketplace.test.mjs`.
 
 ## Build, Test, and Development Commands
 

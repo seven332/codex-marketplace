@@ -17,7 +17,9 @@ Repo-local marketplace scaffold for Codex plugins.
 ├── schemas/
 │   ├── marketplace.schema.json
 │   └── plugin.schema.json
-└── scripts/validate-marketplace.mjs
+└── scripts/
+    ├── validate-marketplace.mjs
+    └── validate-marketplace.test.mjs
 ```
 
 ## Use Locally

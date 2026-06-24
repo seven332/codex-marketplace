@@ -85,6 +85,10 @@ function validateSkillFile(pluginName, skillDirName, skillPath, fail) {
     fail(`${pluginName}: skills/${skillDirName}/SKILL.md frontmatter description is required`);
     isValid = false;
   }
+  if (!content.slice(frontmatterMatch[0].length).trim()) {
+    fail(`${pluginName}: skills/${skillDirName}/SKILL.md body is required`);
+    isValid = false;
+  }
 
   return isValid;
 }

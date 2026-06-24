@@ -27,11 +27,11 @@
       "type": "array",
       "minItems": 1,
       "items": {
-        "$ref": "#/$defs/pluginEntry"
+        "$ref": "#/definitions/pluginEntry"
       }
     }
   },
-  "$defs": {
+  "definitions": {
     "pluginEntry": {
       "type": "object",
       "required": [

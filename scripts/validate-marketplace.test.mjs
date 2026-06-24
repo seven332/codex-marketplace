@@ -141,6 +141,34 @@ test("reports nested schema locations for missing manifest fields", () => {
   });
 });
 
+test("rejects duplicate marketplace plugin names", () => {
+  withFixture((root) => {
+    const marketplacePath = join(root, ".agents/plugins/marketplace.json");
+    const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
+    marketplace.plugins.push({ ...marketplace.plugins[0] });
+    writeJson(marketplacePath, marketplace);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join("\n"), /duplicate plugin entry: demo-plugin/);
+  });
+});
+
+test("rejects plugin manifests whose names do not match marketplace entries", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.name = "other-plugin";
+    writeJson(manifestPath, manifest);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join("\n"), /manifest name must match marketplace entry name/);
+  });
+});
+
 test("rejects marketplace paths outside the repository", () => {
   withFixture((root) => {
     const marketplacePath = join(root, ".agents/plugins/marketplace.json");
@@ -170,6 +198,25 @@ test("rejects plugin symlinks that resolve outside the repository", () => {
     } finally {
       rmSync(outsideRoot, { recursive: true, force: true });
     }
+  });
+});
+
+test("rejects skills with empty bodies", () => {
+  withFixture((root) => {
+    writeFileSync(
+      join(root, "plugins/demo-plugin/skills/demo-skill/SKILL.md"),
+      `---
+name: demo-skill
+description: Demo skill.
+---
+`
+    );
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.equal(result.skillCount, 0);
+    assert.match(result.errors.join("\n"), /body is required/);
   });
 });
 
