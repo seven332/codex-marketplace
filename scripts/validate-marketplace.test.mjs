@@ -221,6 +221,17 @@ test("accepts empty marketplace plugin lists", () => {
   });
 });
 
+test("reports schema errors for null marketplace files", () => {
+  withFixture((root) => {
+    writeJson(join(root, ".agents/plugins/marketplace.json"), null);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join("\n"), /marketplace\.json\/ must be object/);
+  });
+});
+
 test("accepts unknown manifest fields for Codex compatibility", () => {
   withFixture((root) => {
     const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
@@ -231,6 +242,17 @@ test("accepts unknown manifest fields for Codex compatibility", () => {
     const result = validateRepository(root);
 
     assert.equal(result.ok, true);
+  });
+});
+
+test("reports schema errors for null plugin manifests", () => {
+  withFixture((root) => {
+    writeJson(join(root, "plugins/demo-plugin/.codex-plugin/plugin.json"), null);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join("\n"), /plugin\.json\/ must be object/);
   });
 });
 

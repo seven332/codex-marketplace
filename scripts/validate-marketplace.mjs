@@ -68,7 +68,7 @@ function readJson(path, fail) {
     return JSON.parse(readFileSync(path, "utf8"));
   } catch (error) {
     fail(`${path} is not valid JSON: ${error.message}`);
-    return null;
+    return undefined;
   }
 }
 
@@ -204,7 +204,11 @@ export function validateRepository(root = defaultRepoRoot) {
   const marketplaceSchema = readJson(marketplaceSchemaPath, fail);
   const pluginSchema = readJson(pluginSchemaPath, fail);
 
-  if (!marketplace || !marketplaceSchema || !pluginSchema) {
+  if (
+    marketplace === undefined ||
+    marketplaceSchema === undefined ||
+    pluginSchema === undefined
+  ) {
     return { ok: false, errors, pluginCount: 0, skillCount: 0 };
   }
 
@@ -217,7 +221,7 @@ export function validateRepository(root = defaultRepoRoot) {
 
   validateJson(marketplacePath, marketplace, validateMarketplace, fail);
 
-  if (!Array.isArray(marketplace.plugins)) {
+  if (!isObject(marketplace) || !Array.isArray(marketplace.plugins)) {
     return { ok: false, errors, pluginCount: 0, skillCount: 0 };
   }
 
@@ -262,11 +266,15 @@ export function validateRepository(root = defaultRepoRoot) {
     }
 
     const manifest = readJson(manifestPath, fail);
-    if (!manifest) {
+    if (manifest === undefined) {
       continue;
     }
 
     validateJson(manifestPath, manifest, validatePlugin, fail);
+
+    if (!isObject(manifest)) {
+      continue;
+    }
 
     if (manifestNameForPluginRoot(manifest, pluginRoot) !== entry.name) {
       fail(`${entry.name}: manifest name must match marketplace entry name`);
