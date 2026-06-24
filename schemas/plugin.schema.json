@@ -8,12 +8,15 @@
     "version",
     "description",
     "author",
-    "license",
     "skills",
     "interface"
   ],
-  "additionalProperties": true,
+  "additionalProperties": false,
   "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
     "name": {
       "type": "string",
       "pattern": "^[a-z0-9][a-z0-9-]*$"
@@ -31,13 +34,29 @@
       "required": [
         "name"
       ],
-      "additionalProperties": true,
+      "additionalProperties": false,
       "properties": {
         "name": {
           "type": "string",
           "minLength": 1
+        },
+        "email": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^https://.+"
         }
       }
+    },
+    "homepage": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repository": {
+      "type": "string",
+      "minLength": 1
     },
     "license": {
       "type": "string",
@@ -52,8 +71,32 @@
       "uniqueItems": true
     },
     "skills": {
-      "type": "string",
-      "pattern": "^\\./.+"
+      "enum": [
+        "./skills",
+        "./skills/"
+      ]
+    },
+    "apps": {
+      "enum": [
+        ".app.json",
+        "./.app.json"
+      ]
+    },
+    "mcpServers": {
+      "oneOf": [
+        {
+          "enum": [
+            ".mcp.json",
+            "./.mcp.json"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      ]
     },
     "interface": {
       "type": "object",
@@ -63,12 +106,21 @@
         "longDescription",
         "developerName",
         "category",
-        "capabilities",
-        "defaultPrompt",
-        "brandColor",
-        "screenshots"
+        "capabilities"
       ],
-      "additionalProperties": true,
+      "anyOf": [
+        {
+          "required": [
+            "defaultPrompt"
+          ]
+        },
+        {
+          "required": [
+            "default_prompt"
+          ]
+        }
+      ],
+      "additionalProperties": false,
       "properties": {
         "displayName": {
           "type": "string",
@@ -106,9 +158,37 @@
             "minLength": 1
           }
         },
+        "default_prompt": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "websiteURL": {
+          "type": "string",
+          "pattern": "^https://.+"
+        },
+        "privacyPolicyURL": {
+          "type": "string",
+          "pattern": "^https://.+"
+        },
+        "termsOfServiceURL": {
+          "type": "string",
+          "pattern": "^https://.+"
+        },
         "brandColor": {
           "type": "string",
           "pattern": "^#[0-9A-Fa-f]{6}$"
+        },
+        "composerIcon": {
+          "type": "string",
+          "minLength": 1
+        },
+        "logo": {
+          "type": "string",
+          "minLength": 1
         },
         "screenshots": {
           "type": "array",

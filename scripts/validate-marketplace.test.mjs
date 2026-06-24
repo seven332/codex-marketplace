@@ -113,6 +113,23 @@ test("accepts semantic versions with prerelease and build metadata", () => {
   });
 });
 
+test("accepts optional manifest fields being omitted", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    delete manifest.license;
+    delete manifest.interface.brandColor;
+    delete manifest.interface.screenshots;
+    manifest.interface.default_prompt = manifest.interface.defaultPrompt;
+    delete manifest.interface.defaultPrompt;
+    writeJson(manifestPath, manifest);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+  });
+});
+
 test("rejects empty marketplace plugin lists", () => {
   withFixture((root) => {
     const marketplacePath = join(root, ".agents/plugins/marketplace.json");
@@ -124,6 +141,20 @@ test("rejects empty marketplace plugin lists", () => {
 
     assert.equal(result.ok, false);
     assert.match(result.errors.join("\n"), /must NOT have fewer than 1 items/);
+  });
+});
+
+test("rejects unknown manifest fields", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.unexpected = true;
+    writeJson(manifestPath, manifest);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join("\n"), /must NOT have additional properties/);
   });
 });
 
