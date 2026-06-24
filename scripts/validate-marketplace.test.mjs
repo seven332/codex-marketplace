@@ -659,6 +659,26 @@ Run the demo workflow.
   });
 });
 
+test("accepts skill frontmatter names with YAML line comments", () => {
+  withFixture((root) => {
+    writeFileSync(
+      join(root, "plugins/demo-plugin/skills/demo-skill/SKILL.md"),
+      `---
+name: demo-skill # directory name
+description: Demo skill.
+---
+
+Run the demo workflow.
+`
+    );
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+    assert.equal(result.skillCount, 1);
+  });
+});
+
 test("accepts block scalar skill descriptions", () => {
   withFixture((root) => {
     writeFileSync(
@@ -678,6 +698,27 @@ Run the demo workflow.
 
     assert.equal(result.ok, true);
     assert.equal(result.skillCount, 1);
+  });
+});
+
+test("rejects comment-only skill descriptions", () => {
+  withFixture((root) => {
+    writeFileSync(
+      join(root, "plugins/demo-plugin/skills/demo-skill/SKILL.md"),
+      `---
+name: demo-skill
+description: # missing description
+---
+
+Run the demo workflow.
+`
+    );
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.equal(result.skillCount, 0);
+    assert.match(result.errors.join("\n"), /description is required/);
   });
 });
 

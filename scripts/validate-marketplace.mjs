@@ -125,6 +125,36 @@ function unquoteYamlScalar(value) {
   return value;
 }
 
+function stripYamlLineComment(value) {
+  let quote = null;
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index];
+    if (quote === '"') {
+      if (character === '"' && value[index - 1] !== "\\") {
+        quote = null;
+      }
+      continue;
+    }
+    if (quote === "'") {
+      if (character === "'" && value[index + 1] === "'") {
+        index += 1;
+      } else if (character === "'") {
+        quote = null;
+      }
+      continue;
+    }
+    if (character === '"' || character === "'") {
+      quote = character;
+      continue;
+    }
+    if (character === "#" && (index === 0 || /\s/.test(value[index - 1]))) {
+      return value.slice(0, index).trim();
+    }
+  }
+
+  return value.trim();
+}
+
 function looksLikeNonStringYamlScalar(value) {
   const lowerValue = value.toLowerCase();
   return (
@@ -170,10 +200,11 @@ function readFrontmatterValue(lines, key) {
     if (/^[|>][+-]?$/.test(rawValue)) {
       return readBlockScalar(lines, index + 1);
     }
-    if (looksLikeNonStringYamlScalar(rawValue)) {
+    const value = stripYamlLineComment(rawValue);
+    if (looksLikeNonStringYamlScalar(value)) {
       return undefined;
     }
-    return unquoteYamlScalar(rawValue).trim();
+    return unquoteYamlScalar(value).trim();
   }
 
   return undefined;
