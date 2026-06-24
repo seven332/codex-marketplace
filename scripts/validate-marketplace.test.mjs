@@ -113,6 +113,19 @@ test("accepts Codex plugin version segments", () => {
   });
 });
 
+test("accepts plugin versions with surrounding whitespace", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.version = " 1.2.3-beta+7 ";
+    writeJson(manifestPath, manifest);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+  });
+});
+
 test("accepts optional manifest fields being omitted", () => {
   withFixture((root) => {
     const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
@@ -140,6 +153,57 @@ test("accepts omitted manifest names that match the plugin directory", () => {
     const result = validateRepository(root);
 
     assert.equal(result.ok, true);
+  });
+});
+
+test("validates the default skills root when manifest skills is omitted", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    delete manifest.skills;
+    writeJson(manifestPath, manifest);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+    assert.equal(result.skillCount, 1);
+  });
+});
+
+test("validates the default skills root when manifest skills is empty", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.skills = [];
+    writeJson(manifestPath, manifest);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+    assert.equal(result.skillCount, 1);
+  });
+});
+
+test("rejects invalid default skills when manifest skills is omitted", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    delete manifest.skills;
+    writeJson(manifestPath, manifest);
+    writeFileSync(
+      join(root, "plugins/demo-plugin/skills/demo-skill/SKILL.md"),
+      `---
+name: demo-skill
+description: Demo skill.
+---
+`
+    );
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.equal(result.skillCount, 0);
+    assert.match(result.errors.join("\n"), /body is required/);
   });
 });
 
@@ -248,6 +312,74 @@ test("rejects snake_case plugin default prompts ignored by Codex", () => {
 
     assert.equal(result.ok, false);
     assert.match(result.errors.join("\n"), /plugin\.json\/interface\/default_prompt/);
+  });
+});
+
+test("rejects whitespace-only default prompts ignored by Codex", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.interface.defaultPrompt = "   ";
+    writeJson(manifestPath, manifest);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join("\n"), /plugin\.json\/interface\/defaultPrompt/);
+  });
+});
+
+test("accepts inline hook declarations", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.hooks = {
+      hooks: {
+        PreToolUse: [
+          {
+            matcher: "^Bash$",
+            hooks: [
+              {
+                type: "command",
+                command: "python3 scripts/check.py",
+                timeout: 10,
+                statusMessage: "checking"
+              }
+            ]
+          }
+        ]
+      }
+    };
+    writeJson(manifestPath, manifest);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+  });
+});
+
+test("rejects root-level hook events ignored by Codex", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.hooks = {
+      SessionStart: [
+        {
+          hooks: [
+            {
+              type: "command",
+              command: "python3 scripts/session-start.py"
+            }
+          ]
+        }
+      ]
+    };
+    writeJson(manifestPath, manifest);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join("\n"), /plugin\.json\/hooks/);
   });
 });
 

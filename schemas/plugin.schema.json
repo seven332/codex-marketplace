@@ -12,7 +12,7 @@
     },
     "version": {
       "type": "string",
-      "pattern": "^(?!\\.{1,2}$)[A-Za-z0-9._+-]+$"
+      "pattern": "^\\s*(?!\\.{1,2}\\s*$)[A-Za-z0-9._+-]+\\s*$"
     },
     "description": {
       "type": "string"
@@ -48,12 +48,12 @@
           "$ref": "#/definitions/pathArray"
         },
         {
-          "type": "object"
+          "$ref": "#/definitions/hookFile"
         },
         {
           "type": "array",
           "items": {
-            "type": "object"
+            "$ref": "#/definitions/hookFile"
           }
         }
       ]
@@ -162,7 +162,8 @@
         {
           "type": "string",
           "minLength": 1,
-          "maxLength": 128
+          "maxLength": 128,
+          "pattern": "\\S"
         },
         {
           "type": "array",
@@ -171,7 +172,131 @@
           "items": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 128
+            "maxLength": 128,
+            "pattern": "\\S"
+          }
+        }
+      ]
+    },
+    "hookFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hooks": {
+          "$ref": "#/definitions/hookEvents"
+        }
+      }
+    },
+    "hookEvents": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "PreToolUse": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "PermissionRequest": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "PostToolUse": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "PreCompact": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "PostCompact": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "SessionStart": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "UserPromptSubmit": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "SubagentStart": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "SubagentStop": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "Stop": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        }
+      }
+    },
+    "hookMatcherGroups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "matcher": {
+            "type": "string"
+          },
+          "hooks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/hookHandler"
+            }
+          }
+        }
+      }
+    },
+    "hookHandler": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "command"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "type": {
+              "const": "command"
+            },
+            "command": {
+              "type": "string"
+            },
+            "commandWindows": {
+              "type": "string"
+            },
+            "command_windows": {
+              "type": "string"
+            },
+            "timeout": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "async": {
+              "type": "boolean"
+            },
+            "statusMessage": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "type": {
+              "const": "prompt"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "type": {
+              "const": "agent"
+            }
           }
         }
       ]

@@ -164,8 +164,15 @@ function validateSkillRoot(pluginName, pluginRoot, skillsPath, fail) {
 }
 
 function validateSkills(pluginName, pluginRoot, manifest, fail) {
-  if (manifest.skills === undefined) {
-    return 0;
+  const usesDefaultSkillRoot =
+    manifest.skills === undefined ||
+    (Array.isArray(manifest.skills) && manifest.skills.length === 0);
+  if (usesDefaultSkillRoot) {
+    const defaultSkillsRoot = join(pluginRoot, "skills");
+    if (!existsSync(defaultSkillsRoot)) {
+      return 0;
+    }
+    return validateSkillRoot(pluginName, pluginRoot, "./skills", fail);
   }
 
   const skillPaths = Array.isArray(manifest.skills) ? manifest.skills : [manifest.skills];
