@@ -1,0 +1,30 @@
+{
+  "name": "marketplace-starter",
+  "version": "0.1.0",
+  "description": "Example Codex plugin packaged through this marketplace.",
+  "author": {
+    "name": "codex-marketplace maintainers"
+  },
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "marketplace",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Marketplace Starter",
+    "shortDescription": "Example plugin for validating this marketplace.",
+    "longDescription": "A small sample plugin that demonstrates the expected directory layout and manifest fields for this marketplace.",
+    "developerName": "codex-marketplace maintainers",
+    "category": "Productivity",
+    "capabilities": [
+      "Instructions"
+    ],
+    "defaultPrompt": [
+      "Use Marketplace Starter to explain this plugin layout."
+    ],
+    "brandColor": "#10A37F",
+    "screenshots": []
+  }
+}
