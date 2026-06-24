@@ -625,6 +625,104 @@ description: Demo skill.
   });
 });
 
+test("accepts skills with CRLF frontmatter", () => {
+  withFixture((root) => {
+    writeFileSync(
+      join(root, "plugins/demo-plugin/skills/demo-skill/SKILL.md"),
+      "---\r\nname: demo-skill\r\ndescription: Demo skill.\r\n---\r\n\r\nRun the demo workflow.\r\n"
+    );
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+    assert.equal(result.skillCount, 1);
+  });
+});
+
+test("accepts quoted skill frontmatter names", () => {
+  withFixture((root) => {
+    writeFileSync(
+      join(root, "plugins/demo-plugin/skills/demo-skill/SKILL.md"),
+      `---
+name: "demo-skill"
+description: Demo skill.
+---
+
+Run the demo workflow.
+`
+    );
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+    assert.equal(result.skillCount, 1);
+  });
+});
+
+test("accepts block scalar skill descriptions", () => {
+  withFixture((root) => {
+    writeFileSync(
+      join(root, "plugins/demo-plugin/skills/demo-skill/SKILL.md"),
+      `---
+name: demo-skill
+description: |-
+
+  Demo skill.
+---
+
+Run the demo workflow.
+`
+    );
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+    assert.equal(result.skillCount, 1);
+  });
+});
+
+test("rejects empty quoted skill descriptions", () => {
+  withFixture((root) => {
+    writeFileSync(
+      join(root, "plugins/demo-plugin/skills/demo-skill/SKILL.md"),
+      `---
+name: demo-skill
+description: ""
+---
+
+Run the demo workflow.
+`
+    );
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.equal(result.skillCount, 0);
+    assert.match(result.errors.join("\n"), /description is required/);
+  });
+});
+
+test("rejects non-string YAML skill descriptions", () => {
+  withFixture((root) => {
+    writeFileSync(
+      join(root, "plugins/demo-plugin/skills/demo-skill/SKILL.md"),
+      `---
+name: demo-skill
+description: []
+---
+
+Run the demo workflow.
+`
+    );
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.equal(result.skillCount, 0);
+    assert.match(result.errors.join("\n"), /description is required/);
+  });
+});
+
 test("rejects skill frontmatter names that do not match the directory", () => {
   withFixture((root) => {
     writeFileSync(

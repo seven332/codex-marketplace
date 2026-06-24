@@ -82,6 +82,103 @@ function validateJson(path, value, validate, fail) {
   }
 }
 
+function extractSkillFrontmatter(content) {
+  const lines = content.split(/\r?\n/);
+  if (lines[0]?.trim() !== "---") {
+    return null;
+  }
+
+  const frontmatterLines = [];
+  for (let index = 1; index < lines.length; index += 1) {
+    if (lines[index].trim() === "---") {
+      if (frontmatterLines.length === 0) {
+        return null;
+      }
+      return {
+        frontmatterLines,
+        body: lines.slice(index + 1).join("\n")
+      };
+    }
+    frontmatterLines.push(lines[index]);
+  }
+
+  return null;
+}
+
+function unquoteYamlScalar(value) {
+  if (value.length < 2) {
+    return value;
+  }
+
+  if (value.startsWith('"') && value.endsWith('"')) {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value.slice(1, -1);
+    }
+  }
+
+  if (value.startsWith("'") && value.endsWith("'")) {
+    return value.slice(1, -1).replaceAll("''", "'");
+  }
+
+  return value;
+}
+
+function looksLikeNonStringYamlScalar(value) {
+  const lowerValue = value.toLowerCase();
+  return (
+    lowerValue === "null" ||
+    lowerValue === "~" ||
+    lowerValue === "true" ||
+    lowerValue === "false" ||
+    /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]?\d+)?$/i.test(value) ||
+    value.startsWith("[") ||
+    value.startsWith("{")
+  );
+}
+
+function readBlockScalar(lines, startIndex) {
+  const blockLines = [];
+  for (let index = startIndex; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (!line.trim()) {
+      blockLines.push(line);
+      continue;
+    }
+    if (/^[A-Za-z][\w-]*:/.test(line)) {
+      break;
+    }
+    if (/^\s/.test(line)) {
+      blockLines.push(line);
+    } else {
+      break;
+    }
+  }
+
+  return blockLines.join("\n").trim();
+}
+
+function readFrontmatterValue(lines, key) {
+  for (let index = 0; index < lines.length; index += 1) {
+    const match = lines[index].match(/^([A-Za-z][\w-]*):\s*(.*)$/);
+    if (!match || match[1] !== key) {
+      continue;
+    }
+
+    const rawValue = match[2].trim();
+    if (/^[|>][+-]?$/.test(rawValue)) {
+      return readBlockScalar(lines, index + 1);
+    }
+    if (looksLikeNonStringYamlScalar(rawValue)) {
+      return undefined;
+    }
+    return unquoteYamlScalar(rawValue).trim();
+  }
+
+  return undefined;
+}
+
 function validateSkillFile(pluginName, skillDirName, skillPath, fail) {
   if (!existsSync(skillPath) || !statSync(skillPath).isFile()) {
     fail(`${pluginName}: missing skills/${skillDirName}/SKILL.md`);
@@ -89,30 +186,25 @@ function validateSkillFile(pluginName, skillDirName, skillPath, fail) {
   }
 
   const content = readFileSync(skillPath, "utf8");
-  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
-  if (!frontmatterMatch) {
+  const frontmatter = extractSkillFrontmatter(content);
+  if (!frontmatter) {
     fail(`${pluginName}: skills/${skillDirName}/SKILL.md is missing YAML frontmatter`);
     return false;
   }
 
-  const metadata = new Map();
-  for (const line of frontmatterMatch[1].split("\n")) {
-    const match = line.match(/^([A-Za-z][\w-]*):\s*(.*)$/);
-    if (match) {
-      metadata.set(match[1], match[2].trim());
-    }
-  }
+  const skillName = readFrontmatterValue(frontmatter.frontmatterLines, "name");
+  const description = readFrontmatterValue(frontmatter.frontmatterLines, "description");
 
   let isValid = true;
-  if (metadata.get("name") !== skillDirName) {
+  if (skillName !== skillDirName) {
     fail(`${pluginName}: skills/${skillDirName}/SKILL.md frontmatter name must match directory`);
     isValid = false;
   }
-  if (!metadata.get("description")) {
+  if (!description) {
     fail(`${pluginName}: skills/${skillDirName}/SKILL.md frontmatter description is required`);
     isValid = false;
   }
-  if (!content.slice(frontmatterMatch[0].length).trim()) {
+  if (!frontmatter.body.trim()) {
     fail(`${pluginName}: skills/${skillDirName}/SKILL.md body is required`);
     isValid = false;
   }
