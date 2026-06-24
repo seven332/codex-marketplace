@@ -701,6 +701,26 @@ Run the demo workflow.
   });
 });
 
+test("accepts unquoted skill descriptions containing colon-space", () => {
+  withFixture((root) => {
+    writeFileSync(
+      join(root, "plugins/demo-plugin/skills/demo-skill/SKILL.md"),
+      `---
+name: demo-skill
+description: AWS deployment patterns: ECS Fargate, Lambda, and S3
+---
+
+Run the demo workflow.
+`
+    );
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+    assert.equal(result.skillCount, 1);
+  });
+});
+
 test("rejects comment-only skill descriptions", () => {
   withFixture((root) => {
     writeFileSync(

@@ -2,6 +2,7 @@ import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "n
 import { basename, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import Ajv from "ajv";
+import { isScalar, parseDocument } from "yaml";
 
 const defaultRepoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 
@@ -189,7 +190,7 @@ function readBlockScalar(lines, startIndex) {
   return blockLines.join("\n").trim();
 }
 
-function readFrontmatterValue(lines, key) {
+function readFrontmatterValueFallback(lines, key) {
   for (let index = 0; index < lines.length; index += 1) {
     const match = lines[index].match(/^([A-Za-z][\w-]*):\s*(.*)$/);
     if (!match || match[1] !== key) {
@@ -210,6 +211,30 @@ function readFrontmatterValue(lines, key) {
   return undefined;
 }
 
+function scalarStringFromYamlDocument(document, key) {
+  const value = document.get(key, true);
+  if (!isScalar(value) || typeof value.value !== "string") {
+    return undefined;
+  }
+
+  return value.value.trim();
+}
+
+function readFrontmatterValues(lines) {
+  const document = parseDocument(lines.join("\n"), { prettyErrors: false });
+  if (document.errors.length > 0) {
+    return {
+      name: readFrontmatterValueFallback(lines, "name"),
+      description: readFrontmatterValueFallback(lines, "description")
+    };
+  }
+
+  return {
+    name: scalarStringFromYamlDocument(document, "name"),
+    description: scalarStringFromYamlDocument(document, "description")
+  };
+}
+
 function validateSkillFile(pluginName, skillDirName, skillPath, fail) {
   if (!existsSync(skillPath) || !statSync(skillPath).isFile()) {
     fail(`${pluginName}: missing skills/${skillDirName}/SKILL.md`);
@@ -223,8 +248,7 @@ function validateSkillFile(pluginName, skillDirName, skillPath, fail) {
     return false;
   }
 
-  const skillName = readFrontmatterValue(frontmatter.frontmatterLines, "name");
-  const description = readFrontmatterValue(frontmatter.frontmatterLines, "description");
+  const { name: skillName, description } = readFrontmatterValues(frontmatter.frontmatterLines);
 
   let isValid = true;
   if (skillName !== skillDirName) {
