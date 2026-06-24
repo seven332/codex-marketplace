@@ -283,6 +283,117 @@ test("accepts local source shorthand strings", () => {
   });
 });
 
+test("rejects non-normal local marketplace source paths", () => {
+  withFixture((root) => {
+    const marketplacePath = join(root, ".agents/plugins/marketplace.json");
+    const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
+    marketplace.plugins[0].source.path = "./plugins/demo-plugin/.";
+    writeJson(marketplacePath, marketplace);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join("\n"), /marketplace\.json\/plugins\/0\/source/);
+  });
+});
+
+test("accepts supported git marketplace source urls", () => {
+  withFixture((root) => {
+    const marketplacePath = join(root, ".agents/plugins/marketplace.json");
+    const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
+    marketplace.plugins = [
+      {
+        name: "https-plugin",
+        source: {
+          source: "url",
+          url: "https://github.com/example/plugin"
+        }
+      },
+      {
+        name: "ssh-plugin",
+        source: {
+          source: "url",
+          url: "git@github.com:example/plugin.git"
+        }
+      },
+      {
+        name: "shorthand-plugin",
+        source: {
+          source: "git-subdir",
+          url: "example/marketplace",
+          path: "./plugins/shorthand-plugin"
+        }
+      },
+      {
+        name: "relative-plugin",
+        source: {
+          source: "url",
+          url: "./remotes/plugin.git"
+        }
+      }
+    ];
+    writeJson(marketplacePath, marketplace);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+    assert.equal(result.pluginCount, 4);
+    assert.equal(result.skillCount, 0);
+  });
+});
+
+test("rejects unsupported git marketplace source urls", () => {
+  withFixture((root) => {
+    const marketplacePath = join(root, ".agents/plugins/marketplace.json");
+    const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
+    marketplace.plugins[0].source = {
+      source: "url",
+      url: "not a url"
+    };
+    writeJson(marketplacePath, marketplace);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join("\n"), /marketplace\.json\/plugins\/0\/source/);
+  });
+});
+
+test("rejects empty git marketplace source urls", () => {
+  withFixture((root) => {
+    const marketplacePath = join(root, ".agents/plugins/marketplace.json");
+    const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
+    marketplace.plugins[0].source = {
+      source: "url",
+      url: "   "
+    };
+    writeJson(marketplacePath, marketplace);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join("\n"), /marketplace\.json\/plugins\/0\/source/);
+  });
+});
+
+test("rejects non-normal git subdirectory paths", () => {
+  withFixture((root) => {
+    const marketplacePath = join(root, ".agents/plugins/marketplace.json");
+    const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
+    marketplace.plugins[0].source = {
+      source: "git-subdir",
+      url: "example/marketplace",
+      path: "."
+    };
+    writeJson(marketplacePath, marketplace);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join("\n"), /marketplace\.json\/plugins\/0\/source/);
+  });
+});
+
 test("accepts multiple skill roots", () => {
   withFixture((root) => {
     const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
