@@ -20,7 +20,7 @@ Run validation before opening or updating a pull request.
 ## Coding Style & Naming Conventions
 
 Use JSON for marketplace and plugin manifests, with two-space indentation. Plugin names should be
-lowercase kebab-case, for example `code-quality` or `marketplace-starter`. Keep paths relative and
+lowercase kebab-case, for example `code-quality` or `github-tools`. Keep paths relative and
 prefixed with `./` where Codex expects relative paths, such as `./plugins/code-quality` and
 `./skills/`. Markdown files should be concise, structured with clear headings, and written in
 English.
