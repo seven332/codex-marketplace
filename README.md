@@ -8,9 +8,12 @@ Repo-local marketplace scaffold for Codex plugins.
 .
 ├── .agents/plugins/marketplace.json
 ├── plugins/
-│   └── code-quality/
+│   ├── code-quality/
+│   │   ├── .codex-plugin/plugin.json
+│   │   └── skills/code-quality/SKILL.md
+│   └── github-workflow/
 │       ├── .codex-plugin/plugin.json
-│       └── skills/code-quality/SKILL.md
+│       └── skills/
 └── scripts/validate-marketplace.mjs
 ```
 
@@ -24,7 +27,7 @@ codex plugin marketplace list
 ```
 
 Then restart Codex, open the plugin directory, select `Codex Marketplace`, and install
-`Code Quality`.
+`Code Quality` or `GitHub Workflow`.
 
 For development, edit files under `plugins/<plugin-name>/`, then reinstall the plugin or refresh
 the marketplace from Codex.
@@ -52,3 +55,5 @@ Marketplace entries should keep `source.path` relative to the repository root an
 
 - `code-quality` - General-purpose review and cleanup workflows that start from each repository's
   own quality and testing documentation.
+- `github-workflow` - GitHub issue and pull request workflows for planning, implementation,
+  review, CI checks, rebasing, and issue maintenance.

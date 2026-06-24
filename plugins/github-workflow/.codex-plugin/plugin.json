@@ -1,0 +1,38 @@
+{
+  "name": "github-workflow",
+  "version": "0.1.0",
+  "description": "GitHub issue and pull request workflow skills for Codex.",
+  "author": {
+    "name": "codex-marketplace maintainers"
+  },
+  "homepage": "https://github.com/vm0-ai/team-skills/tree/main/github-workflow",
+  "repository": "https://github.com/seven332/codex-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "github",
+    "pull-request",
+    "issues",
+    "workflow"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "GitHub Workflow",
+    "shortDescription": "Manage GitHub issues, PRs, reviews, CI checks, and branch updates.",
+    "longDescription": "A Codex-native GitHub workflow plugin for issue planning and implementation, issue creation and compaction, pull request lifecycle management, PR review, CI checking, rebasing, and switching to main.",
+    "developerName": "codex-marketplace maintainers",
+    "category": "Developer Tools",
+    "capabilities": [
+      "GitHub",
+      "Issues",
+      "Pull Requests",
+      "Review"
+    ],
+    "defaultPrompt": [
+      "Create a PR for the current changes.",
+      "Review this pull request and post findings.",
+      "Plan implementation for this GitHub issue."
+    ],
+    "brandColor": "#24292F",
+    "screenshots": []
+  }
+}
