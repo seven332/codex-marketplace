@@ -18,7 +18,7 @@
   "interface": {
     "displayName": "GitHub Workflow",
     "shortDescription": "Manage GitHub issues, PRs, reviews, CI checks, and branch updates.",
-    "longDescription": "A Codex-native GitHub workflow plugin for issue planning and implementation, issue creation and compaction, pull request lifecycle management, PR review, CI checking, rebasing, and switching to main.",
+    "longDescription": "A Codex-native GitHub workflow plugin for issue planning and implementation, issue creation and compaction, pull request lifecycle management, PR review, CI checking, rebasing, and switching to the default branch.",
     "developerName": "codex-marketplace maintainers",
     "category": "Developer Tools",
     "capabilities": [

@@ -33,7 +33,7 @@ Use this skill when the user asks to review a GitHub pull request.
    - `P2`: maintainability risk, unclear API, or follow-up cleanup.
 6. Prepare a concise PR comment in a temporary Markdown file from `mktemp`:
    ```bash
-   PR_REVIEW_FILE=$(mktemp "${TMPDIR:-/tmp}/pr-review.XXXXXX.md")
+   PR_REVIEW_FILE=$(mktemp "${TMPDIR:-/tmp}/pr-review.XXXXXX")
    ```
    ```markdown
    ## Code Review: PR #<number>

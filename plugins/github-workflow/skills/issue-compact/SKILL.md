@@ -27,7 +27,7 @@ Use this skill when the user asks to compact or consolidate a GitHub issue discu
    ---
    > Compacted on YYYY-MM-DD from N comments.
    ```
-6. Create `ISSUE_COMPACT_FILE=$(mktemp "${TMPDIR:-/tmp}/issue-compact.XXXXXX.md")` and write the
+6. Create `ISSUE_COMPACT_FILE=$(mktemp "${TMPDIR:-/tmp}/issue-compact.XXXXXX")` and write the
    draft there.
 7. Show the draft path and a concise summary of what will be preserved. Ask for explicit user
    confirmation before updating the issue body unless the user already explicitly approved the

@@ -25,7 +25,7 @@ request, investigation, or task.
 3. Draft an issue title using a Conventional Commit-style prefix when appropriate:
    - `feat:`, `bug:`, `docs:`, `refactor:`, `test:`, `chore:`, `perf:`
    - Use lowercase description and no trailing period.
-4. Create `ISSUE_BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/issue-create.XXXXXX.md")` and draft the body
+4. Create `ISSUE_BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/issue-create.XXXXXX")` and draft the body
    there. Adapt structure to the issue, but prefer:
    - Background
    - Problem or requirement

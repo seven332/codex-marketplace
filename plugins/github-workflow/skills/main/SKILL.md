@@ -5,8 +5,8 @@ description: Switch to the repository default branch and pull the latest remote 
 
 # Main Branch
 
-Use this skill when the user asks to switch back to the default branch, update `main`, or return to
-a clean base after PR work.
+Use this skill when the user asks to switch back to the default branch, update the base branch, or
+return to a clean base after PR work.
 
 ## Workflow
 
@@ -17,7 +17,7 @@ a clean base after PR work.
    DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' 2>/dev/null || echo main)
    ```
 4. Switch to the default branch with `git switch "$DEFAULT_BRANCH"`.
-5. Pull the latest remote changes with `git pull`.
+5. Pull the latest remote changes with `git pull --ff-only`.
 6. Report the latest commit and whether the pull fast-forwarded.
 
 Do not stash, discard, amend, reset, or force-push unless the user explicitly asks.

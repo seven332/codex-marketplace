@@ -38,7 +38,7 @@ Infer the operation from the user request when it is not explicit.
 8. If the current branch already has an open PR, report that PR URL instead of creating a duplicate.
    Otherwise create a PR body in a temporary Markdown file from `mktemp`, then create the PR:
    ```bash
-   PR_BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/pr-body.XXXXXX.md")
+   PR_BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/pr-body.XXXXXX")
    # Write the PR body to "$PR_BODY_FILE", then:
    gh pr create --base "$DEFAULT_BRANCH" --head <branch> --title "<title>" --body-file "$PR_BODY_FILE"
    ```
@@ -57,7 +57,7 @@ Do not amend or force-push unless the user explicitly asks.
    ```bash
    gh pr merge <pr-number> --squash --delete-branch
    ```
-8. Switch to the default branch and pull latest.
+8. Switch to the default branch and pull latest with `git pull --ff-only`.
 
 ## List Workflow
 
@@ -70,7 +70,7 @@ Run `gh pr list --state open` and summarize number, title, branch, author, and s
    from `mktemp`.
 3. Post with:
    ```bash
-   PR_COMMENT_FILE=$(mktemp "${TMPDIR:-/tmp}/pr-comment.XXXXXX.md")
+   PR_COMMENT_FILE=$(mktemp "${TMPDIR:-/tmp}/pr-comment.XXXXXX")
    # Write the comment to "$PR_COMMENT_FILE", then:
    gh pr comment <pr-number> --body-file "$PR_COMMENT_FILE"
    ```

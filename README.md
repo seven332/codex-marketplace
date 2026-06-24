@@ -49,7 +49,8 @@ or:
 npm run validate
 ```
 
-Marketplace entries should keep `source.path` relative to the repository root and start with `./`.
+Marketplace entries should keep `source.path` relative to the repository root, start with `./`, and
+stay inside this repository.
 
 ## Plugins
 

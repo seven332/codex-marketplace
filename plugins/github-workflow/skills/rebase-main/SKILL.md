@@ -10,7 +10,8 @@ Use this skill when the user asks to update the current feature branch on top of
 ## Workflow
 
 1. Check the branch and working tree with `git status --short --branch`.
-2. Refuse to rebase if unrelated uncommitted changes are present.
+2. Refuse to rebase if any uncommitted changes are present. Ask the user whether to commit,
+   shelve, or discard them before continuing.
 3. Detect the default branch:
    ```bash
    DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' 2>/dev/null || echo main)

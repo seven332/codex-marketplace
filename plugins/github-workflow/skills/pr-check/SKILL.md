@@ -25,7 +25,7 @@ Use this skill when the user asks to check a PR, inspect CI, or fix straightforw
    them. Before changing files:
    - Check `git status --short --branch`.
    - Confirm the current branch matches the PR head branch.
-   - Stop if unrelated uncommitted changes are present.
+   - Stop if any uncommitted changes are present before the auto-fix command runs.
    After auto-fix commands run, rerun the failed lint/format command and relevant repository
    validation. If validation still fails, stop and report the remaining failure. If it passes,
    inspect the diff, stage only mechanical lint/format changes, commit them, and push to the PR
