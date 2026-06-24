@@ -1,6 +1,6 @@
 ---
 name: issue-implement
-description: Implement an approved GitHub issue plan and create a pull request.
+description: Implement an approved GitHub issue plan after planning or approval and hand off changes to the PR workflow.
 ---
 
 # Issue Implement
