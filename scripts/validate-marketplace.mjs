@@ -1,27 +1,9 @@
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import Ajv from "ajv";
 
-const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const realRepoRoot = realpathSync(repoRoot);
-const marketplacePath = join(repoRoot, ".agents/plugins/marketplace.json");
-const marketplaceSchemaPath = join(repoRoot, "schemas/marketplace.schema.json");
-const pluginSchemaPath = join(repoRoot, "schemas/plugin.schema.json");
-
-function fail(message) {
-  console.error(`error: ${message}`);
-  process.exitCode = 1;
-}
-
-function readJson(path) {
-  try {
-    return JSON.parse(readFileSync(path, "utf8"));
-  } catch (error) {
-    fail(`${path} is not valid JSON: ${error.message}`);
-    return null;
-  }
-}
+const defaultRepoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 
 function isObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -37,7 +19,15 @@ function isInsideDirectory(parent, child) {
   );
 }
 
-function compileSchema(ajv, schema, path) {
+function formatSchemaLocation(error) {
+  const basePath = error.instancePath || "";
+  if (error.params?.missingProperty) {
+    return `${basePath}/${error.params.missingProperty}`;
+  }
+  return basePath || "/";
+}
+
+function compileSchema(ajv, schema, path, fail) {
   try {
     return ajv.compile(schema);
   } catch (error) {
@@ -46,17 +36,16 @@ function compileSchema(ajv, schema, path) {
   }
 }
 
-function formatSchemaLocation(error) {
-  if (error.instancePath) {
-    return error.instancePath;
+function readJson(path, fail) {
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch (error) {
+    fail(`${path} is not valid JSON: ${error.message}`);
+    return null;
   }
-  if (error.params?.missingProperty) {
-    return `/${error.params.missingProperty}`;
-  }
-  return "/";
 }
 
-function validateJson(path, value, validate) {
+function validateJson(path, value, validate, fail) {
   if (validate(value)) {
     return;
   }
@@ -66,7 +55,7 @@ function validateJson(path, value, validate) {
   }
 }
 
-function validateSkillFile(pluginName, skillDirName, skillPath) {
+function validateSkillFile(pluginName, skillDirName, skillPath, fail) {
   if (!existsSync(skillPath) || !statSync(skillPath).isFile()) {
     fail(`${pluginName}: missing skills/${skillDirName}/SKILL.md`);
     return false;
@@ -87,17 +76,20 @@ function validateSkillFile(pluginName, skillDirName, skillPath) {
     }
   }
 
+  let isValid = true;
   if (metadata.get("name") !== skillDirName) {
     fail(`${pluginName}: skills/${skillDirName}/SKILL.md frontmatter name must match directory`);
+    isValid = false;
   }
   if (!metadata.get("description")) {
     fail(`${pluginName}: skills/${skillDirName}/SKILL.md frontmatter description is required`);
+    isValid = false;
   }
 
-  return true;
+  return isValid;
 }
 
-function validateSkills(pluginName, pluginRoot, manifest) {
+function validateSkills(pluginName, pluginRoot, manifest, fail) {
   if (!manifest.skills || typeof manifest.skills !== "string") {
     return 0;
   }
@@ -130,7 +122,7 @@ function validateSkills(pluginName, pluginRoot, manifest) {
   let validSkillCount = 0;
   for (const skillDirName of skillDirectories) {
     const skillPath = join(skillsRoot, skillDirName, "SKILL.md");
-    if (validateSkillFile(pluginName, skillDirName, skillPath)) {
+    if (validateSkillFile(pluginName, skillDirName, skillPath, fail)) {
       validSkillCount += 1;
     }
   }
@@ -138,82 +130,119 @@ function validateSkills(pluginName, pluginRoot, manifest) {
   return validSkillCount;
 }
 
-const ajv = new Ajv({ allErrors: true });
-const marketplace = readJson(marketplacePath);
-const marketplaceSchema = readJson(marketplaceSchemaPath);
-const pluginSchema = readJson(pluginSchemaPath);
+export function validateRepository(root = defaultRepoRoot) {
+  const repoRoot = resolve(root);
+  const errors = [];
+  const fail = (message) => errors.push(message);
+  const marketplacePath = join(repoRoot, ".agents/plugins/marketplace.json");
+  const marketplaceSchemaPath = join(repoRoot, "schemas/marketplace.schema.json");
+  const pluginSchemaPath = join(repoRoot, "schemas/plugin.schema.json");
 
-if (!marketplace || !marketplaceSchema || !pluginSchema) {
-  process.exit(1);
+  let realRepoRoot;
+  try {
+    realRepoRoot = realpathSync(repoRoot);
+  } catch (error) {
+    fail(`${repoRoot} is not accessible: ${error.message}`);
+    return { ok: false, errors, pluginCount: 0, skillCount: 0 };
+  }
+
+  const ajv = new Ajv({ allErrors: true });
+  const marketplace = readJson(marketplacePath, fail);
+  const marketplaceSchema = readJson(marketplaceSchemaPath, fail);
+  const pluginSchema = readJson(pluginSchemaPath, fail);
+
+  if (!marketplace || !marketplaceSchema || !pluginSchema) {
+    return { ok: false, errors, pluginCount: 0, skillCount: 0 };
+  }
+
+  const validateMarketplace = compileSchema(ajv, marketplaceSchema, marketplaceSchemaPath, fail);
+  const validatePlugin = compileSchema(ajv, pluginSchema, pluginSchemaPath, fail);
+
+  if (!validateMarketplace || !validatePlugin) {
+    return { ok: false, errors, pluginCount: 0, skillCount: 0 };
+  }
+
+  validateJson(marketplacePath, marketplace, validateMarketplace, fail);
+
+  if (!Array.isArray(marketplace.plugins)) {
+    return { ok: false, errors, pluginCount: 0, skillCount: 0 };
+  }
+
+  const seenNames = new Set();
+  let skillCount = 0;
+
+  for (const entry of marketplace.plugins) {
+    if (
+      !isObject(entry) ||
+      !entry.name ||
+      !isObject(entry.source) ||
+      typeof entry.source.path !== "string"
+    ) {
+      continue;
+    }
+
+    if (seenNames.has(entry.name)) {
+      fail(`duplicate plugin entry: ${entry.name}`);
+    }
+    seenNames.add(entry.name);
+
+    const pluginRoot = resolve(repoRoot, entry.source.path);
+    if (!isInsideDirectory(repoRoot, pluginRoot)) {
+      fail(`${entry.name}: source.path must stay inside the repository`);
+      continue;
+    }
+
+    if (!existsSync(pluginRoot) || !statSync(pluginRoot).isDirectory()) {
+      fail(`${entry.name}: plugin directory does not exist at ${entry.source.path}`);
+      continue;
+    }
+
+    if (!isInsideDirectory(realRepoRoot, realpathSync(pluginRoot))) {
+      fail(`${entry.name}: source.path must not resolve outside the repository`);
+      continue;
+    }
+
+    const manifestPath = join(pluginRoot, ".codex-plugin/plugin.json");
+    if (!existsSync(manifestPath)) {
+      fail(`${entry.name}: missing .codex-plugin/plugin.json`);
+      continue;
+    }
+
+    const manifest = readJson(manifestPath, fail);
+    if (!manifest) {
+      continue;
+    }
+
+    validateJson(manifestPath, manifest, validatePlugin, fail);
+
+    if (manifest.name !== entry.name) {
+      fail(`${entry.name}: manifest name must match marketplace entry name`);
+    }
+
+    skillCount += validateSkills(entry.name, pluginRoot, manifest, fail);
+  }
+
+  return {
+    ok: errors.length === 0,
+    errors,
+    pluginCount: marketplace.plugins.length,
+    skillCount
+  };
 }
 
-const validateMarketplace = compileSchema(ajv, marketplaceSchema, marketplaceSchemaPath);
-const validatePlugin = compileSchema(ajv, pluginSchema, pluginSchemaPath);
-
-if (!validateMarketplace || !validatePlugin) {
-  process.exit(1);
+function isCliEntrypoint() {
+  return process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
 }
 
-validateJson(marketplacePath, marketplace, validateMarketplace);
-
-if (!Array.isArray(marketplace.plugins)) {
-  process.exit(1);
-}
-
-const seenNames = new Set();
-let skillCount = 0;
-
-for (const entry of marketplace.plugins) {
-  if (
-    !isObject(entry) ||
-    !entry.name ||
-    !isObject(entry.source) ||
-    typeof entry.source.path !== "string"
-  ) {
-    continue;
+if (isCliEntrypoint()) {
+  const result = validateRepository();
+  for (const error of result.errors) {
+    console.error(`error: ${error}`);
   }
 
-  if (seenNames.has(entry.name)) {
-    fail(`duplicate plugin entry: ${entry.name}`);
+  if (result.ok) {
+    console.log(`validated ${result.pluginCount} marketplace plugin(s) and ${result.skillCount} skill(s)`);
+  } else {
+    process.exitCode = 1;
   }
-  seenNames.add(entry.name);
-
-  const pluginRoot = resolve(repoRoot, entry.source.path);
-  if (!isInsideDirectory(repoRoot, pluginRoot)) {
-    fail(`${entry.name}: source.path must stay inside the repository`);
-    continue;
-  }
-
-  if (!existsSync(pluginRoot) || !statSync(pluginRoot).isDirectory()) {
-    fail(`${entry.name}: plugin directory does not exist at ${entry.source.path}`);
-    continue;
-  }
-
-  if (!isInsideDirectory(realRepoRoot, realpathSync(pluginRoot))) {
-    fail(`${entry.name}: source.path must not resolve outside the repository`);
-    continue;
-  }
-
-  const manifestPath = join(pluginRoot, ".codex-plugin/plugin.json");
-  if (!existsSync(manifestPath)) {
-    fail(`${entry.name}: missing .codex-plugin/plugin.json`);
-    continue;
-  }
-
-  const manifest = readJson(manifestPath);
-  if (!manifest) {
-    continue;
-  }
-
-  validateJson(manifestPath, manifest, validatePlugin);
-
-  if (manifest.name !== entry.name) {
-    fail(`${entry.name}: manifest name must match marketplace entry name`);
-  }
-
-  skillCount += validateSkills(entry.name, pluginRoot, manifest);
-}
-
-if (!process.exitCode) {
-  console.log(`validated ${marketplace.plugins.length} marketplace plugin(s) and ${skillCount} skill(s)`);
 }

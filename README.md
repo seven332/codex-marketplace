@@ -40,13 +40,13 @@ the marketplace from Codex.
 1. Create `plugins/<plugin-name>/.codex-plugin/plugin.json`.
 2. Put skills under `plugins/<plugin-name>/skills/`.
 3. Add a matching entry to `.agents/plugins/marketplace.json`.
-4. Run:
+4. Run the full validation suite:
 
 ```bash
-node scripts/validate-marketplace.mjs
+npm test
 ```
 
-or:
+For a quick schema and repository-structure check without regression tests, run:
 
 ```bash
 npm run validate

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "validate": "node scripts/validate-marketplace.mjs",
-    "test": "node scripts/validate-marketplace.mjs"
+    "test": "node --test scripts/*.test.mjs && npm run validate"
   },
   "devDependencies": {
     "ajv": "^8.20.0"
