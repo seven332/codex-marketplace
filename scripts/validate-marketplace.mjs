@@ -83,6 +83,40 @@ function validateJson(path, value, validate, fail) {
   }
 }
 
+function normalizedDefaultPrompt(prompt) {
+  return prompt.split(/\s+/u).filter(Boolean).join(" ");
+}
+
+function characterCount(value) {
+  return Array.from(value).length;
+}
+
+function validateDefaultPrompt(path, manifest, fail) {
+  const interfaceConfig = manifest.interface;
+  if (!isObject(interfaceConfig) || !Object.hasOwn(interfaceConfig, "defaultPrompt")) {
+    return;
+  }
+
+  const prompts =
+    typeof interfaceConfig.defaultPrompt === "string"
+      ? [{ value: interfaceConfig.defaultPrompt, location: "/interface/defaultPrompt" }]
+      : Array.isArray(interfaceConfig.defaultPrompt)
+        ? interfaceConfig.defaultPrompt.map((value, index) => ({
+            value,
+            location: `/interface/defaultPrompt/${index}`
+          }))
+        : [];
+
+  for (const prompt of prompts) {
+    if (typeof prompt.value !== "string") {
+      continue;
+    }
+    if (characterCount(normalizedDefaultPrompt(prompt.value)) > 128) {
+      fail(`${path}${prompt.location} must be at most 128 characters after whitespace normalization`);
+    }
+  }
+}
+
 function extractSkillFrontmatter(content) {
   const lines = content.split(/\r?\n/);
   if (lines[0]?.trim() !== "---") {
@@ -422,6 +456,7 @@ export function validateRepository(root = defaultRepoRoot) {
     if (!isObject(manifest)) {
       continue;
     }
+    validateDefaultPrompt(manifestPath, manifest, fail);
 
     if (manifestNameForPluginRoot(manifest, pluginRoot) !== entry.name) {
       fail(`${entry.name}: manifest name must match marketplace entry name`);

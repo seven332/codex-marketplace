@@ -450,6 +450,33 @@ test("accepts default prompt strings and dark logos", () => {
   });
 });
 
+test("accepts default prompts that normalize under the Codex length limit", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.interface.defaultPrompt = `${"A".repeat(64)}${" ".repeat(100)}${"B".repeat(63)}`;
+    writeJson(manifestPath, manifest);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+  });
+});
+
+test("rejects default prompts that exceed the normalized Codex length limit", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.interface.defaultPrompt = "x".repeat(129);
+    writeJson(manifestPath, manifest);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join("\n"), /defaultPrompt.*128 characters after whitespace/);
+  });
+});
+
 test("rejects snake_case plugin default prompts ignored by Codex", () => {
   withFixture((root) => {
     const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
