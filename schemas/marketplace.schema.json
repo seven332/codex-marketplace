@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://seven332.github.io/codex-marketplace/schemas/marketplace.schema.json",
+  "title": "Codex Marketplace",
+  "type": "object",
+  "required": [
+    "name",
+    "plugins"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "interface": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/pluginEntry"
+      }
+    }
+  },
+  "$defs": {
+    "pluginEntry": {
+      "type": "object",
+      "required": [
+        "name",
+        "source",
+        "policy",
+        "category"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "source": {
+          "type": "object",
+          "required": [
+            "source",
+            "path"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "source": {
+              "const": "local"
+            },
+            "path": {
+              "type": "string",
+              "pattern": "^\\./.+",
+              "not": {
+                "pattern": "(^|/)\\.\\.($|/)"
+              }
+            }
+          }
+        },
+        "policy": {
+          "type": "object",
+          "required": [
+            "installation",
+            "authentication"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "installation": {
+              "enum": [
+                "AVAILABLE",
+                "INSTALLED_BY_DEFAULT",
+                "NOT_AVAILABLE"
+              ]
+            },
+            "authentication": {
+              "enum": [
+                "ON_INSTALL",
+                "ON_USE"
+              ]
+            }
+          }
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

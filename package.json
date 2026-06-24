@@ -6,5 +6,8 @@
   "scripts": {
     "validate": "node scripts/validate-marketplace.mjs",
     "test": "node scripts/validate-marketplace.mjs"
+  },
+  "devDependencies": {
+    "ajv": "^8.20.0"
   }
 }

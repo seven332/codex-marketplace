@@ -14,6 +14,9 @@ Repo-local marketplace scaffold for Codex plugins.
 │   └── github-workflow/
 │       ├── .codex-plugin/plugin.json
 │       └── skills/
+├── schemas/
+│   ├── marketplace.schema.json
+│   └── plugin.schema.json
 └── scripts/validate-marketplace.mjs
 ```
 
@@ -49,8 +52,9 @@ or:
 npm run validate
 ```
 
+Marketplace entries and plugin manifests are checked against JSON Schemas in `schemas/`.
 Marketplace entries should keep `source.path` relative to the repository root, start with `./`, and
-stay inside this repository.
+stay inside this repository. Pull requests run the same validation in GitHub Actions.
 
 ## Plugins
 

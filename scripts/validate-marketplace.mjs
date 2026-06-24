@@ -1,10 +1,13 @@
-import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import Ajv from "ajv";
 
 const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const realRepoRoot = realpathSync(repoRoot);
 const marketplacePath = join(repoRoot, ".agents/plugins/marketplace.json");
+const marketplaceSchemaPath = join(repoRoot, "schemas/marketplace.schema.json");
+const pluginSchemaPath = join(repoRoot, "schemas/plugin.schema.json");
 
 function fail(message) {
   console.error(`error: ${message}`);
@@ -34,31 +37,139 @@ function isInsideDirectory(parent, child) {
   );
 }
 
-const marketplace = readJson(marketplacePath);
+function compileSchema(ajv, schema, path) {
+  try {
+    return ajv.compile(schema);
+  } catch (error) {
+    fail(`${path} is not a valid JSON Schema: ${error.message}`);
+    return null;
+  }
+}
 
-if (!marketplace) {
+function formatSchemaLocation(error) {
+  if (error.instancePath) {
+    return error.instancePath;
+  }
+  if (error.params?.missingProperty) {
+    return `/${error.params.missingProperty}`;
+  }
+  return "/";
+}
+
+function validateJson(path, value, validate) {
+  if (validate(value)) {
+    return;
+  }
+
+  for (const error of validate.errors ?? []) {
+    fail(`${path}${formatSchemaLocation(error)} ${error.message}`);
+  }
+}
+
+function validateSkillFile(pluginName, skillDirName, skillPath) {
+  if (!existsSync(skillPath) || !statSync(skillPath).isFile()) {
+    fail(`${pluginName}: missing skills/${skillDirName}/SKILL.md`);
+    return false;
+  }
+
+  const content = readFileSync(skillPath, "utf8");
+  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
+  if (!frontmatterMatch) {
+    fail(`${pluginName}: skills/${skillDirName}/SKILL.md is missing YAML frontmatter`);
+    return false;
+  }
+
+  const metadata = new Map();
+  for (const line of frontmatterMatch[1].split("\n")) {
+    const match = line.match(/^([A-Za-z][\w-]*):\s*(.*)$/);
+    if (match) {
+      metadata.set(match[1], match[2].trim());
+    }
+  }
+
+  if (metadata.get("name") !== skillDirName) {
+    fail(`${pluginName}: skills/${skillDirName}/SKILL.md frontmatter name must match directory`);
+  }
+  if (!metadata.get("description")) {
+    fail(`${pluginName}: skills/${skillDirName}/SKILL.md frontmatter description is required`);
+  }
+
+  return true;
+}
+
+function validateSkills(pluginName, pluginRoot, manifest) {
+  if (!manifest.skills || typeof manifest.skills !== "string") {
+    return 0;
+  }
+
+  const skillsRoot = resolve(pluginRoot, manifest.skills);
+  if (!isInsideDirectory(pluginRoot, skillsRoot)) {
+    fail(`${pluginName}: manifest.skills must stay inside the plugin directory`);
+    return 0;
+  }
+
+  if (!existsSync(skillsRoot) || !statSync(skillsRoot).isDirectory()) {
+    fail(`${pluginName}: skills directory does not exist at ${manifest.skills}`);
+    return 0;
+  }
+
+  if (!isInsideDirectory(realpathSync(pluginRoot), realpathSync(skillsRoot))) {
+    fail(`${pluginName}: manifest.skills must not resolve outside the plugin directory`);
+    return 0;
+  }
+
+  const skillDirectories = readdirSync(skillsRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+
+  if (skillDirectories.length === 0) {
+    fail(`${pluginName}: skills directory must contain at least one skill directory`);
+  }
+
+  let validSkillCount = 0;
+  for (const skillDirName of skillDirectories) {
+    const skillPath = join(skillsRoot, skillDirName, "SKILL.md");
+    if (validateSkillFile(pluginName, skillDirName, skillPath)) {
+      validSkillCount += 1;
+    }
+  }
+
+  return validSkillCount;
+}
+
+const ajv = new Ajv({ allErrors: true });
+const marketplace = readJson(marketplacePath);
+const marketplaceSchema = readJson(marketplaceSchemaPath);
+const pluginSchema = readJson(pluginSchemaPath);
+
+if (!marketplace || !marketplaceSchema || !pluginSchema) {
   process.exit(1);
 }
 
-if (!marketplace.name || typeof marketplace.name !== "string") {
-  fail("marketplace.name must be a non-empty string");
+const validateMarketplace = compileSchema(ajv, marketplaceSchema, marketplaceSchemaPath);
+const validatePlugin = compileSchema(ajv, pluginSchema, pluginSchemaPath);
+
+if (!validateMarketplace || !validatePlugin) {
+  process.exit(1);
 }
 
+validateJson(marketplacePath, marketplace, validateMarketplace);
+
 if (!Array.isArray(marketplace.plugins)) {
-  fail("marketplace.plugins must be an array");
   process.exit(1);
 }
 
 const seenNames = new Set();
+let skillCount = 0;
 
 for (const entry of marketplace.plugins) {
-  if (!isObject(entry)) {
-    fail("each marketplace plugin entry must be an object");
-    continue;
-  }
-
-  if (!entry.name || typeof entry.name !== "string") {
-    fail("plugin entry is missing name");
+  if (
+    !isObject(entry) ||
+    !entry.name ||
+    !isObject(entry.source) ||
+    typeof entry.source.path !== "string"
+  ) {
     continue;
   }
 
@@ -66,25 +177,6 @@ for (const entry of marketplace.plugins) {
     fail(`duplicate plugin entry: ${entry.name}`);
   }
   seenNames.add(entry.name);
-
-  if (!isObject(entry.source)) {
-    fail(`${entry.name}: source must be an object`);
-    continue;
-  }
-
-  if (entry.source.source !== "local") {
-    fail(`${entry.name}: only local marketplace entries are supported by this validator`);
-  }
-
-  if (!entry.source.path || typeof entry.source.path !== "string") {
-    fail(`${entry.name}: source.path must be a non-empty string`);
-    continue;
-  }
-
-  if (!entry.source.path.startsWith("./")) {
-    fail(`${entry.name}: source.path must start with ./`);
-    continue;
-  }
 
   const pluginRoot = resolve(repoRoot, entry.source.path);
   if (!isInsideDirectory(repoRoot, pluginRoot)) {
@@ -113,38 +205,15 @@ for (const entry of marketplace.plugins) {
     continue;
   }
 
+  validateJson(manifestPath, manifest, validatePlugin);
+
   if (manifest.name !== entry.name) {
     fail(`${entry.name}: manifest name must match marketplace entry name`);
   }
 
-  if (!manifest.version || typeof manifest.version !== "string") {
-    fail(`${entry.name}: manifest.version must be a non-empty string`);
-  }
-
-  if (!manifest.description || typeof manifest.description !== "string") {
-    fail(`${entry.name}: manifest.description must be a non-empty string`);
-  }
-
-  if (!isObject(manifest.interface)) {
-    fail(`${entry.name}: manifest.interface must be an object`);
-  }
-
-  if (!isObject(entry.policy)) {
-    fail(`${entry.name}: policy must be an object`);
-  } else {
-    if (!["AVAILABLE", "INSTALLED_BY_DEFAULT", "NOT_AVAILABLE"].includes(entry.policy.installation)) {
-      fail(`${entry.name}: policy.installation is invalid`);
-    }
-    if (!["ON_INSTALL", "ON_USE"].includes(entry.policy.authentication)) {
-      fail(`${entry.name}: policy.authentication is invalid`);
-    }
-  }
-
-  if (!entry.category || typeof entry.category !== "string") {
-    fail(`${entry.name}: category must be a non-empty string`);
-  }
+  skillCount += validateSkills(entry.name, pluginRoot, manifest);
 }
 
 if (!process.exitCode) {
-  console.log(`validated ${marketplace.plugins.length} marketplace plugin(s)`);
+  console.log(`validated ${marketplace.plugins.length} marketplace plugin(s) and ${skillCount} skill(s)`);
 }
