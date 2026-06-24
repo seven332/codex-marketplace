@@ -1,24 +1,10 @@
-import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
-import { isAbsolute, join, relative, resolve, sep } from "node:path";
-import { fileURLToPath } from "node:url";
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
+import { basename, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import Ajv from "ajv";
+import { isScalar, parseDocument } from "yaml";
 
-const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const realRepoRoot = realpathSync(repoRoot);
-const marketplacePath = join(repoRoot, ".agents/plugins/marketplace.json");
-
-function fail(message) {
-  console.error(`error: ${message}`);
-  process.exitCode = 1;
-}
-
-function readJson(path) {
-  try {
-    return JSON.parse(readFileSync(path, "utf8"));
-  } catch (error) {
-    fail(`${path} is not valid JSON: ${error.message}`);
-    return null;
-  }
-}
+const defaultRepoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 
 function isObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -34,117 +20,486 @@ function isInsideDirectory(parent, child) {
   );
 }
 
-const marketplace = readJson(marketplacePath);
-
-if (!marketplace) {
-  process.exit(1);
+function isInsideOrSameDirectory(parent, child) {
+  const childRelativePath = relative(parent, child);
+  return (
+    childRelativePath === "" ||
+    (childRelativePath !== ".." &&
+      !childRelativePath.startsWith(`..${sep}`) &&
+      !isAbsolute(childRelativePath))
+  );
 }
 
-if (!marketplace.name || typeof marketplace.name !== "string") {
-  fail("marketplace.name must be a non-empty string");
+function localSourcePath(source) {
+  if (typeof source === "string") {
+    return source;
+  }
+  if (isObject(source) && source.source === "local" && typeof source.path === "string") {
+    return source.path;
+  }
+  return null;
 }
 
-if (!Array.isArray(marketplace.plugins)) {
-  fail("marketplace.plugins must be an array");
-  process.exit(1);
+function manifestNameForPluginRoot(manifest, pluginRoot) {
+  if (typeof manifest.name === "string" && manifest.name.trim()) {
+    return manifest.name;
+  }
+  return basename(pluginRoot);
 }
 
-const seenNames = new Set();
+function formatSchemaLocation(error) {
+  const basePath = error.instancePath || "";
+  if (error.params?.missingProperty) {
+    return `${basePath}/${error.params.missingProperty}`;
+  }
+  return basePath || "/";
+}
 
-for (const entry of marketplace.plugins) {
-  if (!isObject(entry)) {
-    fail("each marketplace plugin entry must be an object");
-    continue;
+function compileSchema(ajv, schema, path, fail) {
+  try {
+    return ajv.compile(schema);
+  } catch (error) {
+    fail(`${path} is not a valid JSON Schema: ${error.message}`);
+    return null;
+  }
+}
+
+function readJson(path, fail) {
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch (error) {
+    fail(`${path} is not valid JSON: ${error.message}`);
+    return undefined;
+  }
+}
+
+function validateJson(path, value, validate, fail) {
+  if (validate(value)) {
+    return;
   }
 
-  if (!entry.name || typeof entry.name !== "string") {
-    fail("plugin entry is missing name");
-    continue;
+  for (const error of validate.errors ?? []) {
+    fail(`${path}${formatSchemaLocation(error)} ${error.message}`);
+  }
+}
+
+function normalizedDefaultPrompt(prompt) {
+  return prompt.split(/\s+/u).filter(Boolean).join(" ");
+}
+
+function characterCount(value) {
+  return Array.from(value).length;
+}
+
+function validateDefaultPrompt(path, manifest, fail) {
+  const interfaceConfig = manifest.interface;
+  if (!isObject(interfaceConfig) || !Object.hasOwn(interfaceConfig, "defaultPrompt")) {
+    return;
   }
 
-  if (seenNames.has(entry.name)) {
-    fail(`duplicate plugin entry: ${entry.name}`);
-  }
-  seenNames.add(entry.name);
+  const prompts =
+    typeof interfaceConfig.defaultPrompt === "string"
+      ? [{ value: interfaceConfig.defaultPrompt, location: "/interface/defaultPrompt" }]
+      : Array.isArray(interfaceConfig.defaultPrompt)
+        ? interfaceConfig.defaultPrompt.map((value, index) => ({
+            value,
+            location: `/interface/defaultPrompt/${index}`
+          }))
+        : [];
 
-  if (!isObject(entry.source)) {
-    fail(`${entry.name}: source must be an object`);
-    continue;
+  for (const prompt of prompts) {
+    if (typeof prompt.value !== "string") {
+      continue;
+    }
+    if (characterCount(normalizedDefaultPrompt(prompt.value)) > 128) {
+      fail(`${path}${prompt.location} must be at most 128 characters after whitespace normalization`);
+    }
   }
+}
 
-  if (entry.source.source !== "local") {
-    fail(`${entry.name}: only local marketplace entries are supported by this validator`);
-  }
-
-  if (!entry.source.path || typeof entry.source.path !== "string") {
-    fail(`${entry.name}: source.path must be a non-empty string`);
-    continue;
-  }
-
-  if (!entry.source.path.startsWith("./")) {
-    fail(`${entry.name}: source.path must start with ./`);
-    continue;
-  }
-
-  const pluginRoot = resolve(repoRoot, entry.source.path);
-  if (!isInsideDirectory(repoRoot, pluginRoot)) {
-    fail(`${entry.name}: source.path must stay inside the repository`);
-    continue;
+function extractSkillFrontmatter(content) {
+  const lines = content.split(/\r?\n/);
+  if (lines[0]?.trim() !== "---") {
+    return null;
   }
 
-  if (!existsSync(pluginRoot) || !statSync(pluginRoot).isDirectory()) {
-    fail(`${entry.name}: plugin directory does not exist at ${entry.source.path}`);
-    continue;
+  const frontmatterLines = [];
+  for (let index = 1; index < lines.length; index += 1) {
+    if (lines[index].trim() === "---") {
+      if (frontmatterLines.length === 0) {
+        return null;
+      }
+      return {
+        frontmatterLines,
+        body: lines.slice(index + 1).join("\n")
+      };
+    }
+    frontmatterLines.push(lines[index]);
   }
 
-  if (!isInsideDirectory(realRepoRoot, realpathSync(pluginRoot))) {
-    fail(`${entry.name}: source.path must not resolve outside the repository`);
-    continue;
+  return null;
+}
+
+function unquoteYamlScalar(value) {
+  if (value.length < 2) {
+    return value;
   }
 
-  const manifestPath = join(pluginRoot, ".codex-plugin/plugin.json");
-  if (!existsSync(manifestPath)) {
-    fail(`${entry.name}: missing .codex-plugin/plugin.json`);
-    continue;
+  if (value.startsWith('"') && value.endsWith('"')) {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value.slice(1, -1);
+    }
   }
 
-  const manifest = readJson(manifestPath);
-  if (!manifest) {
-    continue;
+  if (value.startsWith("'") && value.endsWith("'")) {
+    return value.slice(1, -1).replaceAll("''", "'");
   }
 
-  if (manifest.name !== entry.name) {
-    fail(`${entry.name}: manifest name must match marketplace entry name`);
+  return value;
+}
+
+function stripYamlLineComment(value) {
+  let quote = null;
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index];
+    if (quote === '"') {
+      if (character === '"' && value[index - 1] !== "\\") {
+        quote = null;
+      }
+      continue;
+    }
+    if (quote === "'") {
+      if (character === "'" && value[index + 1] === "'") {
+        index += 1;
+      } else if (character === "'") {
+        quote = null;
+      }
+      continue;
+    }
+    if (character === '"' || character === "'") {
+      quote = character;
+      continue;
+    }
+    if (character === "#" && (index === 0 || /\s/.test(value[index - 1]))) {
+      return value.slice(0, index).trim();
+    }
   }
 
-  if (!manifest.version || typeof manifest.version !== "string") {
-    fail(`${entry.name}: manifest.version must be a non-empty string`);
+  return value.trim();
+}
+
+function looksLikeNonStringYamlScalar(value) {
+  const lowerValue = value.toLowerCase();
+  return (
+    lowerValue === "null" ||
+    lowerValue === "~" ||
+    lowerValue === "true" ||
+    lowerValue === "false" ||
+    /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]?\d+)?$/i.test(value) ||
+    value.startsWith("[") ||
+    value.startsWith("{")
+  );
+}
+
+function readBlockScalar(lines, startIndex) {
+  const blockLines = [];
+  for (let index = startIndex; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (!line.trim()) {
+      blockLines.push(line);
+      continue;
+    }
+    if (/^[A-Za-z][\w-]*:/.test(line)) {
+      break;
+    }
+    if (/^\s/.test(line)) {
+      blockLines.push(line);
+    } else {
+      break;
+    }
   }
 
-  if (!manifest.description || typeof manifest.description !== "string") {
-    fail(`${entry.name}: manifest.description must be a non-empty string`);
+  return blockLines.join("\n").trim();
+}
+
+function readFrontmatterValueFallback(lines, key) {
+  for (let index = 0; index < lines.length; index += 1) {
+    const match = lines[index].match(/^([A-Za-z][\w-]*):\s*(.*)$/);
+    if (!match || match[1] !== key) {
+      continue;
+    }
+
+    const rawValue = match[2].trim();
+    if (/^[|>][+-]?$/.test(rawValue)) {
+      return readBlockScalar(lines, index + 1);
+    }
+    const value = stripYamlLineComment(rawValue);
+    if (looksLikeNonStringYamlScalar(value)) {
+      return undefined;
+    }
+    return unquoteYamlScalar(value).trim();
   }
 
-  if (!isObject(manifest.interface)) {
-    fail(`${entry.name}: manifest.interface must be an object`);
+  return undefined;
+}
+
+function scalarStringFromYamlDocument(document, key) {
+  const value = document.get(key, true);
+  if (!isScalar(value) || typeof value.value !== "string") {
+    return undefined;
   }
 
-  if (!isObject(entry.policy)) {
-    fail(`${entry.name}: policy must be an object`);
+  return value.value.trim();
+}
+
+function readFrontmatterValues(lines) {
+  const document = parseDocument(lines.join("\n"), { prettyErrors: false });
+  if (document.errors.length > 0) {
+    return {
+      name: readFrontmatterValueFallback(lines, "name"),
+      description: readFrontmatterValueFallback(lines, "description")
+    };
+  }
+
+  return {
+    name: scalarStringFromYamlDocument(document, "name"),
+    description: scalarStringFromYamlDocument(document, "description")
+  };
+}
+
+function skillFileLabel(skillsPath, skillDirName) {
+  return `${skillsPath.replace(/[\\/]+$/u, "")}/${skillDirName}/SKILL.md`;
+}
+
+function validateSkillFile(pluginName, skillsPath, skillDirName, skillPath, fail) {
+  const label = skillFileLabel(skillsPath, skillDirName);
+  if (!existsSync(skillPath) || !statSync(skillPath).isFile()) {
+    fail(`${pluginName}: missing ${label}`);
+    return false;
+  }
+
+  const content = readFileSync(skillPath, "utf8");
+  const frontmatter = extractSkillFrontmatter(content);
+  if (!frontmatter) {
+    fail(`${pluginName}: ${label} is missing YAML frontmatter`);
+    return false;
+  }
+
+  const { name: skillName, description } = readFrontmatterValues(frontmatter.frontmatterLines);
+
+  let isValid = true;
+  if (skillName !== skillDirName) {
+    fail(`${pluginName}: ${label} frontmatter name must match directory`);
+    isValid = false;
+  }
+  if (!description) {
+    fail(`${pluginName}: ${label} frontmatter description is required`);
+    isValid = false;
+  }
+  if (!frontmatter.body.trim()) {
+    fail(`${pluginName}: ${label} body is required`);
+    isValid = false;
+  }
+
+  return isValid;
+}
+
+function validateSkillRoot(pluginName, pluginRoot, skillsPath, fail) {
+  if (typeof skillsPath !== "string") {
+    return 0;
+  }
+
+  const skillsRoot = resolve(pluginRoot, skillsPath);
+  if (!isInsideDirectory(pluginRoot, skillsRoot)) {
+    fail(`${pluginName}: manifest.skills path ${skillsPath} must stay inside the plugin directory`);
+    return 0;
+  }
+
+  if (!existsSync(skillsRoot) || !statSync(skillsRoot).isDirectory()) {
+    fail(`${pluginName}: skills directory does not exist at ${skillsPath}`);
+    return 0;
+  }
+
+  if (!isInsideDirectory(realpathSync(pluginRoot), realpathSync(skillsRoot))) {
+    fail(
+      `${pluginName}: manifest.skills path ${skillsPath} must not resolve outside the plugin directory`
+    );
+    return 0;
+  }
+
+  const skillDirectories = readdirSync(skillsRoot, { withFileTypes: true })
+    .filter((entry) => !entry.name.startsWith("."))
+    .filter((entry) => {
+      const entryPath = join(skillsRoot, entry.name);
+      if (entry.isSymbolicLink() && existsSync(entryPath) && statSync(entryPath).isDirectory()) {
+        fail(
+          `${pluginName}: skill directory symlink is not allowed at ${skillFileLabel(skillsPath, entry.name)}`
+        );
+      }
+      return entry.isDirectory();
+    })
+    .map((entry) => entry.name)
+    .sort();
+
+  if (skillDirectories.length === 0) {
+    fail(`${pluginName}: skills directory must contain at least one skill directory`);
+  }
+
+  let validSkillCount = 0;
+  for (const skillDirName of skillDirectories) {
+    const skillPath = join(skillsRoot, skillDirName, "SKILL.md");
+    if (validateSkillFile(pluginName, skillsPath, skillDirName, skillPath, fail)) {
+      validSkillCount += 1;
+    }
+  }
+
+  return validSkillCount;
+}
+
+function validateSkills(pluginName, pluginRoot, manifest, fail) {
+  const usesDefaultSkillRoot =
+    manifest.skills === undefined ||
+    (Array.isArray(manifest.skills) && manifest.skills.length === 0);
+  if (usesDefaultSkillRoot) {
+    const defaultSkillsRoot = join(pluginRoot, "skills");
+    if (!existsSync(defaultSkillsRoot)) {
+      return 0;
+    }
+    return validateSkillRoot(pluginName, pluginRoot, "./skills", fail);
+  }
+
+  const skillPaths = Array.isArray(manifest.skills) ? manifest.skills : [manifest.skills];
+  return skillPaths.reduce(
+    (skillCount, skillsPath) =>
+      skillCount + validateSkillRoot(pluginName, pluginRoot, skillsPath, fail),
+    0
+  );
+}
+
+export function validateRepository(root = defaultRepoRoot) {
+  const repoRoot = resolve(root);
+  const errors = [];
+  const fail = (message) => errors.push(message);
+  const marketplacePath = join(repoRoot, ".agents/plugins/marketplace.json");
+  const marketplaceSchemaPath = join(repoRoot, "schemas/marketplace.schema.json");
+  const pluginSchemaPath = join(repoRoot, "schemas/plugin.schema.json");
+
+  let realRepoRoot;
+  try {
+    realRepoRoot = realpathSync(repoRoot);
+  } catch (error) {
+    fail(`${repoRoot} is not accessible: ${error.message}`);
+    return { ok: false, errors, pluginCount: 0, skillCount: 0 };
+  }
+
+  const ajv = new Ajv({ allErrors: true });
+  const marketplace = readJson(marketplacePath, fail);
+  const marketplaceSchema = readJson(marketplaceSchemaPath, fail);
+  const pluginSchema = readJson(pluginSchemaPath, fail);
+
+  if (
+    marketplace === undefined ||
+    marketplaceSchema === undefined ||
+    pluginSchema === undefined
+  ) {
+    return { ok: false, errors, pluginCount: 0, skillCount: 0 };
+  }
+
+  const validateMarketplace = compileSchema(ajv, marketplaceSchema, marketplaceSchemaPath, fail);
+  const validatePlugin = compileSchema(ajv, pluginSchema, pluginSchemaPath, fail);
+
+  if (!validateMarketplace || !validatePlugin) {
+    return { ok: false, errors, pluginCount: 0, skillCount: 0 };
+  }
+
+  validateJson(marketplacePath, marketplace, validateMarketplace, fail);
+
+  if (!isObject(marketplace) || !Array.isArray(marketplace.plugins)) {
+    return { ok: false, errors, pluginCount: 0, skillCount: 0 };
+  }
+
+  const seenNames = new Set();
+  let skillCount = 0;
+
+  for (const entry of marketplace.plugins) {
+    if (!isObject(entry) || !entry.name) {
+      continue;
+    }
+
+    if (seenNames.has(entry.name)) {
+      fail(`duplicate plugin entry: ${entry.name}`);
+    }
+    seenNames.add(entry.name);
+
+    const sourcePath = localSourcePath(entry.source);
+    if (sourcePath === null) {
+      continue;
+    }
+
+    const pluginRoot = resolve(repoRoot, sourcePath);
+    if (!isInsideOrSameDirectory(repoRoot, pluginRoot)) {
+      fail(`${entry.name}: source.path must stay inside the repository`);
+      continue;
+    }
+
+    if (!existsSync(pluginRoot) || !statSync(pluginRoot).isDirectory()) {
+      fail(`${entry.name}: plugin directory does not exist at ${sourcePath}`);
+      continue;
+    }
+
+    if (!isInsideOrSameDirectory(realRepoRoot, realpathSync(pluginRoot))) {
+      fail(`${entry.name}: source.path must not resolve outside the repository`);
+      continue;
+    }
+
+    const manifestPath = join(pluginRoot, ".codex-plugin/plugin.json");
+    if (!existsSync(manifestPath)) {
+      fail(`${entry.name}: missing .codex-plugin/plugin.json`);
+      continue;
+    }
+
+    const manifest = readJson(manifestPath, fail);
+    if (manifest === undefined) {
+      continue;
+    }
+
+    validateJson(manifestPath, manifest, validatePlugin, fail);
+
+    if (!isObject(manifest)) {
+      continue;
+    }
+    validateDefaultPrompt(manifestPath, manifest, fail);
+
+    if (manifestNameForPluginRoot(manifest, pluginRoot) !== entry.name) {
+      fail(`${entry.name}: manifest name must match marketplace entry name`);
+    }
+
+    skillCount += validateSkills(entry.name, pluginRoot, manifest, fail);
+  }
+
+  return {
+    ok: errors.length === 0,
+    errors,
+    pluginCount: marketplace.plugins.length,
+    skillCount
+  };
+}
+
+function isCliEntrypoint() {
+  return process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
+}
+
+if (isCliEntrypoint()) {
+  const result = validateRepository();
+  for (const error of result.errors) {
+    console.error(`error: ${error}`);
+  }
+
+  if (result.ok) {
+    console.log(`validated ${result.pluginCount} marketplace plugin(s) and ${result.skillCount} skill(s)`);
   } else {
-    if (!["AVAILABLE", "INSTALLED_BY_DEFAULT", "NOT_AVAILABLE"].includes(entry.policy.installation)) {
-      fail(`${entry.name}: policy.installation is invalid`);
-    }
-    if (!["ON_INSTALL", "ON_USE"].includes(entry.policy.authentication)) {
-      fail(`${entry.name}: policy.authentication is invalid`);
-    }
+    process.exitCode = 1;
   }
-
-  if (!entry.category || typeof entry.category !== "string") {
-    fail(`${entry.name}: category must be a non-empty string`);
-  }
-}
-
-if (!process.exitCode) {
-  console.log(`validated ${marketplace.plugins.length} marketplace plugin(s)`);
 }

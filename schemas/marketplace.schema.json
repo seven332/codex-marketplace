@@ -1,0 +1,278 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/seven332/codex-marketplace/schemas/marketplace.schema.json",
+  "title": "Codex Marketplace",
+  "description": "Project-owned schema derived from Codex marketplace parsing in openai/codex. Extra plugin fields are allowed because Codex folds them into fallback plugin metadata.",
+  "type": "object",
+  "required": [
+    "name",
+    "plugins"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "name": {
+      "$ref": "#/definitions/pluginSegment"
+    },
+    "interface": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "displayName": {
+          "type": "string"
+        }
+      }
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/pluginEntry"
+      }
+    }
+  },
+  "definitions": {
+    "pluginSegment": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "localSourcePath": {
+      "type": "string",
+      "oneOf": [
+        {
+          "enum": [
+            ".",
+            "./"
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "pattern": "^\\./.+"
+            },
+            {
+              "not": {
+                "anyOf": [
+                  {
+                    "pattern": "^\\./[/\\\\]"
+                  },
+                  {
+                    "pattern": "^\\./[A-Za-z]:"
+                  },
+                  {
+                    "pattern": "^\\./\\.($|[/\\\\])"
+                  },
+                  {
+                    "pattern": "(^|[/\\\\])\\.\\.($|[/\\\\])"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "gitSubdir": {
+      "type": "string",
+      "pattern": "\\S",
+      "minLength": 1,
+      "not": {
+        "anyOf": [
+          {
+            "pattern": "^\\s*\\.\\s*$"
+          },
+          {
+            "pattern": "^\\s*\\.[/\\\\]\\s*$"
+          },
+          {
+            "pattern": "^\\s*\\.[/\\\\]\\.($|[/\\\\])"
+          },
+          {
+            "pattern": "^\\s*\\.\\\\"
+          },
+          {
+            "pattern": "^\\s*[/\\\\]"
+          },
+          {
+            "pattern": "^\\s*[A-Za-z]:"
+          },
+          {
+            "pattern": "^\\s*\\.[/\\\\][A-Za-z]:"
+          },
+          {
+            "pattern": "(^|[/\\\\])\\.\\.($|[/\\\\])"
+          }
+        ]
+      }
+    },
+    "gitUrl": {
+      "type": "string",
+      "allOf": [
+        {
+          "pattern": "\\S"
+        },
+        {
+          "anyOf": [
+            {
+              "pattern": "^\\s*https?://\\S+\\s*$"
+            },
+            {
+              "pattern": "^\\s*ssh://\\S+\\s*$"
+            },
+            {
+              "pattern": "^\\s*file://\\S*\\s*$"
+            },
+            {
+              "pattern": "^\\s*/\\S*\\s*$"
+            },
+            {
+              "pattern": "^\\s*git@[^\\s:]+:\\S+\\s*$"
+            },
+            {
+              "pattern": "^\\s*[A-Za-z0-9_.-]+/(?!\\.git\\s*$)[A-Za-z0-9_.-]+(?:\\.git)?\\s*$"
+            },
+            {
+              "pattern": "^\\s*\\.[/\\\\].+\\s*$"
+            }
+          ]
+        }
+      ],
+      "not": {
+        "anyOf": [
+          {
+            "pattern": "^\\s*\\.\\.[/\\\\]"
+          },
+          {
+            "pattern": "[/\\\\]\\.\\.($|[/\\\\])"
+          }
+        ]
+      }
+    },
+    "gitSelector": {
+      "type": "string"
+    },
+    "pluginEntry": {
+      "type": "object",
+      "required": [
+        "name",
+        "source"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/pluginSegment"
+        },
+        "source": {
+          "$ref": "#/definitions/pluginSource"
+        },
+        "policy": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "installation": {
+              "enum": [
+                "AVAILABLE",
+                "INSTALLED_BY_DEFAULT",
+                "NOT_AVAILABLE"
+              ]
+            },
+            "authentication": {
+              "enum": [
+                "ON_INSTALL",
+                "ON_USE"
+              ]
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "chatgpt",
+                  "codex",
+                  "atlas",
+                  "CHATGPT",
+                  "CODEX",
+                  "ATLAS"
+                ]
+              }
+            }
+          }
+        },
+        "category": {
+          "type": "string"
+        }
+      }
+    },
+    "pluginSource": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/localSourcePath"
+        },
+        {
+          "type": "object",
+          "required": [
+            "source",
+            "path"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "source": {
+              "const": "local"
+            },
+            "path": {
+              "$ref": "#/definitions/localSourcePath"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "source",
+            "url"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "source": {
+              "const": "url"
+            },
+            "url": {
+              "$ref": "#/definitions/gitUrl"
+            },
+            "path": {
+              "$ref": "#/definitions/gitSubdir"
+            },
+            "ref": {
+              "$ref": "#/definitions/gitSelector"
+            },
+            "sha": {
+              "$ref": "#/definitions/gitSelector"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "source",
+            "url",
+            "path"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "source": {
+              "const": "git-subdir"
+            },
+            "url": {
+              "$ref": "#/definitions/gitUrl"
+            },
+            "path": {
+              "$ref": "#/definitions/gitSubdir"
+            },
+            "ref": {
+              "$ref": "#/definitions/gitSelector"
+            },
+            "sha": {
+              "$ref": "#/definitions/gitSelector"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

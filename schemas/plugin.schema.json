@@ -1,0 +1,303 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/seven332/codex-marketplace/schemas/plugin.schema.json",
+  "title": "Codex Plugin Manifest",
+  "description": "Project-owned schema derived from Codex plugin manifest parsing in openai/codex. Codex ignores unknown fields, so this schema permits forward-compatible metadata.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\s*(?!\\.{1,2}\\s*$)[A-Za-z0-9._+-]+\\s*$"
+    },
+    "description": {
+      "type": "string"
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "skills": {
+      "$ref": "#/definitions/pathOrPathArray"
+    },
+    "apps": {
+      "$ref": "#/definitions/pluginRelativePath"
+    },
+    "mcpServers": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/pluginRelativePath"
+        },
+        {
+          "type": "object"
+        }
+      ]
+    },
+    "hooks": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/pluginRelativePath"
+        },
+        {
+          "$ref": "#/definitions/pathArray"
+        },
+        {
+          "$ref": "#/definitions/hookFile"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/hookFile"
+          }
+        }
+      ]
+    },
+    "interface": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "displayName": {
+          "type": "string"
+        },
+        "shortDescription": {
+          "type": "string"
+        },
+        "longDescription": {
+          "type": "string"
+        },
+        "developerName": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "defaultPrompt": {
+          "$ref": "#/definitions/defaultPrompt"
+        },
+        "default_prompt": false,
+        "websiteUrl": {
+          "type": "string"
+        },
+        "websiteURL": {
+          "type": "string"
+        },
+        "privacyPolicyUrl": {
+          "type": "string"
+        },
+        "privacyPolicyURL": {
+          "type": "string"
+        },
+        "termsOfServiceUrl": {
+          "type": "string"
+        },
+        "termsOfServiceURL": {
+          "type": "string"
+        },
+        "brandColor": {
+          "type": "string"
+        },
+        "composerIcon": {
+          "$ref": "#/definitions/pluginRelativePath"
+        },
+        "logo": {
+          "$ref": "#/definitions/pluginRelativePath"
+        },
+        "logoDark": {
+          "$ref": "#/definitions/pluginRelativePath"
+        },
+        "screenshots": {
+          "$ref": "#/definitions/pathArray"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "pluginRelativePath": {
+      "type": "string",
+      "pattern": "^\\./.+",
+      "not": {
+        "anyOf": [
+          {
+            "pattern": "^\\./[/\\\\]"
+          },
+          {
+            "pattern": "^\\./[A-Za-z]:"
+          },
+          {
+            "pattern": "(^|[/\\\\])\\.\\.($|[/\\\\])"
+          }
+        ]
+      }
+    },
+    "pathArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/pluginRelativePath"
+      }
+    },
+    "pathOrPathArray": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/pluginRelativePath"
+        },
+        {
+          "$ref": "#/definitions/pathArray"
+        }
+      ]
+    },
+    "defaultPrompt": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        }
+      ]
+    },
+    "hookFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hooks": {
+          "$ref": "#/definitions/hookEvents"
+        }
+      }
+    },
+    "hookEvents": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "PreToolUse": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "PermissionRequest": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "PostToolUse": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "PreCompact": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "PostCompact": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "SessionStart": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "UserPromptSubmit": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "SubagentStart": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "SubagentStop": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        },
+        "Stop": {
+          "$ref": "#/definitions/hookMatcherGroups"
+        }
+      }
+    },
+    "hookMatcherGroups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "matcher": {
+            "type": "string"
+          },
+          "hooks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/hookHandler"
+            }
+          }
+        }
+      }
+    },
+    "hookHandler": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "command"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "type": {
+              "const": "command"
+            },
+            "command": {
+              "type": "string"
+            },
+            "commandWindows": {
+              "type": "string"
+            },
+            "command_windows": {
+              "type": "string"
+            },
+            "timeout": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "async": {
+              "type": "boolean"
+            },
+            "statusMessage": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "type": {
+              "const": "prompt"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "type": {
+              "const": "agent"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

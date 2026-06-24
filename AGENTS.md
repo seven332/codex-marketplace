@@ -6,13 +6,14 @@ This repository is a Codex plugin marketplace. Marketplace metadata lives in
 `.agents/plugins/marketplace.json`. Installable plugins live under
 `plugins/<plugin-name>/`, and each plugin must include
 `plugins/<plugin-name>/.codex-plugin/plugin.json`. Plugin skills belong in
-`plugins/<plugin-name>/skills/<skill-name>/SKILL.md`. Validation tooling is in
-`scripts/`, currently `scripts/validate-marketplace.mjs`.
+`plugins/<plugin-name>/skills/<skill-name>/SKILL.md`. JSON Schemas live in
+`schemas/`. Validation tooling is in `scripts/`, currently
+`scripts/validate-marketplace.mjs` and `scripts/validate-marketplace.test.mjs`.
 
 ## Build, Test, and Development Commands
 
-- `npm run validate` - validates marketplace entries, plugin directories, and required manifests.
-- `npm test` - alias for the same marketplace validation.
+- `npm run validate` - validates marketplace entries, plugin manifests, plugin paths, and skill files.
+- `npm test` - runs validator regression tests, then runs marketplace validation.
 - `python3 /Users/liangyou/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py plugins/<plugin-name>` - validates an individual plugin against Codex plugin manifest rules.
 
 Run validation before opening or updating a pull request.
@@ -28,9 +29,10 @@ English.
 ## Testing Guidelines
 
 There is no application runtime test suite yet. Treat validation as the required test surface:
-`npm run validate` for the marketplace and `validate_plugin.py` for every plugin changed. When
-editing a skill, read it as rendered Markdown and check for broken code fences, stale paths, and
-project-specific assumptions that should not apply globally.
+`npm test` for validator regression coverage and marketplace validation. Also run
+`validate_plugin.py` for every plugin changed when the change should satisfy the stricter
+plugin-creator contract. When editing a skill, read it as rendered Markdown and check for broken
+code fences, stale paths, and project-specific assumptions that should not apply globally.
 
 ## Commit & Pull Request Guidelines
 
