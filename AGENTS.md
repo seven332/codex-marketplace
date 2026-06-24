@@ -29,8 +29,9 @@ English.
 ## Testing Guidelines
 
 There is no application runtime test suite yet. Treat validation as the required test surface:
-`npm test` for validator regression coverage and marketplace validation, plus `validate_plugin.py`
-for every plugin changed. When editing a skill, read it as rendered Markdown and check for broken
+`npm test` for validator regression coverage and marketplace validation. Also run
+`validate_plugin.py` for every plugin changed when the change should satisfy the stricter
+plugin-creator contract. When editing a skill, read it as rendered Markdown and check for broken
 code fences, stale paths, and project-specific assumptions that should not apply globally.
 
 ## Commit & Pull Request Guidelines

@@ -100,11 +100,11 @@ test("validates a marketplace with a plugin and skill", () => {
   });
 });
 
-test("accepts semantic versions with prerelease and build metadata", () => {
+test("accepts Codex plugin version segments", () => {
   withFixture((root) => {
     const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-    manifest.version = "1.0.0-beta.1+build.5";
+    manifest.version = "local_build+5";
     writeJson(manifestPath, manifest);
 
     const result = validateRepository(root);
@@ -117,11 +117,11 @@ test("accepts optional manifest fields being omitted", () => {
   withFixture((root) => {
     const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    delete manifest.version;
+    delete manifest.description;
+    delete manifest.author;
     delete manifest.license;
-    delete manifest.interface.brandColor;
-    delete manifest.interface.screenshots;
-    manifest.interface.default_prompt = manifest.interface.defaultPrompt;
-    delete manifest.interface.defaultPrompt;
+    delete manifest.interface;
     writeJson(manifestPath, manifest);
 
     const result = validateRepository(root);
@@ -130,7 +130,20 @@ test("accepts optional manifest fields being omitted", () => {
   });
 });
 
-test("rejects empty marketplace plugin lists", () => {
+test("accepts omitted manifest names that match the plugin directory", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    delete manifest.name;
+    writeJson(manifestPath, manifest);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+  });
+});
+
+test("accepts empty marketplace plugin lists", () => {
   withFixture((root) => {
     const marketplacePath = join(root, ".agents/plugins/marketplace.json");
     const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
@@ -139,12 +152,12 @@ test("rejects empty marketplace plugin lists", () => {
 
     const result = validateRepository(root);
 
-    assert.equal(result.ok, false);
-    assert.match(result.errors.join("\n"), /must NOT have fewer than 1 items/);
+    assert.equal(result.ok, true);
+    assert.equal(result.pluginCount, 0);
   });
 });
 
-test("rejects unknown manifest fields", () => {
+test("accepts unknown manifest fields for Codex compatibility", () => {
   withFixture((root) => {
     const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
@@ -153,22 +166,88 @@ test("rejects unknown manifest fields", () => {
 
     const result = validateRepository(root);
 
-    assert.equal(result.ok, false);
-    assert.match(result.errors.join("\n"), /must NOT have additional properties/);
+    assert.equal(result.ok, true);
   });
 });
 
-test("reports nested schema locations for missing manifest fields", () => {
+test("reports nested schema locations for invalid manifest fields", () => {
   withFixture((root) => {
     const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-    delete manifest.interface.displayName;
+    manifest.interface.displayName = 42;
     writeJson(manifestPath, manifest);
 
     const result = validateRepository(root);
 
     assert.equal(result.ok, false);
     assert.match(result.errors.join("\n"), /plugin\.json\/interface\/displayName/);
+  });
+});
+
+test("accepts local source shorthand strings", () => {
+  withFixture((root) => {
+    const marketplacePath = join(root, ".agents/plugins/marketplace.json");
+    const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
+    marketplace.plugins[0].source = "./plugins/demo-plugin";
+    writeJson(marketplacePath, marketplace);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+  });
+});
+
+test("accepts multiple skill roots", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.skills = ["./skills/", "./more-skills/"];
+    writeJson(manifestPath, manifest);
+    mkdirSync(join(root, "plugins/demo-plugin/more-skills/other-skill"), { recursive: true });
+    writeFileSync(
+      join(root, "plugins/demo-plugin/more-skills/other-skill/SKILL.md"),
+      `---
+name: other-skill
+description: Other skill.
+---
+
+Run the other workflow.
+`
+    );
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+    assert.equal(result.skillCount, 2);
+  });
+});
+
+test("accepts default prompt strings and dark logos", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.interface.defaultPrompt = "Run the demo skill.";
+    manifest.interface.logoDark = "./assets/logo-dark.svg";
+    writeJson(manifestPath, manifest);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+  });
+});
+
+test("rejects snake_case plugin default prompts ignored by Codex", () => {
+  withFixture((root) => {
+    const manifestPath = join(root, "plugins/demo-plugin/.codex-plugin/plugin.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.interface.default_prompt = "Run the demo skill.";
+    delete manifest.interface.defaultPrompt;
+    writeJson(manifestPath, manifest);
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join("\n"), /plugin\.json\/interface\/default_prompt/);
   });
 });
 

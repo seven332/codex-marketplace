@@ -2,97 +2,57 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/seven332/codex-marketplace/schemas/plugin.schema.json",
   "title": "Codex Plugin Manifest",
+  "description": "Project-owned schema derived from Codex plugin manifest parsing in openai/codex. Codex ignores unknown fields, so this schema permits forward-compatible metadata.",
   "type": "object",
-  "required": [
-    "name",
-    "version",
-    "description",
-    "author",
-    "skills",
-    "interface"
-  ],
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
-    "id": {
-      "type": "string",
-      "minLength": 1
-    },
     "name": {
       "type": "string",
-      "pattern": "^[a-z0-9][a-z0-9-]*$"
+      "pattern": "^[A-Za-z0-9_-]+$"
     },
     "version": {
       "type": "string",
-      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$"
+      "pattern": "^(?!\\.{1,2}$)[A-Za-z0-9._+-]+$"
     },
     "description": {
-      "type": "string",
-      "minLength": 1
-    },
-    "author": {
-      "type": "object",
-      "required": [
-        "name"
-      ],
-      "additionalProperties": false,
-      "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "email": {
-          "type": "string",
-          "minLength": 1
-        },
-        "url": {
-          "type": "string",
-          "pattern": "^https://.+"
-        }
-      }
-    },
-    "homepage": {
-      "type": "string",
-      "minLength": 1
-    },
-    "repository": {
-      "type": "string",
-      "minLength": 1
-    },
-    "license": {
-      "type": "string",
-      "minLength": 1
+      "type": "string"
     },
     "keywords": {
       "type": "array",
       "items": {
-        "type": "string",
-        "minLength": 1
-      },
-      "uniqueItems": true
+        "type": "string"
+      }
     },
     "skills": {
-      "enum": [
-        "./skills",
-        "./skills/"
-      ]
+      "$ref": "#/definitions/pathOrPathArray"
     },
     "apps": {
-      "enum": [
-        ".app.json",
-        "./.app.json"
-      ]
+      "$ref": "#/definitions/pluginRelativePath"
     },
     "mcpServers": {
       "oneOf": [
         {
-          "enum": [
-            ".mcp.json",
-            "./.mcp.json"
-          ]
+          "$ref": "#/definitions/pluginRelativePath"
         },
         {
-          "type": "object",
-          "additionalProperties": {
+          "type": "object"
+        }
+      ]
+    },
+    "hooks": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/pluginRelativePath"
+        },
+        {
+          "$ref": "#/definitions/pathArray"
+        },
+        {
+          "type": "object"
+        },
+        {
+          "type": "array",
+          "items": {
             "type": "object"
           }
         }
@@ -100,104 +60,121 @@
     },
     "interface": {
       "type": "object",
-      "required": [
-        "displayName",
-        "shortDescription",
-        "longDescription",
-        "developerName",
-        "category",
-        "capabilities"
-      ],
-      "anyOf": [
-        {
-          "required": [
-            "defaultPrompt"
-          ]
-        },
-        {
-          "required": [
-            "default_prompt"
-          ]
-        }
-      ],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "displayName": {
-          "type": "string",
-          "minLength": 1
+          "type": "string"
         },
         "shortDescription": {
-          "type": "string",
-          "minLength": 1
+          "type": "string"
         },
         "longDescription": {
-          "type": "string",
-          "minLength": 1
+          "type": "string"
         },
         "developerName": {
-          "type": "string",
-          "minLength": 1
+          "type": "string"
         },
         "category": {
-          "type": "string",
-          "minLength": 1
+          "type": "string"
         },
         "capabilities": {
           "type": "array",
-          "minItems": 1,
           "items": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           }
         },
         "defaultPrompt": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "$ref": "#/definitions/defaultPrompt"
         },
-        "default_prompt": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+        "default_prompt": false,
+        "websiteUrl": {
+          "type": "string"
         },
         "websiteURL": {
-          "type": "string",
-          "pattern": "^https://.+"
+          "type": "string"
+        },
+        "privacyPolicyUrl": {
+          "type": "string"
         },
         "privacyPolicyURL": {
-          "type": "string",
-          "pattern": "^https://.+"
+          "type": "string"
+        },
+        "termsOfServiceUrl": {
+          "type": "string"
         },
         "termsOfServiceURL": {
-          "type": "string",
-          "pattern": "^https://.+"
+          "type": "string"
         },
         "brandColor": {
-          "type": "string",
-          "pattern": "^#[0-9A-Fa-f]{6}$"
+          "type": "string"
         },
         "composerIcon": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/definitions/pluginRelativePath"
         },
         "logo": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/definitions/pluginRelativePath"
+        },
+        "logoDark": {
+          "$ref": "#/definitions/pluginRelativePath"
         },
         "screenshots": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "$ref": "#/definitions/pathArray"
         }
       }
+    }
+  },
+  "definitions": {
+    "pluginRelativePath": {
+      "type": "string",
+      "pattern": "^\\./.+",
+      "not": {
+        "anyOf": [
+          {
+            "pattern": "^\\./[/\\\\]"
+          },
+          {
+            "pattern": "^\\./[A-Za-z]:"
+          },
+          {
+            "pattern": "(^|[/\\\\])\\.\\.($|[/\\\\])"
+          }
+        ]
+      }
+    },
+    "pathArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/pluginRelativePath"
+      }
+    },
+    "pathOrPathArray": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/pluginRelativePath"
+        },
+        {
+          "$ref": "#/definitions/pathArray"
+        }
+      ]
+    },
+    "defaultPrompt": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      ]
     }
   }
 }

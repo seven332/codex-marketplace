@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/seven332/codex-marketplace/schemas/marketplace.schema.json",
   "title": "Codex Marketplace",
+  "description": "Project-owned schema derived from Codex marketplace parsing in openai/codex. Extra plugin fields are allowed because Codex folds them into fallback plugin metadata.",
   "type": "object",
   "required": [
     "name",
@@ -10,68 +11,98 @@
   "additionalProperties": true,
   "properties": {
     "name": {
-      "type": "string",
-      "minLength": 1
+      "$ref": "#/definitions/pluginSegment"
     },
     "interface": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
         "displayName": {
-          "type": "string",
-          "minLength": 1
+          "type": "string"
         }
       }
     },
     "plugins": {
       "type": "array",
-      "minItems": 1,
       "items": {
         "$ref": "#/definitions/pluginEntry"
       }
     }
   },
   "definitions": {
+    "pluginSegment": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "localSourcePath": {
+      "type": "string",
+      "oneOf": [
+        {
+          "enum": [
+            ".",
+            "./"
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "pattern": "^\\./.+"
+            },
+            {
+              "not": {
+                "anyOf": [
+                  {
+                    "pattern": "^\\./[/\\\\]"
+                  },
+                  {
+                    "pattern": "^\\./[A-Za-z]:"
+                  },
+                  {
+                    "pattern": "(^|[/\\\\])\\.\\.($|[/\\\\])"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "gitSubdir": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "anyOf": [
+          {
+            "pattern": "^[/\\\\]"
+          },
+          {
+            "pattern": "^[A-Za-z]:"
+          },
+          {
+            "pattern": "(^|[/\\\\])\\.\\.($|[/\\\\])"
+          }
+        ]
+      }
+    },
+    "gitSelector": {
+      "type": "string"
+    },
     "pluginEntry": {
       "type": "object",
       "required": [
         "name",
-        "source",
-        "policy",
-        "category"
+        "source"
       ],
       "additionalProperties": true,
       "properties": {
         "name": {
-          "type": "string",
-          "pattern": "^[a-z0-9][a-z0-9-]*$"
+          "$ref": "#/definitions/pluginSegment"
         },
         "source": {
-          "type": "object",
-          "required": [
-            "source",
-            "path"
-          ],
-          "additionalProperties": true,
-          "properties": {
-            "source": {
-              "const": "local"
-            },
-            "path": {
-              "type": "string",
-              "pattern": "^\\./.+",
-              "not": {
-                "pattern": "(^|/)\\.\\.($|/)"
-              }
-            }
-          }
+          "$ref": "#/definitions/pluginSource"
         },
         "policy": {
           "type": "object",
-          "required": [
-            "installation",
-            "authentication"
-          ],
           "additionalProperties": true,
           "properties": {
             "installation": {
@@ -86,14 +117,102 @@
                 "ON_INSTALL",
                 "ON_USE"
               ]
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "chatgpt",
+                  "codex",
+                  "atlas",
+                  "CHATGPT",
+                  "CODEX",
+                  "ATLAS"
+                ]
+              }
             }
           }
         },
         "category": {
-          "type": "string",
-          "minLength": 1
+          "type": "string"
         }
       }
+    },
+    "pluginSource": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/localSourcePath"
+        },
+        {
+          "type": "object",
+          "required": [
+            "source",
+            "path"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "source": {
+              "const": "local"
+            },
+            "path": {
+              "$ref": "#/definitions/localSourcePath"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "source",
+            "url"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "source": {
+              "const": "url"
+            },
+            "url": {
+              "type": "string",
+              "minLength": 1
+            },
+            "path": {
+              "$ref": "#/definitions/gitSubdir"
+            },
+            "ref": {
+              "$ref": "#/definitions/gitSelector"
+            },
+            "sha": {
+              "$ref": "#/definitions/gitSelector"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "source",
+            "url",
+            "path"
+          ],
+          "additionalProperties": true,
+          "properties": {
+            "source": {
+              "const": "git-subdir"
+            },
+            "url": {
+              "type": "string",
+              "minLength": 1
+            },
+            "path": {
+              "$ref": "#/definitions/gitSubdir"
+            },
+            "ref": {
+              "$ref": "#/definitions/gitSelector"
+            },
+            "sha": {
+              "$ref": "#/definitions/gitSelector"
+            }
+          }
+        }
+      ]
     }
   }
 }

@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
-import { isAbsolute, join, relative, resolve, sep } from "node:path";
+import { basename, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import Ajv from "ajv";
 
@@ -17,6 +17,33 @@ function isInsideDirectory(parent, child) {
     !childRelativePath.startsWith(`..${sep}`) &&
     !isAbsolute(childRelativePath)
   );
+}
+
+function isInsideOrSameDirectory(parent, child) {
+  const childRelativePath = relative(parent, child);
+  return (
+    childRelativePath === "" ||
+    (childRelativePath !== ".." &&
+      !childRelativePath.startsWith(`..${sep}`) &&
+      !isAbsolute(childRelativePath))
+  );
+}
+
+function localSourcePath(source) {
+  if (typeof source === "string") {
+    return source;
+  }
+  if (isObject(source) && source.source === "local" && typeof source.path === "string") {
+    return source.path;
+  }
+  return null;
+}
+
+function manifestNameForPluginRoot(manifest, pluginRoot) {
+  if (typeof manifest.name === "string" && manifest.name.trim()) {
+    return manifest.name;
+  }
+  return basename(pluginRoot);
 }
 
 function formatSchemaLocation(error) {
@@ -93,24 +120,26 @@ function validateSkillFile(pluginName, skillDirName, skillPath, fail) {
   return isValid;
 }
 
-function validateSkills(pluginName, pluginRoot, manifest, fail) {
-  if (!manifest.skills || typeof manifest.skills !== "string") {
+function validateSkillRoot(pluginName, pluginRoot, skillsPath, fail) {
+  if (typeof skillsPath !== "string") {
     return 0;
   }
 
-  const skillsRoot = resolve(pluginRoot, manifest.skills);
+  const skillsRoot = resolve(pluginRoot, skillsPath);
   if (!isInsideDirectory(pluginRoot, skillsRoot)) {
-    fail(`${pluginName}: manifest.skills must stay inside the plugin directory`);
+    fail(`${pluginName}: manifest.skills path ${skillsPath} must stay inside the plugin directory`);
     return 0;
   }
 
   if (!existsSync(skillsRoot) || !statSync(skillsRoot).isDirectory()) {
-    fail(`${pluginName}: skills directory does not exist at ${manifest.skills}`);
+    fail(`${pluginName}: skills directory does not exist at ${skillsPath}`);
     return 0;
   }
 
   if (!isInsideDirectory(realpathSync(pluginRoot), realpathSync(skillsRoot))) {
-    fail(`${pluginName}: manifest.skills must not resolve outside the plugin directory`);
+    fail(
+      `${pluginName}: manifest.skills path ${skillsPath} must not resolve outside the plugin directory`
+    );
     return 0;
   }
 
@@ -132,6 +161,19 @@ function validateSkills(pluginName, pluginRoot, manifest, fail) {
   }
 
   return validSkillCount;
+}
+
+function validateSkills(pluginName, pluginRoot, manifest, fail) {
+  if (manifest.skills === undefined) {
+    return 0;
+  }
+
+  const skillPaths = Array.isArray(manifest.skills) ? manifest.skills : [manifest.skills];
+  return skillPaths.reduce(
+    (skillCount, skillsPath) =>
+      skillCount + validateSkillRoot(pluginName, pluginRoot, skillsPath, fail),
+    0
+  );
 }
 
 export function validateRepository(root = defaultRepoRoot) {
@@ -176,12 +218,7 @@ export function validateRepository(root = defaultRepoRoot) {
   let skillCount = 0;
 
   for (const entry of marketplace.plugins) {
-    if (
-      !isObject(entry) ||
-      !entry.name ||
-      !isObject(entry.source) ||
-      typeof entry.source.path !== "string"
-    ) {
+    if (!isObject(entry) || !entry.name) {
       continue;
     }
 
@@ -190,18 +227,23 @@ export function validateRepository(root = defaultRepoRoot) {
     }
     seenNames.add(entry.name);
 
-    const pluginRoot = resolve(repoRoot, entry.source.path);
-    if (!isInsideDirectory(repoRoot, pluginRoot)) {
+    const sourcePath = localSourcePath(entry.source);
+    if (sourcePath === null) {
+      continue;
+    }
+
+    const pluginRoot = resolve(repoRoot, sourcePath);
+    if (!isInsideOrSameDirectory(repoRoot, pluginRoot)) {
       fail(`${entry.name}: source.path must stay inside the repository`);
       continue;
     }
 
     if (!existsSync(pluginRoot) || !statSync(pluginRoot).isDirectory()) {
-      fail(`${entry.name}: plugin directory does not exist at ${entry.source.path}`);
+      fail(`${entry.name}: plugin directory does not exist at ${sourcePath}`);
       continue;
     }
 
-    if (!isInsideDirectory(realRepoRoot, realpathSync(pluginRoot))) {
+    if (!isInsideOrSameDirectory(realRepoRoot, realpathSync(pluginRoot))) {
       fail(`${entry.name}: source.path must not resolve outside the repository`);
       continue;
     }
@@ -219,7 +261,7 @@ export function validateRepository(root = defaultRepoRoot) {
 
     validateJson(manifestPath, manifest, validatePlugin, fail);
 
-    if (manifest.name !== entry.name) {
+    if (manifestNameForPluginRoot(manifest, pluginRoot) !== entry.name) {
       fail(`${entry.name}: manifest name must match marketplace entry name`);
     }
 

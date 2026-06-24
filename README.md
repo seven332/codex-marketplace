@@ -55,10 +55,12 @@ npm run validate
 ```
 
 Marketplace entries and plugin manifests are checked against project-owned JSON Schemas in `schemas/`.
-These schemas are not official Codex schemas; they encode this repository's supported marketplace
-shape plus additional safety checks.
-Marketplace entries should keep `source.path` relative to the repository root, start with `./`, and
-stay inside this repository. Pull requests run the same validation in GitHub Actions.
+These schemas are not official Codex schemas; they are derived from the current `openai/codex`
+marketplace and plugin manifest parsers and kept in this repository for CI. The validator adds
+repository-local safety checks for local plugin sources, including path containment, symlink escape
+protection, manifest name matching, and skill file checks. Local marketplace entries should keep
+plugin paths relative to the repository root and stay inside this repository. Pull requests run the
+same validation in GitHub Actions.
 
 ## Plugins
 
