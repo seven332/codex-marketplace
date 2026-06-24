@@ -1,8 +1,9 @@
-import { existsSync, readFileSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
+import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
+const realRepoRoot = realpathSync(repoRoot);
 const marketplacePath = join(repoRoot, ".agents/plugins/marketplace.json");
 
 function fail(message) {
@@ -21,6 +22,16 @@ function readJson(path) {
 
 function isObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isInsideDirectory(parent, child) {
+  const childRelativePath = relative(parent, child);
+  return (
+    !!childRelativePath &&
+    childRelativePath !== ".." &&
+    !childRelativePath.startsWith(`..${sep}`) &&
+    !isAbsolute(childRelativePath)
+  );
 }
 
 const marketplace = readJson(marketplacePath);
@@ -75,9 +86,19 @@ for (const entry of marketplace.plugins) {
     continue;
   }
 
-  const pluginRoot = join(repoRoot, entry.source.path);
+  const pluginRoot = resolve(repoRoot, entry.source.path);
+  if (!isInsideDirectory(repoRoot, pluginRoot)) {
+    fail(`${entry.name}: source.path must stay inside the repository`);
+    continue;
+  }
+
   if (!existsSync(pluginRoot) || !statSync(pluginRoot).isDirectory()) {
     fail(`${entry.name}: plugin directory does not exist at ${entry.source.path}`);
+    continue;
+  }
+
+  if (!isInsideDirectory(realRepoRoot, realpathSync(pluginRoot))) {
+    fail(`${entry.name}: source.path must not resolve outside the repository`);
     continue;
   }
 
