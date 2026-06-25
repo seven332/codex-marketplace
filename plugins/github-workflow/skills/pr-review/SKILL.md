@@ -1,6 +1,6 @@
 ---
 name: pr-review
-description: Review a pull request and optionally post concise findings as a PR comment.
+description: Review a pull request and post concise findings as a PR comment.
 ---
 
 # PR Review
@@ -54,7 +54,7 @@ Use this skill when the user asks to review a GitHub pull request.
    ### Verdict
    <LGTM / Changes Requested / Needs Discussion>
    ```
-7. Ask before posting unless the user explicitly requested posting. Post with:
+7. Post the review comment directly:
    ```bash
    gh pr comment <pr-number> --body-file "$PR_REVIEW_FILE"
    ```
