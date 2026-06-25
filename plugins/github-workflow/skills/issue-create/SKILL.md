@@ -25,8 +25,11 @@ request, investigation, or task.
 3. Draft an issue title using a Conventional Commit-style prefix when appropriate:
    - `feat:`, `bug:`, `docs:`, `refactor:`, `test:`, `chore:`, `perf:`
    - Use lowercase description and no trailing period.
-4. Create `ISSUE_BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/issue-create.XXXXXX")` and draft the body
-   there. Adapt structure to the issue, but prefer:
+4. Create a temporary issue body file using the operating system temp directory. On POSIX shells,
+   `ISSUE_BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/issue-create.XXXXXX")` is acceptable; in PowerShell,
+   use `New-TemporaryFile` or another OS temp-file API. Examples below use POSIX variable syntax;
+   use equivalent syntax in other shells. Draft the body there. Adapt structure to the issue, but
+   prefer:
    - Background
    - Problem or requirement
    - Acceptance criteria or reproduction steps

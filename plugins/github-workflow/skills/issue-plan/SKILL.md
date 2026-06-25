@@ -14,25 +14,36 @@ Use this skill when the user asks to start planning work for a GitHub issue.
    ```bash
    gh issue view <issue-number> --json title,body,comments,labels,url
    ```
-3. Create or reuse a planning directory under `/tmp/github-workflow/<issue-number>-<short-task-name>/`.
-   Use a sanitized slug with only lowercase letters, numbers, and hyphens.
-4. Research phase:
-   - Read repository guidance such as `AGENTS.md`, README, tests, and relevant docs.
-   - Search the codebase with `rg`.
-   - Identify affected modules, constraints, existing patterns, and risks.
-   - Write `/tmp/github-workflow/<issue-task>/research.md`.
-5. Options phase:
-   - Compare plausible approaches and trade-offs.
-   - Call out rejected approaches and why.
-   - Write `/tmp/github-workflow/<issue-task>/innovate.md`.
-6. Plan phase:
-   - Produce concrete implementation steps.
-   - Include test strategy and validation commands.
-   - Include rollout, migration, or compatibility notes when relevant.
-   - Write `/tmp/github-workflow/<issue-task>/plan.md`.
-7. Post the plan artifacts or summaries to the issue:
+3. Resolve `<temp-dir>` to the operating system temporary directory. Use `${TMPDIR:-/tmp}` on
+   POSIX shells, `$env:TEMP` in PowerShell, or a standard library temp directory such as Python
+   `tempfile.gettempdir()` or Node.js `os.tmpdir()` when scripting. Do not assume `/tmp` exists.
+4. Choose an `<issue-task>` slug with only lowercase letters, numbers, and hyphens.
+5. If the `deep-research`, `deep-innovate`, and `deep-plan` skills are installed, use them in
+   sequence for the planning phases:
+   - Pass the issue title, body, comments, labels, and URL as the task context.
+   - Pass the selected `<issue-task>` slug and artifact directory so all phases write to the same
+     `<temp-dir>/deep-dive/<issue-task>/` directory.
+   - Use `<temp-dir>/deep-dive/<issue-task>/research.md`,
+     `<temp-dir>/deep-dive/<issue-task>/innovate.md`, and
+     `<temp-dir>/deep-dive/<issue-task>/plan.md` as the planning artifacts.
+   - After `deep-innovate`, select an approach only when the issue context, research, and option
+     analysis make the choice clear. If a human decision is needed, post the options summary or
+     `innovate.md` to the issue, add `pending`, and stop instead of forcing a plan.
+   - This skill owns the phase transitions, issue comments, and approval label. Do not implement.
+6. If the full `deep-dive` workflow is unavailable, use the built-in fallback under
+   `<temp-dir>/github-workflow/<issue-task>/`:
+   - Research: read repository guidance such as `AGENTS.md`, README, tests, and relevant docs;
+     search with `rg`; identify affected modules, constraints, patterns, and risks; write
+     `research.md`.
+   - Options: compare plausible approaches and trade-offs; call out rejected approaches and why;
+     write `innovate.md`.
+   - Plan: produce concrete implementation steps only when the direction is clear. If a human
+     decision is needed, post the options summary or `innovate.md` to the issue, add `pending`, and
+     stop. Otherwise include test strategy, validation commands, and rollout, migration, or
+     compatibility notes when relevant; write `plan.md`.
+7. Post the final plan artifact or summary to the issue. Use the selected `plan.md` path:
    ```bash
-   gh issue comment <issue-number> --body-file /tmp/github-workflow/<issue-task>/plan.md
+   gh issue comment <issue-number> --body-file <selected-plan-path>
    ```
 8. Add or create a `pending` label when waiting for human approval:
    ```bash

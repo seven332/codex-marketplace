@@ -1,0 +1,37 @@
+{
+  "name": "deep-dive",
+  "version": "0.1.0",
+  "description": "Structured research, option exploration, and implementation planning workflows for Codex.",
+  "author": {
+    "name": "codex-marketplace maintainers"
+  },
+  "homepage": "https://github.com/vm0-ai/team-skills/tree/main/deep-dive",
+  "repository": "https://github.com/seven332/codex-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "research",
+    "planning",
+    "architecture",
+    "workflow"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Deep Dive",
+    "shortDescription": "Research complex work, explore options, and write implementation plans.",
+    "longDescription": "A structured Codex workflow for complex software tasks: gather facts without proposing solutions, explore multiple approaches and trade-offs, then produce a concrete implementation plan after direction is clear.",
+    "developerName": "codex-marketplace maintainers",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Research",
+      "Planning",
+      "Architecture"
+    ],
+    "defaultPrompt": [
+      "Deep research this refactor before we decide on an approach.",
+      "Explore implementation options using the existing research notes.",
+      "Turn the deep-dive artifacts into an implementation plan."
+    ],
+    "brandColor": "#0F766E",
+    "screenshots": []
+  }
+}

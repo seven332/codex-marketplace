@@ -31,7 +31,9 @@ Use this skill when the user asks to review a GitHub pull request.
    - `P0`: data loss, security, release blocker, or missing tests for critical feature/fix.
    - `P1`: likely user-visible bug, broken workflow, important missing test, or serious test convention violation.
    - `P2`: maintainability risk, unclear API, or follow-up cleanup.
-6. Prepare a concise PR comment in a temporary Markdown file from `mktemp`:
+6. Prepare a concise PR comment in a temporary Markdown file. On POSIX shells, `mktemp` is
+   acceptable; in PowerShell, use `New-TemporaryFile` or another OS temp-file API. The example
+   below uses POSIX variable syntax; use equivalent syntax in other shells:
    ```bash
    PR_REVIEW_FILE=$(mktemp "${TMPDIR:-/tmp}/pr-review.XXXXXX")
    ```

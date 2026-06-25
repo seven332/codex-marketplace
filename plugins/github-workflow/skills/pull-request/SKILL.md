@@ -36,7 +36,9 @@ Infer the operation from the user request when it is not explicit.
    `<type>[optional scope]: <description>`.
 7. Push the branch.
 8. If the current branch already has an open PR, report that PR URL instead of creating a duplicate.
-   Otherwise create a PR body in a temporary Markdown file from `mktemp`, then create the PR:
+   Otherwise create a PR body in a temporary Markdown file, then create the PR. On POSIX shells,
+   `mktemp` is acceptable; in PowerShell, use `New-TemporaryFile` or another OS temp-file API. The
+   example below uses POSIX variable syntax; use equivalent syntax in other shells:
    ```bash
    PR_BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/pr-body.XXXXXX")
    # Write the PR body to "$PR_BODY_FILE", then:
@@ -66,8 +68,10 @@ Run `gh pr list --state open` and summarize number, title, branch, author, and s
 ## Comment Workflow
 
 1. Determine PR number from args, URL, current branch, or conversation context.
-2. Summarize the relevant discussion into a concise Markdown comment in a temporary Markdown file
-   from `mktemp`.
+2. Summarize the relevant discussion into a concise Markdown comment in a temporary Markdown file.
+   On POSIX shells, `mktemp` is acceptable; in PowerShell, use `New-TemporaryFile` or another OS
+   temp-file API. The example below uses POSIX variable syntax; use equivalent syntax in other
+   shells.
 3. Post with:
    ```bash
    PR_COMMENT_FILE=$(mktemp "${TMPDIR:-/tmp}/pr-comment.XXXXXX")

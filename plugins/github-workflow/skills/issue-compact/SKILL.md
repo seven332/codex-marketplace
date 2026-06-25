@@ -27,8 +27,10 @@ Use this skill when the user asks to compact or consolidate a GitHub issue discu
    ---
    > Compacted on YYYY-MM-DD from N comments.
    ```
-6. Create `ISSUE_COMPACT_FILE=$(mktemp "${TMPDIR:-/tmp}/issue-compact.XXXXXX")` and write the
-   draft there.
+6. Create a temporary compact body file using the operating system temp directory. On POSIX shells,
+   `ISSUE_COMPACT_FILE=$(mktemp "${TMPDIR:-/tmp}/issue-compact.XXXXXX")` is acceptable; in
+   PowerShell, use `New-TemporaryFile` or another OS temp-file API. Examples below use POSIX
+   variable syntax; use equivalent syntax in other shells. Write the draft there.
 7. Show the draft path and a concise summary of what will be preserved. Ask for explicit user
    confirmation before updating the issue body unless the user already explicitly approved the
    compacted body update.

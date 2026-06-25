@@ -15,6 +15,7 @@ import test from "node:test";
 import { validateRepository } from "./validate-marketplace.mjs";
 
 const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
+const directorySymlinkType = process.platform === "win32" ? "junction" : "dir";
 
 function writeJson(path, value) {
   mkdirSync(dirname(path), { recursive: true });
@@ -480,13 +481,43 @@ Run the linked workflow.
       symlinkSync(
         join(outsideRoot, "linked-skill"),
         join(root, "plugins/demo-plugin/skills/linked-skill"),
-        "dir"
+        directorySymlinkType
       );
 
       const result = validateRepository(root);
 
       assert.equal(result.ok, false);
       assert.match(result.errors.join("\n"), /skill directory symlink is not allowed/);
+    } finally {
+      rmSync(outsideRoot, { recursive: true, force: true });
+    }
+  });
+});
+
+test("rejects symlinked skill files", () => {
+  withFixture((root) => {
+    const outsideRoot = mkdtempSync(join(tmpdir(), "codex-marketplace-skill-file-outside-"));
+    try {
+      const outsideSkill = join(outsideRoot, "SKILL.md");
+      writeFileSync(
+        outsideSkill,
+        `---
+name: demo-skill
+description: Linked skill file.
+---
+
+Run the linked workflow.
+`
+      );
+      const skillPath = join(root, "plugins/demo-plugin/skills/demo-skill/SKILL.md");
+      rmSync(skillPath, { force: true });
+      symlinkSync(outsideSkill, skillPath);
+
+      const result = validateRepository(root);
+
+      assert.equal(result.ok, false);
+      assert.equal(result.skillCount, 0);
+      assert.match(result.errors.join("\n"), /SKILL\.md symlink is not allowed/);
     } finally {
       rmSync(outsideRoot, { recursive: true, force: true });
     }
@@ -678,7 +709,11 @@ test("rejects plugin symlinks that resolve outside the repository", () => {
     try {
       cpSync(join(root, "plugins/demo-plugin"), join(outsideRoot, "demo-plugin"), { recursive: true });
       rmSync(join(root, "plugins/demo-plugin"), { recursive: true, force: true });
-      symlinkSync(join(outsideRoot, "demo-plugin"), join(root, "plugins/demo-plugin"), "dir");
+      symlinkSync(
+        join(outsideRoot, "demo-plugin"),
+        join(root, "plugins/demo-plugin"),
+        directorySymlinkType
+      );
 
       const result = validateRepository(root);
 
@@ -886,5 +921,169 @@ Run the demo workflow.
     assert.equal(result.ok, false);
     assert.equal(result.skillCount, 0);
     assert.match(result.errors.join("\n"), /frontmatter name must match directory/);
+  });
+});
+
+test("accepts skill agents openai metadata", () => {
+  withFixture((root) => {
+    const agentsDir = join(root, "plugins/demo-plugin/skills/demo-skill/agents");
+    mkdirSync(agentsDir, { recursive: true });
+    writeFileSync(
+      join(agentsDir, "openai.yaml"),
+      `interface:
+  display_name: "Demo Skill"
+  short_description: "Demo skill metadata for tests."
+  default_prompt: "Use $demo-skill to run the demo workflow."
+`
+    );
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+    assert.equal(result.skillCount, 1);
+  });
+});
+
+test("accepts skill agents dependency metadata without interface fields", () => {
+  withFixture((root) => {
+    const agentsDir = join(root, "plugins/demo-plugin/skills/demo-skill/agents");
+    mkdirSync(agentsDir, { recursive: true });
+    writeFileSync(
+      join(agentsDir, "openai.yaml"),
+      `dependencies:
+  tools: []
+`
+    );
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, true);
+    assert.equal(result.skillCount, 1);
+  });
+});
+
+test("rejects invalid skill agents openai metadata YAML", () => {
+  withFixture((root) => {
+    const agentsDir = join(root, "plugins/demo-plugin/skills/demo-skill/agents");
+    mkdirSync(agentsDir, { recursive: true });
+    writeFileSync(join(agentsDir, "openai.yaml"), "interface:\n  default_prompt: [\n");
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.equal(result.skillCount, 0);
+    assert.match(result.errors.join("\n"), /agents\/openai\.yaml is not valid YAML/);
+  });
+});
+
+test("rejects symlinked skill agents openai metadata", () => {
+  withFixture((root) => {
+    const outsideRoot = mkdtempSync(join(tmpdir(), "codex-marketplace-agents-outside-"));
+    try {
+      const agentsDir = join(root, "plugins/demo-plugin/skills/demo-skill/agents");
+      mkdirSync(agentsDir, { recursive: true });
+      const outsideMetadata = join(outsideRoot, "openai.yaml");
+      writeFileSync(
+        outsideMetadata,
+        `interface:
+  display_name: "Demo Skill"
+  short_description: "Demo skill metadata for tests."
+  default_prompt: "Use $demo-skill to run the demo workflow."
+`
+      );
+      symlinkSync(outsideMetadata, join(agentsDir, "openai.yaml"));
+
+      const result = validateRepository(root);
+
+      assert.equal(result.ok, false);
+      assert.equal(result.skillCount, 0);
+      assert.match(result.errors.join("\n"), /agents\/openai\.yaml symlink is not allowed/);
+    } finally {
+      rmSync(outsideRoot, { recursive: true, force: true });
+    }
+  });
+});
+
+test("rejects symlinked skill agents directories", () => {
+  withFixture((root) => {
+    const outsideRoot = mkdtempSync(join(tmpdir(), "codex-marketplace-agents-dir-outside-"));
+    try {
+      writeFileSync(
+        join(outsideRoot, "openai.yaml"),
+        `interface:
+  display_name: "Demo Skill"
+  short_description: "Demo skill metadata for tests."
+  default_prompt: "Use $demo-skill to run the demo workflow."
+`
+      );
+      symlinkSync(
+        outsideRoot,
+        join(root, "plugins/demo-plugin/skills/demo-skill/agents"),
+        directorySymlinkType
+      );
+
+      const result = validateRepository(root);
+
+      assert.equal(result.ok, false);
+      assert.equal(result.skillCount, 0);
+      assert.match(result.errors.join("\n"), /agents symlink is not allowed/);
+    } finally {
+      rmSync(outsideRoot, { recursive: true, force: true });
+    }
+  });
+});
+
+test("rejects broken symlinked skill agents openai metadata", () => {
+  withFixture((root) => {
+    const agentsDir = join(root, "plugins/demo-plugin/skills/demo-skill/agents");
+    mkdirSync(agentsDir, { recursive: true });
+    symlinkSync(join(root, "missing-openai.yaml"), join(agentsDir, "openai.yaml"));
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.equal(result.skillCount, 0);
+    assert.match(result.errors.join("\n"), /agents\/openai\.yaml symlink is not allowed/);
+  });
+});
+
+test("rejects skill agents interface fields at the top level", () => {
+  withFixture((root) => {
+    const agentsDir = join(root, "plugins/demo-plugin/skills/demo-skill/agents");
+    mkdirSync(agentsDir, { recursive: true });
+    writeFileSync(
+      join(agentsDir, "openai.yaml"),
+      `display_name: "Demo Skill"
+short_description: "Demo skill metadata for tests."
+default_prompt: "Use $demo-skill to run the demo workflow."
+`
+    );
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.equal(result.skillCount, 0);
+    assert.match(result.errors.join("\n"), /display_name must be nested under interface/);
+  });
+});
+
+test("rejects skill agents default prompts without the skill reference", () => {
+  withFixture((root) => {
+    const agentsDir = join(root, "plugins/demo-plugin/skills/demo-skill/agents");
+    mkdirSync(agentsDir, { recursive: true });
+    writeFileSync(
+      join(agentsDir, "openai.yaml"),
+      `interface:
+  display_name: "Demo Skill"
+  short_description: "Demo skill metadata for tests."
+  default_prompt: "Run the demo workflow."
+`
+    );
+
+    const result = validateRepository(root);
+
+    assert.equal(result.ok, false);
+    assert.equal(result.skillCount, 0);
+    assert.match(result.errors.join("\n"), /default_prompt must mention \$demo-skill/);
   });
 });

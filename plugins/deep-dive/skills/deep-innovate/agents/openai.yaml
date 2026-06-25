@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deep Innovate"
+  short_description: "Explore options from research notes."
+  default_prompt: "Use $deep-innovate to explore approaches from the existing deep-dive research."
