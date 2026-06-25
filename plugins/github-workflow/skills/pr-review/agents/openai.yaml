@@ -1,4 +1,4 @@
 interface:
   display_name: "PR Review"
   short_description: "Review pull requests for actionable issues."
-  default_prompt: "Use $pr-review to review this pull request for actionable findings."
+  default_prompt: "Use $pr-review to review this pull request and post actionable findings."
