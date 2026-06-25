@@ -26,10 +26,14 @@ not assume `/tmp` exists.
 
 ## Workflow
 
-1. Locate the matching `<temp-dir>/deep-dive/<task-slug>/research.md`. If no matching research exists,
-   ask whether to run `deep-research` first.
-2. Read the research document and relevant repository guidance it references.
-3. Create `<temp-dir>/deep-dive/<task-slug>/innovate.md`.
+1. Resolve the artifact directory:
+   - Use the caller-provided artifact directory when one is provided.
+   - Otherwise use the caller-provided task slug if present.
+   - Otherwise locate the matching `<temp-dir>/deep-dive/<task-slug>/` directory.
+   If no matching `research.md` exists, ask whether to run `deep-research` first.
+2. Read `research.md` from the resolved artifact directory and relevant repository guidance it
+   references.
+3. Create `innovate.md` in the resolved artifact directory.
 4. Generate at least two credible approaches when possible. For each approach, document:
    - Core idea
    - Advantages

@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
-import { basename, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { existsSync, lstatSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import Ajv from "ajv";
 import { isScalar, parseDocument } from "yaml";
@@ -273,9 +273,139 @@ function skillFileLabel(skillsPath, skillDirName) {
   return `${skillsPath.replace(/[\\/]+$/u, "")}/${skillDirName}/SKILL.md`;
 }
 
+function skillDirectoryLabel(skillsPath, skillDirName) {
+  return `${skillsPath.replace(/[\\/]+$/u, "")}/${skillDirName}`;
+}
+
+function validateInterfaceString(pluginName, label, fieldName, value, fail) {
+  if (value === undefined) {
+    return true;
+  }
+  if (typeof value !== "string" || !value.trim()) {
+    fail(`${pluginName}: ${label}/interface/${fieldName} must be a non-empty string`);
+    return false;
+  }
+  return true;
+}
+
+function validateAgentsOpenaiYaml(pluginName, skillsPath, skillDirName, skillDirPath, fail) {
+  const metadataPath = join(skillDirPath, "agents/openai.yaml");
+  let metadataStats;
+  try {
+    metadataStats = lstatSync(metadataPath);
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return true;
+    }
+    fail(
+      `${pluginName}: ${skillDirectoryLabel(
+        skillsPath,
+        skillDirName
+      )}/agents/openai.yaml is not accessible: ${error.message}`
+    );
+    return false;
+  }
+
+  const label = `${skillDirectoryLabel(skillsPath, skillDirName)}/agents/openai.yaml`;
+  if (metadataStats.isSymbolicLink()) {
+    fail(`${pluginName}: ${label} symlink is not allowed`);
+    return false;
+  }
+  if (!metadataStats.isFile()) {
+    fail(`${pluginName}: ${label} must be a file`);
+    return false;
+  }
+
+  const document = parseDocument(readFileSync(metadataPath, "utf8"), { prettyErrors: false });
+  if (document.errors.length > 0) {
+    fail(`${pluginName}: ${label} is not valid YAML: ${document.errors[0].message}`);
+    return false;
+  }
+
+  const metadata = document.toJS();
+  if (!isObject(metadata)) {
+    fail(`${pluginName}: ${label} must contain a YAML object`);
+    return false;
+  }
+
+  let isValid = true;
+  const knownTopLevelSections = ["interface", "dependencies", "policy"];
+  if (!knownTopLevelSections.some((section) => Object.hasOwn(metadata, section))) {
+    fail(`${pluginName}: ${label} must contain interface, dependencies, or policy`);
+    isValid = false;
+  }
+
+  for (const fieldName of ["display_name", "short_description", "default_prompt"]) {
+    if (Object.hasOwn(metadata, fieldName)) {
+      fail(`${pluginName}: ${label}/${fieldName} must be nested under interface`);
+      isValid = false;
+    }
+  }
+
+  const interfaceConfig = metadata.interface;
+  if (interfaceConfig === undefined) {
+    return isValid;
+  }
+
+  if (!isObject(interfaceConfig)) {
+    fail(`${pluginName}: ${label}/interface must be an object`);
+    return false;
+  }
+
+  isValid =
+    validateInterfaceString(pluginName, label, "display_name", interfaceConfig.display_name, fail) &&
+    isValid;
+  isValid =
+    validateInterfaceString(
+      pluginName,
+      label,
+      "short_description",
+      interfaceConfig.short_description,
+      fail
+    ) && isValid;
+  isValid =
+    validateInterfaceString(
+      pluginName,
+      label,
+      "default_prompt",
+      interfaceConfig.default_prompt,
+      fail
+    ) &&
+    isValid;
+
+  if (typeof interfaceConfig.short_description === "string") {
+    const length = characterCount(interfaceConfig.short_description.trim());
+    if (length < 25 || length > 64) {
+      fail(`${pluginName}: ${label}/interface/short_description must be 25-64 characters`);
+      isValid = false;
+    }
+  }
+
+  if (
+    typeof interfaceConfig.default_prompt === "string" &&
+    !interfaceConfig.default_prompt.includes(`$${skillDirName}`)
+  ) {
+    fail(`${pluginName}: ${label}/interface/default_prompt must mention $${skillDirName}`);
+    isValid = false;
+  }
+
+  return isValid;
+}
+
 function validateSkillFile(pluginName, skillsPath, skillDirName, skillPath, fail) {
   const label = skillFileLabel(skillsPath, skillDirName);
-  if (!existsSync(skillPath) || !statSync(skillPath).isFile()) {
+  let skillStats;
+  try {
+    skillStats = lstatSync(skillPath);
+  } catch {
+    fail(`${pluginName}: missing ${label}`);
+    return false;
+  }
+  if (skillStats.isSymbolicLink()) {
+    fail(`${pluginName}: ${label} symlink is not allowed`);
+    return false;
+  }
+  if (!skillStats.isFile()) {
     fail(`${pluginName}: missing ${label}`);
     return false;
   }
@@ -300,6 +430,9 @@ function validateSkillFile(pluginName, skillsPath, skillDirName, skillPath, fail
   }
   if (!frontmatter.body.trim()) {
     fail(`${pluginName}: ${label} body is required`);
+    isValid = false;
+  }
+  if (!validateAgentsOpenaiYaml(pluginName, skillsPath, skillDirName, dirname(skillPath), fail)) {
     isValid = false;
   }
 

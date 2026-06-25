@@ -27,8 +27,12 @@ such as Python `tempfile.gettempdir()` or Node.js `os.tmpdir()` when scripting. 
 ## Workflow
 
 1. Clarify the task only when the scope is ambiguous.
-2. Choose a sanitized task slug using lowercase letters, numbers, and hyphens.
-3. Create `<temp-dir>/deep-dive/<task-slug>/research.md`.
+2. Resolve the artifact directory:
+   - Use the caller-provided artifact directory when one is provided.
+   - Otherwise use the caller-provided task slug if present.
+   - Otherwise choose a sanitized task slug using lowercase letters, numbers, and hyphens.
+   The default artifact directory is `<temp-dir>/deep-dive/<task-slug>/`.
+3. Create `research.md` in the resolved artifact directory.
 4. Read repository guidance first, such as `AGENTS.md`, `CONTRIBUTING.md`, README files, docs,
    package scripts, test configuration, and nearby tests.
 5. Research systematically:

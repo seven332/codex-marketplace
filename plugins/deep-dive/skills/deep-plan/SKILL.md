@@ -26,11 +26,14 @@ not assume `/tmp` exists.
 
 ## Workflow
 
-1. Locate the matching deep-dive directory under `<temp-dir>/deep-dive/<task-slug>/`.
-2. Read `research.md` and `innovate.md`. If either is missing, ask whether to run the missing
-   phase first.
+1. Resolve the artifact directory:
+   - Use the caller-provided artifact directory when one is provided.
+   - Otherwise use the caller-provided task slug if present.
+   - Otherwise locate the matching `<temp-dir>/deep-dive/<task-slug>/` directory.
+2. Read `research.md` and `innovate.md` from the resolved artifact directory. If either is missing,
+   ask whether to run the missing phase first.
 3. Confirm the chosen approach if the user or caller workflow has not already selected one.
-4. Create `<temp-dir>/deep-dive/<task-slug>/plan.md`.
+4. Create `plan.md` in the resolved artifact directory.
 5. Write a concrete plan with:
    - Goal and chosen approach
    - Ordered implementation tasks

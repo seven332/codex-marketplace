@@ -21,9 +21,14 @@ Use this skill when the user asks to start planning work for a GitHub issue.
 5. If the `deep-research`, `deep-innovate`, and `deep-plan` skills are installed, use them in
    sequence for the planning phases:
    - Pass the issue title, body, comments, labels, and URL as the task context.
+   - Pass the selected `<issue-task>` slug and artifact directory so all phases write to the same
+     `<temp-dir>/deep-dive/<issue-task>/` directory.
    - Use `<temp-dir>/deep-dive/<issue-task>/research.md`,
      `<temp-dir>/deep-dive/<issue-task>/innovate.md`, and
      `<temp-dir>/deep-dive/<issue-task>/plan.md` as the planning artifacts.
+   - After `deep-innovate`, select an approach only when the issue context, research, and option
+     analysis make the choice clear. If a human decision is needed, post the options summary or
+     `innovate.md` to the issue, add `pending`, and stop instead of forcing a plan.
    - This skill owns the phase transitions, issue comments, and approval label. Do not implement.
 6. If the full `deep-dive` workflow is unavailable, use the built-in fallback under
    `<temp-dir>/github-workflow/<issue-task>/`:
