@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deep Research"
+  short_description: "Gather facts before solution discussion."
+  default_prompt: "Use $deep-research to research this task before proposing any solution."

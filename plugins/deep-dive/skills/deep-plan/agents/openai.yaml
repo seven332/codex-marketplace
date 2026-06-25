@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deep Plan"
+  short_description: "Create a plan from deep-dive artifacts."
+  default_prompt: "Use $deep-plan to create an implementation plan from the deep-dive artifacts."
