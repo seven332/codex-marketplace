@@ -1,0 +1,4 @@
+interface:
+  display_name: "My Issues"
+  short_description: "List and prioritize my GitHub issues."
+  default_prompt: "Use $my-issues to list and prioritize my open GitHub issues."

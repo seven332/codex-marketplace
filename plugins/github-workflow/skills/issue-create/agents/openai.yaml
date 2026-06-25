@@ -1,0 +1,4 @@
+interface:
+  display_name: "Issue Create"
+  short_description: "Create clear GitHub issues from context."
+  default_prompt: "Use $issue-create to create a clear GitHub issue from this context."

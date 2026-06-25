@@ -1,0 +1,4 @@
+interface:
+  display_name: "Issue Plan"
+  short_description: "Plan GitHub issue implementation work."
+  default_prompt: "Use $issue-plan to research this GitHub issue and post an implementation plan."

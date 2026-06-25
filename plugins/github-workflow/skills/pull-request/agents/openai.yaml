@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pull Request"
+  short_description: "Create, update, comment on, or merge PRs."
+  default_prompt: "Use $pull-request to create or update a pull request for these changes."
