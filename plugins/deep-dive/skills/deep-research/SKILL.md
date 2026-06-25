@@ -24,11 +24,15 @@ Resolve `<temp-dir>` to the operating system temporary directory before creating
 such as Python `tempfile.gettempdir()` or Node.js `os.tmpdir()` when scripting. Do not assume
 `/tmp` exists.
 
+Keep generated artifacts under `<temp-dir>/deep-dive/` unless the user explicitly requests another
+output location. Use sanitized task slugs and avoid `..` path segments.
+
 ## Workflow
 
 1. Clarify the task only when the scope is ambiguous.
 2. Resolve the artifact directory:
-   - Use the caller-provided artifact directory when one is provided.
+   - Use the caller-provided artifact directory only when it is under `<temp-dir>/deep-dive/` or
+     the user explicitly requested that location.
    - Otherwise use the caller-provided task slug if present.
    - Otherwise choose a sanitized task slug using lowercase letters, numbers, and hyphens.
    The default artifact directory is `<temp-dir>/deep-dive/<task-slug>/`.

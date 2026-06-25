@@ -37,8 +37,10 @@ Use this skill when the user asks to start planning work for a GitHub issue.
      `research.md`.
    - Options: compare plausible approaches and trade-offs; call out rejected approaches and why;
      write `innovate.md`.
-   - Plan: produce concrete implementation steps, test strategy, validation commands, and rollout,
-     migration, or compatibility notes when relevant; write `plan.md`.
+   - Plan: produce concrete implementation steps only when the direction is clear. If a human
+     decision is needed, post the options summary or `innovate.md` to the issue, add `pending`, and
+     stop. Otherwise include test strategy, validation commands, and rollout, migration, or
+     compatibility notes when relevant; write `plan.md`.
 7. Post the final plan artifact or summary to the issue. Use the selected `plan.md` path:
    ```bash
    gh issue comment <issue-number> --body-file <selected-plan-path>

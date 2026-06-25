@@ -24,10 +24,14 @@ artifacts. Use `${TMPDIR:-/tmp}` on POSIX shells, `$env:TEMP` in PowerShell, or 
 temp directory such as Python `tempfile.gettempdir()` or Node.js `os.tmpdir()` when scripting. Do
 not assume `/tmp` exists.
 
+Keep generated artifacts under `<temp-dir>/deep-dive/` unless the user explicitly requests another
+output location. Use sanitized task slugs and avoid `..` path segments.
+
 ## Workflow
 
 1. Resolve the artifact directory:
-   - Use the caller-provided artifact directory when one is provided.
+   - Use the caller-provided artifact directory only when it is under `<temp-dir>/deep-dive/` or
+     the user explicitly requested that location.
    - Otherwise use the caller-provided task slug if present.
    - Otherwise locate the matching `<temp-dir>/deep-dive/<task-slug>/` directory.
    If no matching `research.md` exists, ask whether to run `deep-research` first.

@@ -289,7 +289,29 @@ function validateInterfaceString(pluginName, label, fieldName, value, fail) {
 }
 
 function validateAgentsOpenaiYaml(pluginName, skillsPath, skillDirName, skillDirPath, fail) {
-  const metadataPath = join(skillDirPath, "agents/openai.yaml");
+  const skillDirectory = skillDirectoryLabel(skillsPath, skillDirName);
+  const agentsPath = join(skillDirPath, "agents");
+  let agentsStats;
+  try {
+    agentsStats = lstatSync(agentsPath);
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return true;
+    }
+    fail(`${pluginName}: ${skillDirectory}/agents is not accessible: ${error.message}`);
+    return false;
+  }
+
+  if (agentsStats.isSymbolicLink()) {
+    fail(`${pluginName}: ${skillDirectory}/agents symlink is not allowed`);
+    return false;
+  }
+  if (!agentsStats.isDirectory()) {
+    fail(`${pluginName}: ${skillDirectory}/agents must be a directory`);
+    return false;
+  }
+
+  const metadataPath = join(agentsPath, "openai.yaml");
   let metadataStats;
   try {
     metadataStats = lstatSync(metadataPath);
@@ -297,22 +319,21 @@ function validateAgentsOpenaiYaml(pluginName, skillsPath, skillDirName, skillDir
     if (error.code === "ENOENT") {
       return true;
     }
-    fail(
-      `${pluginName}: ${skillDirectoryLabel(
-        skillsPath,
-        skillDirName
-      )}/agents/openai.yaml is not accessible: ${error.message}`
-    );
+    fail(`${pluginName}: ${skillDirectory}/agents/openai.yaml is not accessible: ${error.message}`);
     return false;
   }
 
-  const label = `${skillDirectoryLabel(skillsPath, skillDirName)}/agents/openai.yaml`;
+  const label = `${skillDirectory}/agents/openai.yaml`;
   if (metadataStats.isSymbolicLink()) {
     fail(`${pluginName}: ${label} symlink is not allowed`);
     return false;
   }
   if (!metadataStats.isFile()) {
     fail(`${pluginName}: ${label} must be a file`);
+    return false;
+  }
+  if (!isInsideDirectory(realpathSync(skillDirPath), realpathSync(metadataPath))) {
+    fail(`${pluginName}: ${label} must not resolve outside the skill directory`);
     return false;
   }
 

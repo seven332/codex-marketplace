@@ -27,6 +27,8 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    Prefer the artifact directory identified in conversation or issue comments. If both roots have
    plausible artifacts and the intended one is unclear, ask which to use. Only use sanitized
    planning directories under `<temp-dir>/deep-dive/` or `<temp-dir>/github-workflow/`.
+   If no approved plan is available in artifacts, issue body, issue comments, or conversation
+   context, ask whether to run `issue-plan` first and stop.
 5. Check `git status --short --branch` before branch changes. Stop if unrelated uncommitted changes
    are present. If on the repository default branch, create the feature branch before editing files.
 6. If comments request plan changes or ask questions, update the plan or answer on the issue, add
