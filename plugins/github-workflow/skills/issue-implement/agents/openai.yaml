@@ -1,0 +1,4 @@
+interface:
+  display_name: "Issue Implement"
+  short_description: "Implement approved GitHub issue plans."
+  default_prompt: "Use $issue-implement to implement this approved GitHub issue plan."

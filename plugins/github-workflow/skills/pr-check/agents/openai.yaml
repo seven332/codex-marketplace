@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Check"
+  short_description: "Check PR status and safe CI fixes."
+  default_prompt: "Use $pr-check to inspect this pull request's CI status."

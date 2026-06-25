@@ -1,0 +1,4 @@
+interface:
+  display_name: "Issue Compact"
+  short_description: "Compact issue discussions into handoffs."
+  default_prompt: "Use $issue-compact to consolidate this GitHub issue discussion."

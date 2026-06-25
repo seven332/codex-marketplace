@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rebase Main"
+  short_description: "Rebase feature branches onto main."
+  default_prompt: "Use $rebase-main to rebase this branch onto the latest default branch."

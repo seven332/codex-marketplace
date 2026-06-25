@@ -1,0 +1,4 @@
+interface:
+  display_name: "Main Branch"
+  short_description: "Switch to main and pull latest changes."
+  default_prompt: "Use $main to return to the default branch and pull latest changes."
