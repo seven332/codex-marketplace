@@ -9,7 +9,9 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
 
 ## Workflow
 
-1. Identify the issue number and planning directory from conversation context. Ask if unclear.
+1. Identify the issue number from the user request or conversation context. Ask if unclear. Do not
+   require a planning directory before reading the issue; recover it from issue comments or local
+   artifacts when possible.
 2. Read issue updates:
    ```bash
    gh issue view <issue-number> --json title,body,comments,labels,url
@@ -24,6 +26,9 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    - `<temp-dir>/github-workflow/<issue-task>/research.md`
    - `<temp-dir>/github-workflow/<issue-task>/innovate.md`
    - `<temp-dir>/github-workflow/<issue-task>/plan.md`
+   Derive `<issue-task>` from `issue-plan` comment markers, the conversation context, or the
+   selected artifact directory basename. If no marker or explicit directory is available, look for
+   sanitized directories matching `issue-<issue-number>-*` under both planning roots.
    Prefer the artifact directory identified in conversation or issue comments. If both roots have
    plausible artifacts and the intended one is unclear, ask which to use. Only use sanitized
    planning directories under `<temp-dir>/deep-dive/` or `<temp-dir>/github-workflow/`. Do not
