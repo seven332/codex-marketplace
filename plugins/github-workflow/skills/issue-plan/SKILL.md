@@ -35,9 +35,13 @@ Use this skill when the user asks to start planning work for a GitHub issue.
    - Prefer an existing directory with artifacts. If none exists, use
      `<temp-dir>/deep-dive/<issue-task>/` for the full `deep-dive` workflow or
      `<temp-dir>/github-workflow/<issue-task>/` for the built-in fallback.
-   - Do not split one run across artifact roots. Reuse existing phase artifacts from the selected
-     directory and run only missing phases. Still post any phase comment that is not already present
-     according to step 8.
+   - Before reusing an existing phase artifact, compare it with later issue updates. Treat a phase
+     as stale when the issue title, body, labels, or human comments after that phase was created or
+     posted materially change its inputs. A human comment that only selects one of the posted
+     options does not make Research or Options stale; use that selection as Plan input.
+   - Do not split one run across artifact roots. Reuse existing non-stale phase artifacts from the
+     selected directory and run only missing or stale phases, starting from the earliest affected
+     phase. Still post any phase comment that is missing or regenerated according to step 8.
 6. If the selected artifact directory is under `<temp-dir>/deep-dive/` and the `deep-research`,
    `deep-innovate`, and `deep-plan` skills are installed, use them in sequence for the planning
    phases:
@@ -66,13 +70,15 @@ Use this skill when the user asks to start planning work for a GitHub issue.
      decision is needed, add `pending` using the label command in step 9, and stop. Otherwise
      include test strategy, validation commands, and rollout, migration, or compatibility notes when
      relevant; write `plan.md`, then post it as a Plan Phase issue comment.
-8. Post at most one comment per completed phase in this order: Research, Options, Plan. Only post a
-   phase when its artifact exists. If planning stops after Options while waiting for a human
-   decision, skip the Plan Phase comment. Before posting a phase, inspect existing issue comments
-   and skip it if the matching marker already exists. If older comments do not have markers, treat a
-   matching phase heading on the same issue as already posted. For the options phase, accept either
-   `## Options Phase` or legacy `## Innovation Phase` headings. Use a stable marker plus a visible
-   heading in each generated comment body:
+8. Post at most one comment per completed phase for this run in this order: Research, Options, Plan.
+   Only post a phase when its artifact exists. If planning stops after Options while waiting for a
+   human decision, skip the Plan Phase comment. Before posting a reused phase, inspect existing issue
+   comments and skip it if the matching marker already exists. If a stale phase was regenerated,
+   post the updated phase with the same marker so the latest matching marker by comment chronology
+   is authoritative. If older comments do not have markers, treat a matching phase heading on the
+   same issue as already posted. For the options phase, accept either `## Options Phase` or legacy
+   `## Innovation Phase` headings. Use a stable marker plus a visible heading in each generated
+   comment body:
    ```markdown
    <!-- codex-marketplace:issue-plan:<issue-task>:research -->
    ## Research Phase
