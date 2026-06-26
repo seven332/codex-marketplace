@@ -28,8 +28,8 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    plausible artifacts and the intended one is unclear, ask which to use. Only use sanitized
    planning directories under `<temp-dir>/deep-dive/` or `<temp-dir>/github-workflow/`. Do not
    follow symlinked planning directories or artifact files.
-   If local artifacts are unavailable, recover the latest Research Phase, Options Phase, and Plan
-   Phase content from comments on the same issue. Prefer
+   If local artifacts are unavailable or incomplete, recover any missing Research Phase, Options
+   Phase, and Plan Phase content from comments on the same issue. Prefer
    `codex-marketplace:issue-plan:issue-<issue-number>-<slug>:<phase>` markers, and fall back to the
    phase headings only for older comments without markers. Treat `## Innovation Phase` as a legacy
    heading for the options phase.
