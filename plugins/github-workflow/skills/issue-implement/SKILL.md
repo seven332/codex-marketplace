@@ -26,8 +26,9 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    - `<temp-dir>/github-workflow/<issue-task>/research.md`
    - `<temp-dir>/github-workflow/<issue-task>/innovate.md`
    - `<temp-dir>/github-workflow/<issue-task>/plan.md`
-   Derive `<issue-task>` from `issue-plan` comment markers, the conversation context, or the
-   selected artifact directory basename. If no marker or explicit directory is available, look for
+   Derive `<issue-task>` from the latest `issue-plan` comment marker for this issue, the
+   conversation context, or the selected artifact directory basename. Prefer the latest Plan Phase
+   marker, then Options, then Research. If no marker or explicit directory is available, look for
    sanitized directories matching `issue-<issue-number>-*` under both planning roots.
    Prefer the artifact directory identified in conversation or issue comments. If both roots have
    plausible artifacts and the intended one is unclear, ask which to use. Only use sanitized
