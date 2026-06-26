@@ -42,8 +42,10 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    context, ask whether to run `issue-plan` first and stop.
 5. Check `git status --short --branch` before branch changes. Stop if unrelated uncommitted changes
    are present. If on the repository default branch, create the feature branch before editing files.
-6. If comments request plan changes or ask questions, update the plan or answer on the issue, add
-   `pending`, and stop.
+6. If human comments after the latest `issue-plan` Plan Phase comment request plan changes or ask
+   unresolved questions, update the plan or answer on the issue, add `pending`, and stop. Do not
+   treat `issue-plan` phase artifact content itself, such as Options Phase open questions, as a new
+   request unless a human explicitly asks about it.
 7. Remove `pending` when resuming approved work:
    ```bash
    gh issue edit <issue-number> --remove-label pending 2>/dev/null || true
