@@ -21,8 +21,8 @@ Use this skill when the user asks to start planning work for a GitHub issue.
    short title. Use only lowercase letters, numbers, and hyphens. This keeps artifact directories
    and comment markers unique per issue.
 5. Select one artifact directory for this issue:
-   - If issue comments already contain `issue-plan` markers for this issue, reuse the latest marker
-     slug as `<issue-task>` before checking local artifact directories.
+   - If issue comments already contain `issue-plan` markers for this issue, reuse the slug from the
+     most recent marker by comment chronology before checking local artifact directories.
    - Check `<temp-dir>/deep-dive/<issue-task>/` and
      `<temp-dir>/github-workflow/<issue-task>/` for `research.md`, `innovate.md`, and `plan.md`.
    - When resuming older work, also look for directories matching `issue-<issue-number>-*` under

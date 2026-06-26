@@ -26,10 +26,12 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    - `<temp-dir>/github-workflow/<issue-task>/research.md`
    - `<temp-dir>/github-workflow/<issue-task>/innovate.md`
    - `<temp-dir>/github-workflow/<issue-task>/plan.md`
-   Derive `<issue-task>` from the latest `issue-plan` comment marker for this issue, the
-   conversation context, or the selected artifact directory basename. Prefer the latest Plan Phase
-   marker, then Options, then Research. If no marker or explicit directory is available, look for
-   sanitized directories matching `issue-<issue-number>-*` under both planning roots.
+   Derive `<issue-task>` from the most recent `issue-plan` comment marker by comment chronology for
+   this issue, the conversation context, or the selected artifact directory basename. Do not fall
+   back to an older Plan Phase marker when a newer Research or Options marker exists; if the latest
+   marker slug has no approved plan, stop for approval instead. If no marker or explicit directory
+   is available, look for sanitized directories matching `issue-<issue-number>-*` under both
+   planning roots.
    Prefer the artifact directory identified in conversation or issue comments. If both roots have
    plausible artifacts and the intended one is unclear, ask which to use. Only use sanitized
    planning directories under `<temp-dir>/deep-dive/` or `<temp-dir>/github-workflow/`. Do not
