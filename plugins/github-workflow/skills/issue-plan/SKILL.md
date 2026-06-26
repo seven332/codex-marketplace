@@ -18,11 +18,14 @@ Use this skill when the user asks to start planning work for a GitHub issue.
    POSIX shells, `$env:TEMP` in PowerShell, or a standard library temp directory such as Python
    `tempfile.gettempdir()` or Node.js `os.tmpdir()` when scripting. Do not assume `/tmp` exists.
 4. Choose an `<issue-task>` slug that starts with `issue-<issue-number>-`, followed by a sanitized
-   short title. Use only lowercase letters, numbers, and hyphens. This keeps artifact directories
-   and comment markers unique per issue.
+   short title. Use only lowercase letters, numbers, and hyphens. If the sanitized title would be
+   empty, use `task` as the title segment. This keeps artifact directories and comment markers
+   unique per issue.
 5. Select one artifact directory for this issue:
-   - If issue comments already contain `issue-plan` markers for this issue, reuse the slug from the
-     most recent marker by comment chronology before checking local artifact directories.
+   - If issue comments already contain valid `issue-plan` markers for this issue, reuse the slug
+     from the most recent marker by comment chronology before checking local artifact directories.
+     Accept only markers whose slug matches `issue-<issue-number>-[a-z0-9-]+` and whose phase is
+     `research`, `options`, or `plan`; ignore malformed markers and markers for other issues.
    - Check `<temp-dir>/deep-dive/<issue-task>/` and
      `<temp-dir>/github-workflow/<issue-task>/` for `research.md`, `innovate.md`, and `plan.md`.
    - When resuming older work, also look for directories matching `issue-<issue-number>-*` under

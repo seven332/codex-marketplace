@@ -26,24 +26,26 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    - `<temp-dir>/github-workflow/<issue-task>/research.md`
    - `<temp-dir>/github-workflow/<issue-task>/innovate.md`
    - `<temp-dir>/github-workflow/<issue-task>/plan.md`
-   Derive `<issue-task>` from the most recent `issue-plan` comment marker by comment chronology for
-   this issue, the conversation context, or the selected artifact directory basename. Do not fall
-   back to an older Plan Phase marker when a newer Research or Options marker exists, even when it
-   uses the same `<issue-task>` slug. Compare marker chronology within the selected slug: when the
-   newest Research or Options marker is newer than the newest Plan marker, treat local and comment
-   Plan content as stale and stop unless a human comment after that newer marker, or the current
-   conversation context, explicitly approves that Plan for implementation. If no marker or explicit
-   directory is available, look for sanitized directories matching `issue-<issue-number>-*` under
-   both planning roots.
+   Derive `<issue-task>` from the most recent valid `issue-plan` comment marker by comment
+   chronology for this issue, the conversation context, or the selected artifact directory basename.
+   Accept only markers whose slug matches `issue-<issue-number>-[a-z0-9-]+` and whose phase is
+   `research`, `options`, or `plan`; ignore malformed markers and markers for other issues. Do not
+   fall back to an older Plan Phase marker when a newer Research or Options marker exists, even when
+   it uses the same `<issue-task>` slug. Compare marker chronology within the selected slug: when
+   the newest Research or Options marker is newer than the newest Plan marker, treat local and
+   comment Plan content as stale and stop unless a human comment after that newer marker, or the
+   current conversation context, explicitly approves that Plan for implementation. If no marker or
+   explicit directory is available, look for sanitized directories matching `issue-<issue-number>-*`
+   under both planning roots.
    Prefer the artifact directory identified in conversation or issue comments. If both roots have
    plausible artifacts and the intended one is unclear, ask which to use. Only use sanitized
    planning directories under `<temp-dir>/deep-dive/` or `<temp-dir>/github-workflow/`. Do not
    follow symlinked planning directories or artifact files.
    If local artifacts are unavailable or incomplete, recover any missing Research Phase, Options
    Phase, and Plan Phase content from comments on the same issue. Prefer
-   `codex-marketplace:issue-plan:issue-<issue-number>-<slug>:<phase>` markers, and fall back to the
-   phase headings only for older comments without markers. Treat `## Innovation Phase` as a legacy
-   heading for the options phase.
+   `codex-marketplace:issue-plan:issue-<issue-number>-<slug>:<phase>` markers with valid sanitized
+   slugs and phase names, and fall back to the phase headings only for older comments without
+   markers. Treat `## Innovation Phase` as a legacy heading for the options phase.
    If no approved plan is available in artifacts, issue body, issue comments, or conversation
    context, ask whether to run `issue-plan` first and stop.
 5. Check `git status --short --branch` before branch changes. Stop if unrelated uncommitted changes
