@@ -64,12 +64,13 @@ Use this skill when the user asks to start planning work for a GitHub issue.
      decision is needed, add `pending` using the label command in step 9, and stop. Otherwise
      include test strategy, validation commands, and rollout, migration, or compatibility notes when
      relevant; write `plan.md`, then post it as a Plan Phase issue comment.
-8. Post at most one comment per phase in this order: Research, Options, Plan. Before posting a
-   phase, inspect existing issue comments and skip it if the matching marker already exists. If
-   older comments do not have markers, treat a matching phase heading on the same issue as already
-   posted. For the options phase, accept either `## Options Phase` or legacy
-   `## Innovation Phase` headings. Use a stable marker plus a visible heading in each generated
-   comment body:
+8. Post at most one comment per completed phase in this order: Research, Options, Plan. Only post a
+   phase when its artifact exists. If planning stops after Options while waiting for a human
+   decision, skip the Plan Phase comment. Before posting a phase, inspect existing issue comments
+   and skip it if the matching marker already exists. If older comments do not have markers, treat a
+   matching phase heading on the same issue as already posted. For the options phase, accept either
+   `## Options Phase` or legacy `## Innovation Phase` headings. Use a stable marker plus a visible
+   heading in each generated comment body:
    ```markdown
    <!-- codex-marketplace:issue-plan:<issue-task>:research -->
    ## Research Phase
