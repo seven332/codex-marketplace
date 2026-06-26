@@ -93,7 +93,8 @@ Use this skill when the user asks to start planning work for a GitHub issue.
    Use marker suffixes `research`, `options`, and `plan`. Build each comment body in a temporary
    file by copying the relevant artifact below the heading, then post it with
    `gh issue comment <issue-number> --body-file <phase-comment-path>`.
-9. Add or create a `pending` label when waiting for human approval:
+9. Add or create a `pending` label when waiting for human input, including after posting a Plan
+   Phase without explicit implementation approval:
    ```bash
    gh label create pending --description "Waiting for human input" --color FFA500 2>/dev/null || true
    gh issue edit <issue-number> --add-label pending

@@ -46,8 +46,11 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    `codex-marketplace:issue-plan:issue-<issue-number>-<slug>:<phase>` markers with valid sanitized
    slugs and phase names, and fall back to the phase headings only for older comments without
    markers. Treat `## Innovation Phase` as a legacy heading for the options phase.
-   If no approved plan is available in artifacts, issue body, issue comments, or conversation
-   context, ask whether to run `issue-plan` first and stop.
+   Treat `plan.md`, Plan Phase comments, and recovered plan content as plan content only, not
+   approval. The plan is approved only when the current user request, conversation context, issue
+   body, or a human issue comment explicitly says to proceed with that plan.
+   If either plan content or explicit approval is unavailable, ask whether to run `issue-plan` or
+   wait for approval first, then stop.
 5. Check `git status --short --branch` before branch changes. Stop if unrelated uncommitted changes
    are present. If on the repository default branch, create the feature branch before editing files.
 6. If human comments after the latest `issue-plan` Plan Phase comment request plan changes or ask
