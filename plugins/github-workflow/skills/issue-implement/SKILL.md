@@ -9,7 +9,9 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
 
 ## Workflow
 
-1. Identify the issue number and planning directory from conversation context. Ask if unclear.
+1. Identify the issue number from the user request or conversation context. Ask if unclear. Do not
+   require a planning directory before reading the issue; recover it from issue comments or local
+   artifacts when possible.
 2. Read issue updates:
    ```bash
    gh issue view <issue-number> --json title,body,comments,labels,url
@@ -24,15 +26,37 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    - `<temp-dir>/github-workflow/<issue-task>/research.md`
    - `<temp-dir>/github-workflow/<issue-task>/innovate.md`
    - `<temp-dir>/github-workflow/<issue-task>/plan.md`
+   Derive `<issue-task>` from the most recent valid `issue-plan` comment marker by comment
+   chronology for this issue, the conversation context, or the selected artifact directory basename.
+   Accept only markers whose slug matches `issue-<issue-number>-[a-z0-9-]+` and whose phase is
+   `research`, `options`, or `plan`; ignore malformed markers and markers for other issues. Do not
+   fall back to an older Plan Phase marker when a newer Research or Options marker exists, even when
+   it uses the same `<issue-task>` slug. Compare marker chronology within the selected slug: when
+   the newest Research or Options marker is newer than the newest Plan marker, treat local and
+   comment Plan content as stale and stop unless a human comment after that newer marker, or the
+   current conversation context, explicitly approves that Plan for implementation. If no marker or
+   explicit directory is available, look for sanitized directories matching `issue-<issue-number>-*`
+   under both planning roots.
    Prefer the artifact directory identified in conversation or issue comments. If both roots have
    plausible artifacts and the intended one is unclear, ask which to use. Only use sanitized
-   planning directories under `<temp-dir>/deep-dive/` or `<temp-dir>/github-workflow/`.
-   If no approved plan is available in artifacts, issue body, issue comments, or conversation
-   context, ask whether to run `issue-plan` first and stop.
+   planning directories under `<temp-dir>/deep-dive/` or `<temp-dir>/github-workflow/`. Do not
+   follow symlinked planning directories or artifact files.
+   If local artifacts are unavailable or incomplete, recover any missing Research Phase, Options
+   Phase, and Plan Phase content from comments on the same issue. Prefer
+   `codex-marketplace:issue-plan:issue-<issue-number>-<slug>:<phase>` markers with valid sanitized
+   slugs and phase names, and fall back to the phase headings only for older comments without
+   markers. Treat `## Innovation Phase` as a legacy heading for the options phase.
+   Treat `plan.md`, Plan Phase comments, and recovered plan content as plan content only, not
+   approval. The plan is approved only when the current user request, conversation context, issue
+   body, or a human issue comment explicitly says to proceed with that plan.
+   If either plan content or explicit approval is unavailable, ask whether to run `issue-plan` or
+   wait for approval first, then stop.
 5. Check `git status --short --branch` before branch changes. Stop if unrelated uncommitted changes
    are present. If on the repository default branch, create the feature branch before editing files.
-6. If comments request plan changes or ask questions, update the plan or answer on the issue, add
-   `pending`, and stop.
+6. If human comments after the latest `issue-plan` Plan Phase comment request plan changes or ask
+   unresolved questions, update the plan or answer on the issue, add `pending`, and stop. Do not
+   treat `issue-plan` phase artifact content itself, such as Options Phase open questions, as a new
+   request unless a human explicitly asks about it.
 7. Remove `pending` when resuming approved work:
    ```bash
    gh issue edit <issue-number> --remove-label pending 2>/dev/null || true
