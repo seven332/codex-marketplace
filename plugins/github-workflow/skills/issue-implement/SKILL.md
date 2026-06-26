@@ -26,7 +26,8 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    - `<temp-dir>/github-workflow/<issue-task>/plan.md`
    Prefer the artifact directory identified in conversation or issue comments. If both roots have
    plausible artifacts and the intended one is unclear, ask which to use. Only use sanitized
-   planning directories under `<temp-dir>/deep-dive/` or `<temp-dir>/github-workflow/`.
+   planning directories under `<temp-dir>/deep-dive/` or `<temp-dir>/github-workflow/`. Do not
+   follow symlinked planning directories or artifact files.
    If local artifacts are unavailable, recover the latest Research Phase, Options Phase, and Plan
    Phase content from comments on the same issue. Prefer
    `codex-marketplace:issue-plan:issue-<issue-number>-<slug>:<phase>` markers, and fall back to the
