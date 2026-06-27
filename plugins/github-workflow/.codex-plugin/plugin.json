@@ -18,7 +18,7 @@
   "interface": {
     "displayName": "GitHub Workflow",
     "shortDescription": "Manage GitHub issues, PRs, reviews, CI checks, and branch updates.",
-    "longDescription": "A Codex-native GitHub workflow plugin for issue planning and implementation, issue creation and compaction, pull request lifecycle management, PR review, CI checking, rebasing, and switching to the default branch.",
+    "longDescription": "A Codex-native GitHub workflow plugin for end-to-end PR workflows, issue planning and implementation, issue creation and compaction, pull request lifecycle management, PR review, CI checking, rebasing, and switching to the default branch.",
     "developerName": "codex-marketplace maintainers",
     "category": "Developer Tools",
     "capabilities": [
@@ -28,7 +28,7 @@
       "Review"
     ],
     "defaultPrompt": [
-      "Create a PR for the current changes.",
+      "Run the full PR workflow for this issue.",
       "Review this pull request and post findings.",
       "Plan implementation for this GitHub issue."
     ],
