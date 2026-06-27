@@ -90,8 +90,8 @@ created or updated.
 ### 6. Run The Review Loop
 
 Review changed behavior, not only changed lines. Use repository-specific review guidelines when
-they exist. Treat the following checklist as one outer review loop. Run each numbered pass as a
-separate focused inspection, in order, instead of combining the passes into one broad scan:
+they exist. Treat the following checklist as one full review loop. Run each numbered pass as a
+separate focused inspection, in order, and track whether any pass found issues in the current loop:
 
 1. Check logic, performance, tests, security, documentation, and code structure.
 2. Check transient failures, races, and deadlocks, including concurrent execution when relevant.
@@ -101,13 +101,14 @@ separate focused inspection, in order, instead of combining the passes into one 
 
 For each pass, inspect only that category deeply enough to form a clear verdict. If the pass finds
 an issue that belongs to the current PR, fix it directly, commit the fix, rerun relevant validation,
-and restart the outer review loop from pass 1. If the issue is real but outside the PR scope, link
-an existing suitable issue, or create one if no suitable issue exists. Record the relationship on
-the parent issue when one exists, and then restart the outer loop from pass 1. Advance to the next
-pass only when the current pass has no issues to fix or record. Do not re-record the same
-out-of-scope issue after it has already been linked or created; treat it as handled for this loop
-unless new evidence changes the scope. Stop only after passes 1 through 5 all complete
-consecutively without new issues.
+mark the current loop as having found issues, and then continue with the next pass instead of
+restarting immediately. If the issue is real but outside the PR scope, link an existing suitable
+issue, or create one if no suitable issue exists. Record the relationship on the parent issue when
+one exists, mark the current loop as having found issues, and then continue with the next pass. Do
+not re-record the same out-of-scope issue after it has already been linked or created; treat it as
+handled for this loop unless new evidence changes the scope. After pass 5, run another full loop if
+any pass in the current loop found issues. Stop only after one full loop completes passes 1 through
+5 without finding any issue to fix or record.
 
 ### 7. Post The PR Review
 
