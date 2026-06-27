@@ -1,6 +1,6 @@
 ---
 name: pr-workflow
-description: Run an end-to-end GitHub pull request workflow from an up-to-date default branch through issue selection, planning, implementation, local verification, review loops, PR review, and merge readiness checks.
+description: Run an end-to-end GitHub pull request workflow from an up-to-date default branch through issue selection, planning, implementation, commit, PR creation, review loops, PR review, and merge readiness checks.
 ---
 
 # PR Workflow
@@ -46,12 +46,17 @@ than a single PR command.
    - Keep edits scoped to the issue boundary.
    - Update tests and documentation with behavior changes.
    - Do not amend review updates; add focused follow-up commits.
-7. Verify locally before opening or updating the PR:
+7. Commit the implementation:
    - Run commands documented by the repository.
    - If no local command is documented, inspect package scripts, language tooling, CI, and nearby
      tests to choose the narrowest credible checks.
-   - List only commands actually run on the reviewed head in the PR body or status update.
-8. Run the review loop until clean:
+   - Inspect the diff, stage only intended files, and commit with Conventional Commits.
+   - Do not amend existing commits unless the user explicitly requests it.
+8. Create or update the PR:
+   - Use `pull-request` for creation or updates.
+   - Include a concise summary, linked issue such as `Closes #123`, explicit exclusions when
+     relevant, and verification commands actually run.
+9. Run the review loop on the open PR until clean:
    - Review logic, performance, tests, security, documentation, and code structure.
    - Check race conditions, transient failures, resource leaks, active sleeps, artificial delays,
      flaky tests, and edge cases.
@@ -60,10 +65,6 @@ than a single PR command.
    - If a real issue is outside the current PR scope, link or create a follow-up issue and record
      the relationship before continuing.
    - Stop only after one complete pass finds no new issues to fix or record.
-9. Create or update the PR:
-   - Use `pull-request` for creation or updates.
-   - Include a concise summary, linked issue such as `Closes #123`, explicit exclusions when
-     relevant, and verification commands actually run.
 10. Post the PR review:
     - Use `pr-review` after the review loop is clean.
     - If `pr-review` finds new issues, fix them and return to the review loop before merging.
