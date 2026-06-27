@@ -88,8 +88,8 @@ Before opening or updating a PR, run the repository checks from the workspace ro
 ### 6. Run The Review Loop
 
 Review changed behavior, not only changed lines. Use repository-specific review guidelines when
-they exist. Run these focused review passes repeatedly. Stop only after one complete pass through
-the checklist finds no new issues to fix or record:
+they exist. Treat the following checklist as one outer review loop. Run each numbered pass as a
+separate focused inspection, in order, instead of combining the passes into one broad scan:
 
 1. Check logic, performance, tests, security, documentation, and code structure.
 2. Check transient failures, races, and deadlocks, including concurrent execution when relevant.
@@ -97,11 +97,13 @@ the checklist finds no new issues to fix or record:
 4. Check active sleeps, artificial delays, performance issues, and flaky tests.
 5. Check edge cases that could produce incorrect behavior.
 
-If any review pass finds an issue that belongs to the current PR, fix it directly, commit the fix,
-rerun relevant validation, and restart the review loop from the first pass. If the issue is real but
-outside the PR scope, link an existing suitable issue, or create one if no suitable issue exists.
-Record the relationship on the parent issue when one exists, and then restart the loop. Do not stop
-the loop just because one category was clean; stop only after a full pass finds no new issues.
+For each pass, inspect only that category deeply enough to form a clear verdict. If the pass finds
+an issue that belongs to the current PR, fix it directly, commit the fix, rerun relevant validation,
+and restart the outer review loop from pass 1. If the issue is real but outside the PR scope, link
+an existing suitable issue, or create one if no suitable issue exists. Record the relationship on
+the parent issue when one exists, and then restart the outer loop from pass 1. Advance to the next
+pass only when the current pass has no issues to fix or record. Stop only after passes 1 through 5
+all complete consecutively without new issues.
 
 ### 7. Post The PR Review
 
