@@ -77,8 +77,8 @@ git commit -m "docs: document PR workflow"
 ### 5. Verify Locally
 
 Before opening or updating a PR, run the repository checks from the workspace root or as documented.
-This is the validation step required before the commit, push, and PR creation or update in section
-4.
+This is the local validation step referenced by section 4 before the branch is pushed and the PR is
+created or updated.
 
 - If the repository documents exact validation commands, run those commands.
 - If no local command is documented, inspect package scripts, language tooling, CI, and nearby tests
