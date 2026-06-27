@@ -46,9 +46,12 @@ Use `issue-plan` for the issue before coding.
 - When a behavior must match a declared compatibility target, public contract, or upstream source,
   compare against the relevant compatibility docs, specs, or source before choosing an interface or
   validation rule.
-- Prefer the smallest implementation that makes the issue complete.
-- Avoid adding future abstractions, public APIs, or compatibility shims that this issue does not
-  need.
+- Choose the best complete design for the issue after weighing correctness, long-term
+  maintainability, compatibility, operability, and implementation cost.
+- Account for known future constraints and established extension points when they materially affect
+  the right design now.
+- Avoid speculative abstractions, public APIs, or compatibility shims that do not improve the
+  current design or a known near-term requirement.
 - Do not implement before the plan is approved.
 
 ### 4. Implement The Approved Plan
