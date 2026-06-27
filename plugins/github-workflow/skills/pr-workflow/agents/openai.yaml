@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Workflow"
+  short_description: "Run an end-to-end pull request workflow."
+  default_prompt: "Use $pr-workflow to run the full pull request workflow for this change."
