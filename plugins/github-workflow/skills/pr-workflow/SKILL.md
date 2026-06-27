@@ -25,7 +25,7 @@ PR-sized issue.
 
 ### 2. Select Or Create The PR Issue
 
-Use one PR for one issue.
+Use one PR for one clear issue. Keep the PR small enough to review independently.
 
 - If a suitable issue already exists, use that issue instead of creating a duplicate.
 - If no suitable issue exists, use `issue-create` to create one.
@@ -56,7 +56,7 @@ Use `issue-plan` for the issue before coding.
 Use `issue-implement` after the plan is approved.
 
 - The implementation workflow should create or use a branch for the issue, implement the approved
-  plan, run validation, commit, push, and create or update the PR.
+  plan, run the local verification in section 5, commit, push, and create or update the PR.
 - Use `feat/`, `fix/`, `docs/`, or `chore/` branch prefixes that match the intended Conventional
   Commit type, for example `feat/issue-123-short-name`.
 - Keep edits scoped to the module, package, service, documentation, or behavior boundary owned by
@@ -77,6 +77,8 @@ git commit -m "docs: document PR workflow"
 ### 5. Verify Locally
 
 Before opening or updating a PR, run the repository checks from the workspace root or as documented.
+This is the validation step required before the commit, push, and PR creation or update in section
+4.
 
 - If the repository documents exact validation commands, run those commands.
 - If no local command is documented, inspect package scripts, language tooling, CI, and nearby tests
@@ -102,8 +104,10 @@ an issue that belongs to the current PR, fix it directly, commit the fix, rerun 
 and restart the outer review loop from pass 1. If the issue is real but outside the PR scope, link
 an existing suitable issue, or create one if no suitable issue exists. Record the relationship on
 the parent issue when one exists, and then restart the outer loop from pass 1. Advance to the next
-pass only when the current pass has no issues to fix or record. Stop only after passes 1 through 5
-all complete consecutively without new issues.
+pass only when the current pass has no issues to fix or record. Do not re-record the same
+out-of-scope issue after it has already been linked or created; treat it as handled for this loop
+unless new evidence changes the scope. Stop only after passes 1 through 5 all complete
+consecutively without new issues.
 
 ### 7. Post The PR Review
 
