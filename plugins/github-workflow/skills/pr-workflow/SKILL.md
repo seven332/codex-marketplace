@@ -12,8 +12,7 @@ than a single PR command.
 
 1. Read repository guidance before acting:
    - `AGENTS.md`, `CONTRIBUTING.md`, README files, package scripts, and CI configuration.
-   - `docs/pull-request-workflow.md`, `docs/review-guidelines.md`, testing docs, or release docs
-     when present.
+   - Use `rg --files` to find repository-owned PR workflow, review, testing, or release docs.
    Follow repository-specific docs over this generic workflow. Apply project-specific notes only
    when they match the current repository.
 2. Determine the current phase from the user request and repository state:
