@@ -46,8 +46,8 @@ Use `issue-plan` for the issue before coding.
 - When a behavior must match a declared compatibility target, public contract, or upstream source,
   compare against the relevant compatibility docs, specs, or source before choosing an interface or
   validation rule.
-- Choose the best complete design for the issue after weighing correctness, performance, long-term
-  maintainability, compatibility, operability, and implementation cost.
+- Choose the best complete design for the issue after weighing correctness, performance, and
+  long-term maintainability.
 - Identify performance-sensitive paths, expected scale or concurrency, and how the plan will
   validate or protect performance when they matter.
 - Account for known future constraints and established extension points when they materially affect
