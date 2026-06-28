@@ -25,19 +25,7 @@ PR-sized issue.
 
 ### 2. Select Or Create The PR Issue
 
-Use one PR for one clear issue. Keep the PR small enough to review independently.
-
-- If a suitable issue already exists, use that issue instead of creating a duplicate.
-- If no suitable issue exists, use `issue-create` to create one.
-- If the parent issue is broad, create or choose one sub-issue that can be completed and merged on
-  its own.
-- When using a sub-issue, record the GitHub sub-issue relationship so the roadmap stays traceable:
-  create a new sub-issue with `gh issue create --parent <parent-issue>` or attach an existing issue
-  with `gh issue edit <parent-issue> --add-sub-issue <child-issue>`.
-- Ensure the issue explains the problem this PR solves, what is intentionally out of scope, and
-  which later work remains in the parent issue.
-- Do not split tests or documentation into separate follow-up issues when they are needed to make
-  the code change reviewable. They belong in the same PR.
+Use `issue-select` to select or create one PR-sized issue before planning.
 
 ### 3. Plan The Issue
 
@@ -99,28 +87,7 @@ created or updated.
 
 ### 6. Run The Review Loop
 
-Run the review loop after the branch has been pushed and the PR has been created or updated, so the
-review is against the submitted PR diff. Review changed behavior, not only changed lines. Use
-repository-specific review guidelines when they exist. Treat the following checklist as one full
-review loop. Run each numbered pass as a separate focused inspection, in order, and track whether
-any pass found issues in the current loop:
-
-1. Check logic, performance, tests, security, documentation, and code structure.
-2. Check transient failures, races, and deadlocks, including concurrent execution when relevant.
-3. Check resource leaks, including concurrent execution when relevant.
-4. Check active sleeps, artificial delays, performance issues, and flaky tests.
-5. Check edge cases that could produce incorrect behavior.
-
-For each pass, inspect only that category deeply enough to form a clear verdict. If the pass finds
-an issue that belongs to the current PR, fix it directly, commit the fix, rerun relevant validation,
-mark the current loop as having found issues, and rerun the same pass. If the issue is real but
-outside the PR scope, link an existing suitable issue, or create one if no suitable issue exists.
-Record the relationship on the parent issue when one exists, mark the current loop as having found
-issues, and rerun the same pass. Do not re-record the same out-of-scope issue after it has already
-been linked or created; treat it as handled for this loop unless new evidence changes the scope.
-Advance to the next pass only when the current pass finds no issues to fix or record. After pass 5,
-run another full loop if any pass in the current loop found issues. Stop only after one full loop
-completes passes 1 through 5 without finding any issue to fix or record.
+Use `pr-review-loop` after the branch has been pushed and the PR has been created or updated.
 
 ### 7. Post The PR Review
 
@@ -151,7 +118,8 @@ After merge, continue from the latest default branch before starting the next is
 ## Related Skills
 
 - Use `main` to update the default branch.
-- Use `issue-create`, `issue-plan`, and `issue-implement` for issue-driven work.
+- Use `issue-select`, `issue-create`, `issue-plan`, and `issue-implement` for issue-driven work.
 - Use `pull-request` to create, update, comment on, or merge PRs.
 - Use `pr-check` for CI and merge-state checks.
+- Use `pr-review-loop` for repeated focused PR self-review.
 - Use `pr-review` for the final PR review comment.
