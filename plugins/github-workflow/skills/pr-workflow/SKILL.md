@@ -31,6 +31,9 @@ Use one PR for one clear issue. Keep the PR small enough to review independently
 - If no suitable issue exists, use `issue-create` to create one.
 - If the parent issue is broad, create or choose one sub-issue that can be completed and merged on
   its own.
+- When using a sub-issue, record the GitHub sub-issue relationship so the roadmap stays traceable:
+  create a new sub-issue with `gh issue create --parent <parent-issue>` or attach an existing issue
+  with `gh issue edit <parent-issue> --add-sub-issue <child-issue>`.
 - Ensure the issue explains the problem this PR solves, what is intentionally out of scope, and
   which later work remains in the parent issue.
 - Do not split tests or documentation into separate follow-up issues when they are needed to make
@@ -54,7 +57,9 @@ Use `issue-plan` for the issue before coding.
   the right design now.
 - Avoid speculative abstractions, public APIs, or compatibility shims that do not improve the
   current design or a known near-term requirement.
-- Do not implement before the plan is approved.
+- Treat the user's explicit request to run this end-to-end `pr-workflow` as approval to continue
+  from the completed plan into implementation unless the user asks to wait for separate approval or
+  planning leaves multiple viable approaches with no clear best choice.
 
 ### 4. Implement The Approved Plan
 
@@ -94,9 +99,11 @@ created or updated.
 
 ### 6. Run The Review Loop
 
-Review changed behavior, not only changed lines. Use repository-specific review guidelines when
-they exist. Treat the following checklist as one full review loop. Run each numbered pass as a
-separate focused inspection, in order, and track whether any pass found issues in the current loop:
+Run the review loop after the branch has been pushed and the PR has been created or updated, so the
+review is against the submitted PR diff. Review changed behavior, not only changed lines. Use
+repository-specific review guidelines when they exist. Treat the following checklist as one full
+review loop. Run each numbered pass as a separate focused inspection, in order, and track whether
+any pass found issues in the current loop:
 
 1. Check logic, performance, tests, security, documentation, and code structure.
 2. Check transient failures, races, and deadlocks, including concurrent execution when relevant.
