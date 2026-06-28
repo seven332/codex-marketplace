@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Workflow Loop"
+  short_description: "Run repeated PR workflow cycles."
+  default_prompt: "Use $pr-workflow-loop to keep running full PR workflow cycles."
