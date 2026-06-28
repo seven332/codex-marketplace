@@ -32,12 +32,15 @@ Infer the operation from the user request when it is not explicit.
    `<type>/<short-description>`, for example `feat/add-github-workflow`. If the current branch
    already has an open PR, keep updating that PR branch.
 4. Inspect changes with `git diff`, `git diff --cached`, and `git log --oneline -5`.
-5. Run relevant validation from repository docs.
+5. Run relevant validation from repository docs. If no local command is documented, inspect package
+   scripts, language tooling, CI, and nearby tests to choose the narrowest credible checks.
 6. Stage only intended files and commit with Conventional Commits:
    `<type>[optional scope]: <description>`.
 7. Push the branch.
 8. If the current branch already has an open PR, report that PR URL instead of creating a duplicate.
-   Otherwise create a PR body in a temporary Markdown file, then create the PR. On POSIX shells,
+   Otherwise create a PR body in a temporary Markdown file. Include a summary of the behavior
+   changed, explicit scope exclusions when relevant, a linked issue such as `Closes #123` when
+   applicable, and validation commands actually run. Then create the PR. On POSIX shells,
    `mktemp` is acceptable; in PowerShell, use `New-TemporaryFile` or another OS temp-file API. The
    example below uses POSIX variable syntax; use equivalent syntax in other shells:
    ```bash
