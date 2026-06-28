@@ -23,9 +23,6 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    - `<temp-dir>/deep-dive/<issue-task>/research.md`
    - `<temp-dir>/deep-dive/<issue-task>/innovate.md`
    - `<temp-dir>/deep-dive/<issue-task>/plan.md`
-   - `<temp-dir>/github-workflow/<issue-task>/research.md`
-   - `<temp-dir>/github-workflow/<issue-task>/innovate.md`
-   - `<temp-dir>/github-workflow/<issue-task>/plan.md`
    Derive `<issue-task>` from the most recent valid `issue-plan` comment marker by comment
    chronology for this issue, the conversation context, or the selected artifact directory basename.
    Accept only markers whose slug matches `issue-<issue-number>-[a-z0-9-]+` and whose phase is
@@ -36,11 +33,10 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    comment Plan content as stale and stop unless a human comment after that newer marker, or the
    current conversation context, explicitly approves that Plan for implementation. If no marker or
    explicit directory is available, look for sanitized directories matching `issue-<issue-number>-*`
-   under both planning roots.
-   Prefer the artifact directory identified in conversation or issue comments. If both roots have
-   plausible artifacts and the intended one is unclear, ask which to use. Only use sanitized
-   planning directories under `<temp-dir>/deep-dive/` or `<temp-dir>/github-workflow/`. Do not
-   follow symlinked planning directories or artifact files.
+   under `<temp-dir>/deep-dive/`.
+   Prefer the artifact directory identified in conversation or issue comments. Only use sanitized
+   planning directories under `<temp-dir>/deep-dive/`. Do not follow symlinked planning directories
+   or artifact files.
    If local artifacts are unavailable or incomplete, recover any missing Research Phase, Options
    Phase, and Plan Phase content from comments on the same issue. Prefer
    `codex-marketplace:issue-plan:issue-<issue-number>-<slug>:<phase>` markers with valid sanitized
