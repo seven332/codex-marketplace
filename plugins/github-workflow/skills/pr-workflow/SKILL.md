@@ -106,14 +106,14 @@ separate focused inspection, in order, and track whether any pass found issues i
 
 For each pass, inspect only that category deeply enough to form a clear verdict. If the pass finds
 an issue that belongs to the current PR, fix it directly, commit the fix, rerun relevant validation,
-mark the current loop as having found issues, and then continue with the next pass instead of
-restarting immediately. If the issue is real but outside the PR scope, link an existing suitable
-issue, or create one if no suitable issue exists. Record the relationship on the parent issue when
-one exists, mark the current loop as having found issues, and then continue with the next pass. Do
-not re-record the same out-of-scope issue after it has already been linked or created; treat it as
-handled for this loop unless new evidence changes the scope. After pass 5, run another full loop if
-any pass in the current loop found issues. Stop only after one full loop completes passes 1 through
-5 without finding any issue to fix or record.
+mark the current loop as having found issues, and rerun the same pass. If the issue is real but
+outside the PR scope, link an existing suitable issue, or create one if no suitable issue exists.
+Record the relationship on the parent issue when one exists, mark the current loop as having found
+issues, and rerun the same pass. Do not re-record the same out-of-scope issue after it has already
+been linked or created; treat it as handled for this loop unless new evidence changes the scope.
+Advance to the next pass only when the current pass finds no issues to fix or record. After pass 5,
+run another full loop if any pass in the current loop found issues. Stop only after one full loop
+completes passes 1 through 5 without finding any issue to fix or record.
 
 ### 7. Post The PR Review
 
