@@ -26,14 +26,12 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    Derive `<issue-task>` from the most recent valid `issue-plan` comment marker by comment
    chronology for this issue, the conversation context, or the selected artifact directory basename.
    Accept only markers whose slug matches `issue-<issue-number>-[a-z0-9-]+` and whose phase is
-   `research`, `options`, or `plan`; ignore malformed markers and markers for other issues. Do not
-   fall back to an older Plan Phase marker when a newer Research or Options marker exists, even when
-   it uses the same `<issue-task>` slug. Compare marker chronology within the selected slug: when
-   the newest Research or Options marker is newer than the newest Plan marker, treat local and
-   comment Plan content as stale and stop unless a human comment after that newer marker, or the
-   current conversation context, explicitly approves that Plan for implementation. If no marker or
-   explicit directory is available, look for sanitized directories matching `issue-<issue-number>-*`
-   under `<temp-dir>/deep-dive/`.
+   `research`, `options`, or `plan`; ignore malformed markers and markers for other issues. Compare
+   marker chronology within the selected slug: when the newest Research or Options marker is newer
+   than the newest Plan marker, treat local and comment Plan content as stale and stop unless a
+   human comment after that newer marker, or the current conversation context, explicitly approves
+   that Plan for implementation. If no marker or explicit directory is available, look for sanitized
+   directories matching `issue-<issue-number>-*` under `<temp-dir>/deep-dive/`.
    Prefer the artifact directory identified in conversation or issue comments. Only use sanitized
    planning directories under `<temp-dir>/deep-dive/`. Do not follow symlinked planning directories
    or artifact files.

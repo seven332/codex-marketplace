@@ -27,7 +27,7 @@ Use this skill when the user asks to start planning work for a GitHub issue.
      Accept only markers whose slug matches `issue-<issue-number>-[a-z0-9-]+` and whose phase is
      `research`, `options`, or `plan`; ignore malformed markers and markers for other issues.
    - Check `<temp-dir>/deep-dive/<issue-task>/` for `research.md`, `innovate.md`, and `plan.md`.
-   - When resuming older work, also look for directories matching `issue-<issue-number>-*` under
+   - When resuming planning work, also look for directories matching `issue-<issue-number>-*` under
      `<temp-dir>/deep-dive/`. If multiple plausible directories exist and the intended one is
      unclear, ask which directory to use.
    - Use only sanitized artifact directories under `<temp-dir>/deep-dive/`. Do not follow symlinked

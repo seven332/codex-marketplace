@@ -22,11 +22,8 @@ Use this skill when the user asks to review a GitHub pull request.
    gh pr diff <pr-number> --name-only
    gh pr diff <pr-number>
    ```
-4. If the `code-quality` skill is installed, use it for the detailed review and read any generated
-   `codereviews/YYYYMMDD/` artifacts. If it is unavailable, perform the same review directly:
-   - Read repository guidance such as `AGENTS.md`, `CONTRIBUTING.md`, and testing docs.
-   - Review correctness, security, tests, API contracts, data changes, performance, and maintainability.
-   - Check changed tests for meaningful behavior assertions and project-specific conventions.
+4. Require the `code-quality` skill. Use it for the detailed review and read any generated
+   `codereviews/YYYYMMDD/` artifacts before preparing the PR comment.
 5. Classify findings:
    - `P0`: data loss, security, release blocker, or missing tests for critical feature/fix.
    - `P1`: likely user-visible bug, broken workflow, important missing test, or serious test convention violation.
