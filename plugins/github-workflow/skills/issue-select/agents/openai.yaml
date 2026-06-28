@@ -1,0 +1,4 @@
+interface:
+  display_name: "Issue Select"
+  short_description: "Select one PR-sized GitHub issue."
+  default_prompt: "Use $issue-select to choose one PR-sized GitHub issue for this work."

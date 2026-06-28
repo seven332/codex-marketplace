@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Review Loop"
+  short_description: "Run repeated focused PR self-reviews."
+  default_prompt: "Use $pr-review-loop to self-review this pull request until the loop is clean."
