@@ -57,8 +57,9 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
 8. Create or switch to a feature branch, for example `feat/issue-<number>-short-name`.
 9. Implement the approved plan in small steps. Do not silently diverge from the approved direction.
 10. Add or update tests for behavior changes.
-11. Run documented validation commands.
-12. Commit, push, and create a PR with the `pull-request` create workflow. Include the issue link
+11. Update documentation for behavior changes when relevant.
+12. Run documented validation commands.
+13. Commit, push, and create a PR with the `pull-request` create workflow. Include the issue link
     and validation commands in the PR body.
 
 If implementation becomes blocked, post a concise issue comment explaining the blocker, create the

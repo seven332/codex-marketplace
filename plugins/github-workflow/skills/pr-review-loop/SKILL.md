@@ -23,8 +23,9 @@ any pass found issues in the current loop:
 5. Check edge cases that could produce incorrect behavior.
 
 For each pass, inspect only that category deeply enough to form a clear verdict. If the pass finds
-an issue that belongs to the current PR, fix it directly, commit the fix, rerun relevant validation,
-mark the current loop as having found issues, and rerun the same pass. If the issue is real but
+an issue that belongs to the current PR, fix it directly, commit the fix without amending existing
+commits, rerun relevant validation, mark the current loop as having found issues, and rerun the
+same pass. If the issue is real but
 outside the PR scope, link an existing suitable issue, or create one if no suitable issue exists.
 Record the relationship on the parent issue when one exists, mark the current loop as having found
 issues, and rerun the same pass. Do not re-record the same out-of-scope issue after it has already
