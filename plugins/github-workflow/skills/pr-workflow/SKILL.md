@@ -73,3 +73,4 @@ After merge, continue from the latest default branch before starting the next is
 - Use `pr-check` for CI and merge-state checks.
 - Use `pr-review-loop` for repeated focused PR self-review.
 - Use `pr-review` for the final PR review comment.
+- Use `pr-workflow-loop` only when the user asks to run multiple `pr-workflow` cycles.
