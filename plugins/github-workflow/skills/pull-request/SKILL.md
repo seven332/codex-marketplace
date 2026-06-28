@@ -25,8 +25,9 @@ Infer the operation from the user request when it is not explicit.
    - `gh pr view --json number,state,mergedAt,url` when on an existing PR branch.
 2. Detect the default branch:
    ```bash
-   DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' 2>/dev/null || echo main)
+   DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
    ```
+   Stop if the command fails or returns an empty value; do not guess a branch name.
 3. If on the default branch or a merged PR branch, create a new branch named
    `<type>/<short-description>`, for example `feat/add-github-workflow`. If the current branch
    already has an open PR, keep updating that PR branch.

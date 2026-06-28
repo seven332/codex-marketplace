@@ -14,8 +14,9 @@ Use this skill when the user asks to update the current feature branch on top of
    shelve, or discard them before continuing.
 3. Detect the default branch:
    ```bash
-   DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' 2>/dev/null || echo main)
+   DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
    ```
+   Stop if the command fails or returns an empty value; do not guess a branch name.
 4. Fetch latest default branch: `git fetch origin "$DEFAULT_BRANCH"`.
 5. Rebase: `git rebase "origin/$DEFAULT_BRANCH"`.
 6. If conflicts occur:
