@@ -23,29 +23,22 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    - `<temp-dir>/deep-dive/<issue-task>/research.md`
    - `<temp-dir>/deep-dive/<issue-task>/innovate.md`
    - `<temp-dir>/deep-dive/<issue-task>/plan.md`
-   - `<temp-dir>/github-workflow/<issue-task>/research.md`
-   - `<temp-dir>/github-workflow/<issue-task>/innovate.md`
-   - `<temp-dir>/github-workflow/<issue-task>/plan.md`
    Derive `<issue-task>` from the most recent valid `issue-plan` comment marker by comment
    chronology for this issue, the conversation context, or the selected artifact directory basename.
    Accept only markers whose slug matches `issue-<issue-number>-[a-z0-9-]+` and whose phase is
-   `research`, `options`, or `plan`; ignore malformed markers and markers for other issues. Do not
-   fall back to an older Plan Phase marker when a newer Research or Options marker exists, even when
-   it uses the same `<issue-task>` slug. Compare marker chronology within the selected slug: when
-   the newest Research or Options marker is newer than the newest Plan marker, treat local and
-   comment Plan content as stale and stop unless a human comment after that newer marker, or the
-   current conversation context, explicitly approves that Plan for implementation. If no marker or
-   explicit directory is available, look for sanitized directories matching `issue-<issue-number>-*`
-   under both planning roots.
-   Prefer the artifact directory identified in conversation or issue comments. If both roots have
-   plausible artifacts and the intended one is unclear, ask which to use. Only use sanitized
-   planning directories under `<temp-dir>/deep-dive/` or `<temp-dir>/github-workflow/`. Do not
-   follow symlinked planning directories or artifact files.
+   `research`, `options`, or `plan`; ignore malformed markers and markers for other issues. Compare
+   marker chronology within the selected slug: when the newest Research or Options marker is newer
+   than the newest Plan marker, treat local and comment Plan content as stale and stop unless a
+   human comment after that newer marker, or the current conversation context, explicitly approves
+   that Plan for implementation. If no marker or explicit directory is available, look for sanitized
+   directories matching `issue-<issue-number>-*` under `<temp-dir>/deep-dive/`.
+   Prefer the artifact directory identified in conversation or issue comments. Only use sanitized
+   planning directories under `<temp-dir>/deep-dive/`. Do not follow symlinked planning directories
+   or artifact files.
    If local artifacts are unavailable or incomplete, recover any missing Research Phase, Options
-   Phase, and Plan Phase content from comments on the same issue. Prefer
+   Phase, and Plan Phase content from comments on the same issue only when those comments contain
    `codex-marketplace:issue-plan:issue-<issue-number>-<slug>:<phase>` markers with valid sanitized
-   slugs and phase names, and fall back to the phase headings only for older comments without
-   markers. Treat `## Innovation Phase` as a legacy heading for the options phase.
+   slugs and phase names.
    Treat `plan.md`, Plan Phase comments, and recovered plan content as plan content only, not
    approval. The plan is approved only when the current user request, conversation context, issue
    body, or a human issue comment explicitly says to proceed with that plan.
@@ -65,10 +58,8 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
 9. Implement the approved plan in small steps. Do not silently diverge from the approved direction.
 10. Add or update tests for behavior changes.
 11. Run documented validation commands.
-12. Commit, push, and create a PR. If the `pull-request` skill is installed, use its `create`
-    workflow for these steps instead of running a separate PR flow. Otherwise commit with
-    Conventional Commits, push the branch, and create a PR. Include the issue link and validation
-    commands in the PR body.
+12. Commit, push, and create a PR with the `pull-request` create workflow. Include the issue link
+    and validation commands in the PR body.
 
 If implementation becomes blocked, post a concise issue comment explaining the blocker, create the
 `pending` label if needed, add it, and stop:
