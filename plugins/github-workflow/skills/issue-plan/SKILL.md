@@ -65,12 +65,10 @@ Use this skill when the user asks to start planning work for a GitHub issue.
 7. Post at most one comment per completed phase for this run in this order: Research, Options, Plan.
    Only post a phase when its artifact exists. If planning stops after Options while waiting for a
    human decision, skip the Plan Phase comment. Before posting a reused phase, inspect existing issue
-   comments and skip it if the matching marker already exists. For reused phases only, if older
-   comments do not have markers, treat a matching phase heading on the same issue as already posted.
-   For the options phase, accept either `## Options Phase` or legacy `## Innovation Phase` headings.
-   If a stale phase was regenerated, post the updated phase even when a prior matching marker or
-   legacy heading exists, using the same marker so the latest matching marker by comment chronology
-   is authoritative. Use a stable marker plus a visible heading in each generated comment body:
+   comments and skip it only if the matching marker already exists. If a stale phase was regenerated,
+   post the updated phase even when a prior matching marker exists, using the same marker so the
+   latest matching marker by comment chronology is authoritative. Use a stable marker plus a visible
+   heading in each generated comment body:
    ```markdown
    <!-- codex-marketplace:issue-plan:<issue-task>:research -->
    ## Research Phase

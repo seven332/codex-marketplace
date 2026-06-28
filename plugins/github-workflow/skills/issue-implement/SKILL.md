@@ -38,10 +38,9 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    planning directories under `<temp-dir>/deep-dive/`. Do not follow symlinked planning directories
    or artifact files.
    If local artifacts are unavailable or incomplete, recover any missing Research Phase, Options
-   Phase, and Plan Phase content from comments on the same issue. Prefer
+   Phase, and Plan Phase content from comments on the same issue only when those comments contain
    `codex-marketplace:issue-plan:issue-<issue-number>-<slug>:<phase>` markers with valid sanitized
-   slugs and phase names, and fall back to the phase headings only for older comments without
-   markers. Treat `## Innovation Phase` as a legacy heading for the options phase.
+   slugs and phase names.
    Treat `plan.md`, Plan Phase comments, and recovered plan content as plan content only, not
    approval. The plan is approved only when the current user request, conversation context, issue
    body, or a human issue comment explicitly says to proceed with that plan.
