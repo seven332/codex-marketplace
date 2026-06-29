@@ -41,34 +41,28 @@ Use this skill when the user asks to start planning work for a GitHub issue.
      posted materially change its inputs. A human comment that only selects one of the posted
      options does not make Research or Options stale; use that selection as Plan input.
    - Do not split one run across artifact roots. Reuse existing non-stale phase artifacts from the
-     selected directory and run only missing or stale phases, starting from the earliest affected
-     phase. Still post any phase comment that is missing or regenerated according to step 7.
+     selected directory, rerun from the earliest missing or stale phase, and publish each completed
+     phase through step 7.
 6. Require `deep-dive:deep-research`, `deep-dive:deep-innovate`, and `deep-dive:deep-plan`. If any
    of those prefixed skills is unavailable, stop and ask the user to install or enable the
    `deep-dive` plugin. Use the deep-dive skills in sequence for the planning phases:
    - Pass the issue title, body, comments, labels, and URL as the task context.
    - Pass the selected `<issue-task>` slug and artifact directory so all phases write to the same
      `<temp-dir>/deep-dive/<issue-task>/` directory.
-   - Use `<temp-dir>/deep-dive/<issue-task>/research.md`,
-     `<temp-dir>/deep-dive/<issue-task>/innovate.md`, and
-     `<temp-dir>/deep-dive/<issue-task>/plan.md` as the planning artifacts.
-   - After `deep-dive:deep-research`, publish the research artifact through step 7 as a Research
-     Phase issue comment.
-   - After `deep-dive:deep-innovate`, publish the innovation artifact through step 7 as an Options
-     Phase issue comment.
-   - After `deep-dive:deep-innovate`, select an approach only when the issue context, research, and
-     option analysis make the choice clear. If a human decision is needed, add `pending` using the
-     label command in step 8, and stop instead of forcing a plan.
-   - After `deep-dive:deep-plan`, publish the plan artifact through step 7 as a Plan Phase issue
-     comment.
+   - Complete Research by running `deep-dive:deep-research` or reusing non-stale `research.md`,
+     then publish it through step 7 before continuing.
+   - Complete Options by running `deep-dive:deep-innovate` or reusing non-stale `innovate.md`, then
+     publish it through step 7 before continuing.
+   - Select an approach only when the issue context, research, and option analysis make the choice
+     clear. If a human decision is needed, add `pending` using the label command in step 8, and stop
+     instead of forcing a plan.
+   - Complete Plan by running `deep-dive:deep-plan` or reusing non-stale `plan.md`, then publish it
+     through step 7.
    - This skill owns the phase transitions, issue comments, and approval label. Do not implement.
-7. Post at most one comment per completed phase for this run in this order: Research, Options, Plan.
-   Only post a phase when its artifact exists. If planning stops after Options while waiting for a
-   human decision, skip the Plan Phase comment. Before posting a reused phase, inspect existing issue
-   comments and skip it only if the matching marker already exists. If a stale phase was regenerated,
-   post the updated phase even when a prior matching marker exists, using the same marker so the
-   latest matching marker by comment chronology is authoritative. Use a stable marker plus a visible
-   heading in each generated comment body:
+7. To publish a phase comment, inspect existing issue comments first. Skip only when reusing a
+   non-stale artifact whose matching marker already exists and no earlier phase comment was posted
+   in this run. Never post phase comments in parallel; wait for each `gh issue comment` to finish
+   before continuing. Use a stable marker plus a visible heading in each generated comment body:
    ```markdown
    <!-- codex-marketplace:issue-plan:<issue-task>:research -->
    ## Research Phase
