@@ -1,20 +1,20 @@
 ---
-name: pr-review-loop
-description: Run the pre-merge PR self-review loop, fixing in-scope issues, recording out-of-scope issues, and repeating focused review passes until clean.
+name: pr-self-review
+description: Self-review a submitted pull request before final review or merge, fixing in-scope issues, recording out-of-scope issues, and repeating focused passes until clean.
 ---
 
-# PR Review Loop
+# PR Self Review
 
-Use this skill when the user asks to run the PR review loop, self-review a submitted pull request,
-or repeatedly inspect and fix PR issues before final PR review or merge.
+Use this skill when the user asks to self-review a submitted pull request or repeatedly inspect and
+fix PR issues before final PR review or merge.
 
 ## Workflow
 
-Run the review loop after the branch has been pushed and the PR has been created or updated, so the
+Run the self-review after the branch has been pushed and the PR has been created or updated, so the
 review is against the submitted PR diff. Review changed behavior, not only changed lines. Use
 repository-specific review guidelines when they exist. Treat the following checklist as one full
-review loop. Run each numbered pass as a separate focused inspection, in order, and track whether
-any pass found issues in the current loop:
+self-review loop. Run each numbered pass as a separate focused inspection, in order, and track
+whether any pass found issues in the current loop:
 
 1. Check logic, performance, tests, security, documentation, and code structure.
 2. Check transient failures, races, and deadlocks, including concurrent execution when relevant.
