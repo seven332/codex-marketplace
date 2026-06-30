@@ -1,6 +1,6 @@
 ---
 name: pr-workflow
-description: Run an end-to-end GitHub pull request workflow from an up-to-date default branch through issue selection, planning, implementation, commit, PR creation, review loops, PR review, and merge readiness checks.
+description: Run an end-to-end GitHub pull request workflow from an up-to-date default branch through issue selection, planning, implementation, commit, PR creation, PR self-review, final PR review, and merge readiness checks.
 ---
 
 # PR Workflow
@@ -49,18 +49,18 @@ needs to change.
 Use the validation commands required by the repository and by the implementation and PR creation
 skills before opening or updating the PR.
 
-### 6. Run The Review Loop
+### 6. Self-Review The PR
 
-Use `pr-review-loop` after the branch has been pushed and the PR has been created or updated.
+Use `pr-self-review` after the branch has been pushed and the PR has been created or updated.
 
 ### 7. Post The PR Review
 
-After the review loop has no new findings, run `pr-review`. If it finds new issues, fix them and
-return to the review loop before merging.
+After PR self-review has no new findings, run `pr-review`. If it finds new issues, fix them and
+return to `pr-self-review` before merging.
 
 ### 8. Merge
 
-Use `pr-check` and `pull-request` merge only when the review loop is clean, `pr-review` has no
+Use `pr-check` and `pull-request` merge only when `pr-self-review` is clean, `pr-review` has no
 blocking findings, CI is green, and GitHub reports a clean merge state.
 
 After merge, continue from the latest default branch before starting the next issue.
@@ -71,6 +71,6 @@ After merge, continue from the latest default branch before starting the next is
 - Use `issue-select`, `issue-create`, `issue-plan`, and `issue-implement` for issue-driven work.
 - Use `pull-request` to create, update, comment on, or merge PRs.
 - Use `pr-check` for CI and merge-state checks.
-- Use `pr-review-loop` for repeated focused PR self-review.
+- Use `pr-self-review` for repeated focused PR self-review.
 - Use `pr-review` for the final PR review comment.
 - Use `pr-workflow-loop` only when the user asks to run multiple `pr-workflow` cycles.
