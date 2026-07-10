@@ -43,21 +43,22 @@ Use this skill when the user asks to start planning work for a GitHub issue.
    - Do not split one run across artifact roots. Reuse existing non-stale phase artifacts from the
      selected directory, rerun from the earliest missing or stale phase, and publish each completed
      phase through step 7.
-6. Require `deep-dive:deep-research`, `deep-dive:deep-innovate`, and `deep-dive:deep-plan`. If any
+6. Require `research-to-plan:deep-research`, `research-to-plan:deep-innovate`, and
+   `research-to-plan:deep-plan`. If any
    of those prefixed skills is unavailable, stop and ask the user to install or enable the
-   `deep-dive` plugin. Use the deep-dive skills in sequence for the planning phases:
+   `research-to-plan` plugin. Use the Research to Plan skills in sequence for the planning phases:
    - Pass the issue title, body, comments, labels, and URL as the task context.
    - Pass the selected `<issue-task>` slug and artifact directory so all phases write to the same
      `<temp-dir>/deep-dive/<issue-task>/` directory.
-   - Complete Research by running `deep-dive:deep-research` or reusing non-stale `research.md`,
-     then publish it through step 7 before continuing.
-   - Complete Options by running `deep-dive:deep-innovate` or reusing non-stale `innovate.md`, then
-     publish it through step 7 before continuing.
+   - Complete Research by running `research-to-plan:deep-research` or reusing non-stale
+     `research.md`, then publish it through step 7 before continuing.
+   - Complete Options by running `research-to-plan:deep-innovate` or reusing non-stale
+     `innovate.md`, then publish it through step 7 before continuing.
    - Select an approach only when the issue context, research, and option analysis make the choice
      clear. If a human decision is needed, add `pending` using the label command in step 8, and stop
      instead of forcing a plan.
-   - Complete Plan by running `deep-dive:deep-plan` or reusing non-stale `plan.md`, then publish it
-     through step 7.
+   - Complete Plan by running `research-to-plan:deep-plan` or reusing non-stale `plan.md`, then
+     publish it through step 7.
    - This skill owns the phase transitions, issue comments, and approval label. Do not implement.
 7. To publish a phase comment, inspect existing issue comments first. Skip only when reusing a
    non-stale artifact whose matching marker already exists and no earlier phase comment was posted

@@ -1,6 +1,6 @@
 ---
 name: deep-research
-description: Research a complex software task before solution discussion by gathering facts, mapping code, and writing deep-dive research notes.
+description: Research a complex software task before solution discussion by gathering facts, mapping code, and writing structured research notes.
 ---
 
 # Deep Research

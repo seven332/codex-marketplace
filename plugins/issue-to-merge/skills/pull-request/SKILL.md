@@ -29,7 +29,7 @@ Infer the operation from the user request when it is not explicit.
    ```
    Stop if the command fails or returns an empty value; do not guess a branch name.
 3. If on the default branch or a merged PR branch, create a new branch named
-   `<type>/<short-description>`, for example `feat/add-github-workflow`. If the current branch
+   `<type>/<short-description>`, for example `feat/add-pr-workflow`. If the current branch
    already has an open PR, keep updating that PR branch.
 4. Inspect changes with `git diff`, `git diff --cached`, and `git log --oneline -5`.
 5. Run relevant validation from repository docs. If no local command is documented, inspect package

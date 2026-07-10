@@ -1,6 +1,6 @@
 ---
 name: deep-innovate
-description: Explore multiple solution approaches and trade-offs from existing deep-dive research without committing to an implementation plan.
+description: Explore multiple solution approaches and trade-offs from existing research notes without committing to an implementation plan.
 ---
 
 # Deep Innovate
