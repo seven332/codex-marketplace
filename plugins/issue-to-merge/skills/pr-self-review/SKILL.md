@@ -16,11 +16,18 @@ repository-specific review guidelines when they exist. Treat the following check
 self-review loop. Run each numbered pass as a separate focused inspection, in order, and track
 whether any pass found issues in the current loop:
 
-1. Check logic, performance, tests, security, documentation, and code structure.
-2. Check transient failures, races, and deadlocks, including concurrent execution when relevant.
-3. Check resource leaks, including concurrent execution when relevant.
-4. Check active sleeps, artificial delays, performance issues, and flaky tests.
-5. Check edge cases that could produce incorrect behavior.
+1. Check scope and approach fit: whether the PR follows the PR scope and any approved plan, and
+   uses the best clear in-scope approach, not just the smallest patch.
+2. Check correctness and edge cases: logic, data flow, boundary inputs, error paths,
+   compatibility, and user-visible behavior.
+3. Check tests and documentation: meaningful coverage, validation commands, docs, and missing
+   regression tests.
+4. Check concurrency, timing, and performance: transient failures, races, deadlocks, active sleeps,
+   artificial delays, flaky tests, and avoidable performance regressions.
+5. Check resource, IO, and security risks: leaks, cleanup, file/network/database side effects, path
+   safety, auth, secrets, and sensitive output.
+6. Check maintainability and structure: unclear shortcuts, over-fitted special cases, duplication,
+   unnecessary abstractions, and code structure debt.
 
 For each pass, inspect only that category deeply enough to form a clear verdict. If the pass finds
 an issue that belongs to the current PR, fix it directly, commit the fix without amending existing
@@ -30,9 +37,9 @@ outside the PR scope, link an existing suitable issue, or create one if no suita
 Record the relationship on the parent issue when one exists, mark the current loop as having found
 issues, and rerun the same pass. Do not re-record the same out-of-scope issue after it has already
 been linked or created; treat it as handled for this loop unless new evidence changes the scope.
-Advance to the next pass only when the current pass finds no issues to fix or record. After pass 5,
+Advance to the next pass only when the current pass finds no issues to fix or record. After pass 6,
 run another full loop if any pass in the current loop found issues. Stop only after one full loop
-completes passes 1 through 5 without finding any issue to fix or record.
+completes passes 1 through 6 without finding any issue to fix or record.
 
 ## Related Skills
 
