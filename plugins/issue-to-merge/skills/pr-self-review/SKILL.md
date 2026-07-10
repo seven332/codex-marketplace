@@ -16,8 +16,8 @@ repository-specific review guidelines when they exist. Treat the following check
 self-review loop. Run each numbered pass as a separate focused inspection, in order, and track
 whether any pass found issues in the current loop:
 
-1. Check scope and approach fit: whether the PR follows the approved plan and uses the best clear
-   in-scope approach, not just the smallest patch.
+1. Check scope and approach fit: whether the PR follows the PR scope and any approved plan, and
+   uses the best clear in-scope approach, not just the smallest patch.
 2. Check correctness and edge cases: logic, data flow, boundary inputs, error paths,
    compatibility, and user-visible behavior.
 3. Check tests and documentation: meaningful coverage, validation commands, docs, and missing
