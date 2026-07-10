@@ -17,10 +17,10 @@
       "category": "Developer Tools"
     },
     {
-      "name": "github-workflow",
+      "name": "issue-to-merge",
       "source": {
         "source": "local",
-        "path": "./plugins/github-workflow"
+        "path": "./plugins/issue-to-merge"
       },
       "policy": {
         "installation": "AVAILABLE",
@@ -29,10 +29,10 @@
       "category": "Developer Tools"
     },
     {
-      "name": "deep-dive",
+      "name": "research-to-plan",
       "source": {
         "source": "local",
-        "path": "./plugins/deep-dive"
+        "path": "./plugins/research-to-plan"
       },
       "policy": {
         "installation": "AVAILABLE",

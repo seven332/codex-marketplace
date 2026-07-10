@@ -11,10 +11,10 @@ Repo-local marketplace scaffold for Codex plugins.
 │   ├── code-quality/
 │   │   ├── .codex-plugin/plugin.json
 │   │   └── skills/code-quality/SKILL.md
-│   ├── deep-dive/
+│   ├── issue-to-merge/
 │   │   ├── .codex-plugin/plugin.json
 │   │   └── skills/
-│   └── github-workflow/
+│   └── research-to-plan/
 │       ├── .codex-plugin/plugin.json
 │       └── skills/
 ├── schemas/
@@ -35,7 +35,7 @@ codex plugin marketplace list
 ```
 
 Then restart Codex, open the plugin directory, select `Codex Marketplace`, and install
-`Code Quality`, `Deep Dive`, or `GitHub Workflow`.
+`Code Quality`, `Issue to Merge`, or `Research to Plan`.
 
 For development, edit files under `plugins/<plugin-name>/`, then reinstall the plugin or refresh
 the marketplace from Codex.
@@ -69,7 +69,7 @@ same validation in GitHub Actions.
 
 - `code-quality` - General-purpose review and cleanup workflows that start from each repository's
   own quality and testing documentation.
-- `deep-dive` - Structured research, option exploration, and planning phases for complex software
+- `research-to-plan` - Structured research, option exploration, and planning phases for complex software
   tasks before implementation.
-- `github-workflow` - GitHub issue and pull request workflows for planning, implementation,
+- `issue-to-merge` - GitHub issue and pull request workflows for planning, implementation,
   review, CI checks, rebasing, and issue maintenance.

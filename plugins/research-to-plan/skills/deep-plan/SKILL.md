@@ -1,6 +1,6 @@
 ---
 name: deep-plan
-description: Create a concrete implementation plan from deep-dive research and option analysis without editing code or running implementation steps.
+description: Create a concrete implementation plan from research notes and option analysis without editing code or running implementation steps.
 ---
 
 # Deep Plan
