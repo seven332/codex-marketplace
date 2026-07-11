@@ -53,8 +53,10 @@ scope and solution as hypotheses, not constraints.
      reversibility and rollback, security and privacy, data integrity, concurrency and timing,
      performance and resources, operability, testability, and long-term maintenance where relevant.
 5. Select exactly one outcome:
-   - `proceed` — the current direction remains the best supported choice.
-   - `revise` — change the problem statement, scope, or proposed solution.
+   - `proceed` — the framing is ready for planning, or the challenged plan remains the best
+     supported choice at the `plan` checkpoint.
+   - `revise` — change the problem statement or scope at `framing`, or the proposed solution at
+     `plan`.
    - `defer` — the value, evidence, or timing does not justify implementation now.
    - `recommend-close` — the problem no longer exists or implementation is unnecessary.
    - `pending` — a material product or engineering trade-off requires a human decision.
@@ -71,11 +73,13 @@ scope and solution as hypotheses, not constraints.
    - Acceptance criteria
    - Delivery notes or open questions
 
-   When the best solution requires more than one reviewable PR, treat the current issue as the
-   delivery parent. Record the full direction, parent-level acceptance criteria, coherent delivery
-   slices, dependency order, and integration or rollout gates. Do not compress the design into a
-   weaker solution or turn the parent into an unreviewable implementation change. Use
-   `issue-select` afterward to materialize justified slices and select the next unblocked child.
+   At the `framing` checkpoint, record evidence that the issue may require multiple PRs, but defer
+   solution boundaries and delivery slices to planning. At the `plan` checkpoint, when the best
+   solution requires more than one reviewable PR, treat the current issue as the delivery parent.
+   Record the full direction, parent-level acceptance criteria, coherent delivery slices,
+   dependency order, and integration or rollout gates. Do not compress the design into a weaker
+   solution or turn the parent into an unreviewable implementation change. Use `issue-select`
+   afterward to materialize justified slices and select the next unblocked child.
 7. Review the draft against the fetched issue before publishing it. Verify that it:
    - explains why the outcome follows from evidence;
    - does not silently discard requirements or unresolved objections;
