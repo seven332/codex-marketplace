@@ -53,19 +53,26 @@ merge the PR in this skill.
    - For a new PR, write the body to an operating-system temporary file. Include the behavior
      changed, explicit exclusions, and the validation commands actually run. For issue-backed
      work, link the exact implementation issue supplied by `issue-implement`. Use
-     `Closes #<implementation-issue>` when merging this PR is intended to complete that issue;
-     otherwise use a non-closing `Relates to #<implementation-issue>` link. When the implementation
-     issue has a delivery parent, link the parent as context without a closing keyword. Never close
-     an umbrella parent from one child PR. Use the repository's PR title convention, or a concise
-     Conventional Commit-style title when none exists. Then create it:
+     `Closes #<implementation-issue>` only when this PR completes that issue and GitHub will apply
+     the closing keyword for the target branch, normally the repository default branch. Use a
+     non-closing `Relates to #<implementation-issue>` link for release, backport, or other target
+     branches where closing semantics do not apply. When the implementation issue has a delivery
+     parent, link the parent as context without a closing keyword. Never close an umbrella parent
+     from one child PR. Use the repository's PR title convention, or a concise Conventional
+     Commit-style title when none exists. Then create it:
      ```bash
      gh pr create --base "$TARGET_BRANCH" --head "$BRANCH" --title "<title>" --body-file "$PR_BODY_FILE"
      ```
    Never create a duplicate PR for the same branch.
-8. Fetch and return the PR number, URL, current `headRefOid`, linked implementation issue, and
-   delivery parent when present. State whether the operation created a PR, updated one with a new
-   commit, or only refreshed metadata. Before handoff, verify that an issue-backed PR does not
-   accidentally close its parent or an unrelated sibling.
+8. Fetch the submitted PR state:
+   ```bash
+   gh pr view --json number,url,headRefOid,baseRefName,headRefName,closingIssuesReferences
+   ```
+   Return the PR number, URL, current `headRefOid`, linked implementation issue, and delivery parent
+   when present. State whether the operation created a PR, updated one with a new commit, or only
+   refreshed metadata. Before handoff, verify that an issue-backed PR does not accidentally close
+   its parent or an unrelated sibling, and that the expected implementation issue appears when
+   closing semantics should apply.
 
 ## Related Skills
 
