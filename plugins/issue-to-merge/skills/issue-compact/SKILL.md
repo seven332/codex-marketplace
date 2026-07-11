@@ -13,7 +13,7 @@ Use this skill when the user asks to compact or consolidate a GitHub issue discu
 2. Fetch issue content:
    ```bash
    gh issue view <issue-number> \
-     --json number,title,body,comments,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
+     --json number,title,body,comments,updatedAt,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
    ```
 3. Analyze the issue body, comments, and relevant conversation context.
 4. Draft a new issue body that preserves:
@@ -37,7 +37,10 @@ Use this skill when the user asks to compact or consolidate a GitHub issue discu
 7. Show the draft path and a concise summary of what will be preserved. Ask for explicit user
    confirmation before updating the issue body unless the user already explicitly approved the
    compacted body update.
-8. Update the issue body only after confirmation:
+8. After confirmation and immediately before writing, re-fetch the fields from step 2. If the
+   title, body, comments, relationships, or `updatedAt` changed materially since the draft was
+   prepared, regenerate the compacted body and obtain confirmation again; never overwrite newer
+   issue state with the stale draft. Otherwise update the issue body:
    ```bash
    gh issue edit <issue-number> --body-file "$ISSUE_COMPACT_FILE"
    ```

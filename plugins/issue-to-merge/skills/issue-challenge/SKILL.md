@@ -95,7 +95,11 @@ scope and solution as hypotheses, not constraints.
    ISSUE_CHALLENGE_BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/issue-challenge-body.XXXXXX")
    ISSUE_CHALLENGE_COMMENT_FILE=$(mktemp "${TMPDIR:-/tmp}/issue-challenge-comment.XXXXXX")
    ```
-   Write the revised body to the body file and update the issue when it materially changes:
+   Write the revised body to the body file. Immediately before updating GitHub, re-fetch the issue
+   fields from step 2 and compare `updatedAt`, title, body, comments, labels, and relationships with
+   the analyzed snapshot. If a concurrent material change exists, discard the stale draft and
+   repeat analysis from step 3; never overwrite the newer state. Update the issue only when the
+   refreshed comparison still supports the draft and it materially changes the body:
    ```bash
    gh issue edit <issue-number> --body-file "$ISSUE_CHALLENGE_BODY_FILE"
    ```
