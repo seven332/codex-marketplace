@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Merge"
+  short_description: "Safely merge an explicitly approved pull request."
+  default_prompt: "Use $pr-merge to verify and merge this approved pull request."

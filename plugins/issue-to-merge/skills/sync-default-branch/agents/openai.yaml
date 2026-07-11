@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sync Default Branch"
+  short_description: "Switch to and update the repository default branch."
+  default_prompt: "Use $sync-default-branch to switch to and update the repository default branch."

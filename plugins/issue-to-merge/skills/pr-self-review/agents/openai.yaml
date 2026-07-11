@@ -1,4 +1,4 @@
 interface:
   display_name: "PR Self Review"
-  short_description: "Run repeated focused PR self-reviews."
-  default_prompt: "Use $pr-self-review to self-review this pull request until no pass finds issues."
+  short_description: "Self-review the current PR head until clean."
+  default_prompt: "Use $pr-self-review to review and fix this pull request's current head until every pass is clean."

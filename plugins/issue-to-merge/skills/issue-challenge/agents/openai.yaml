@@ -1,0 +1,4 @@
+interface:
+  display_name: "Issue Challenge"
+  short_description: "Challenge issue framing or proposed solutions."
+  default_prompt: "Use $issue-challenge to challenge this issue's framing or current plan, then update it."

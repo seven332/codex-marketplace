@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Address Review"
+  short_description: "Address human and automated PR review feedback."
+  default_prompt: "Use $pr-address-review to address actionable review feedback on this pull request."
