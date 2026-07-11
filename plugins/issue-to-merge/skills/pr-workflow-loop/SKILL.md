@@ -25,8 +25,9 @@ delivery parent unless the request explicitly includes closing completed issues.
    ```
    Inspect current Plan and Challenge markers, child states, native `blockedBy` relationships,
    linked PRs, and previously recorded progress. If the parent lacks a valid challenged delivery
-   direction, run the parent planning and challenge stages before selecting a child. Never recreate
-   an existing slice or restart a merged iteration merely because local context was lost.
+   direction, run its framing checkpoint, planning, and Plan checkpoint before selecting a child.
+   Never recreate an existing slice or restart a merged iteration merely because local context was
+   lost.
 3. Select the next iteration:
    - In parent-bound mode, use `issue-select` to choose an open, unblocked child whose prerequisites
      are complete. Materialize another supported slice only when no existing child represents it.

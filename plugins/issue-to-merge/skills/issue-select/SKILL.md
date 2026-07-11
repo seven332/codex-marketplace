@@ -13,16 +13,17 @@ description: Select one PR-sized GitHub issue or decompose a broad parent into c
 2. Inspect each candidate before selecting or splitting it:
    ```bash
    gh issue view <issue-number> \
-     --json number,title,body,state,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
+     --json number,title,body,state,updatedAt,parent,subIssues,subIssuesSummary,blockedBy,blocking,closedByPullRequestsReferences,url
    ```
    Reuse an existing suitable issue or sub-issue instead of creating a duplicate. Exclude closed,
    already implemented, blocked, or overlapping candidates unless the workflow is explicitly
    resuming them.
-3. Classify a broad issue as a planning parent rather than an implementation issue. If its overall
-   direction and delivery boundaries have not been supported by a current Plan and `proceed`
-   Challenge Review, return it to `issue-plan` and `issue-challenge` before inventing child issues.
-   Selecting a planning parent is a valid intermediate result, but never hand it directly to
-   `issue-implement`.
+3. Classify a broad issue as a planning parent rather than an implementation issue. First run
+   `issue-challenge` at the `framing` checkpoint so necessity, problem definition, and scope are
+   correct before planning. If its overall direction and delivery boundaries have not then been
+   supported by a current Plan and `plan:proceed` Challenge Review, return it to `issue-plan` and
+   the `plan` checkpoint before inventing child issues. Selecting a planning parent is a valid
+   intermediate result, but never hand it directly to `issue-implement`.
 4. Once the parent has a challenged delivery direction, map coherent slices and their dependency
    order. Materialize every slice whose problem, boundary, acceptance criteria, and dependency are
    already justified. Keep speculative later work in the parent instead of creating placeholder
@@ -48,5 +49,6 @@ description: Select one PR-sized GitHub issue or decompose a broad parent into c
 ## Related Skills
 
 - Use `issue-create` when a new issue must be created from conversation or repository context.
-- Use `issue-plan` on an unplanned broad parent, then on the selected implementation child.
-- Use `issue-challenge` after planning and before implementation.
+- Use `issue-challenge` at `framing` immediately after selection.
+- Use `issue-plan` on a screened broad parent, then on the selected implementation child.
+- Use `issue-challenge` again at `plan` after planning and before implementation.

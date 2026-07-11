@@ -39,11 +39,23 @@ creation and relationship updates needed for a justified decomposition and selec
 
 - Continue directly when it returns one independently reviewable implementation issue.
 - When an explicit issue is too broad and lacks a challenged delivery direction, retain it as the
-  planning parent and continue through steps 3 and 4 before creating child issues. Never send a
+  planning parent and continue through steps 3 through 5 before creating child issues. Never send a
   planning parent directly to implementation.
 - Preserve the selected parent, child, sibling, and dependency context throughout the workflow.
 
-### 3. Plan The Issue
+### 3. Challenge The Issue Framing
+
+Use `issue-challenge` at the `framing` checkpoint before investing in detailed planning. Verify
+that the issue is necessary, supported by evidence, describes the right problem, has a justified
+scope, and leaves plan-ready requirements and acceptance criteria.
+
+- On `proceed`, continue to planning.
+- On a completed `revise`, use the updated issue as planning input.
+- On `defer`, `recommend-close`, or `pending`, stop for human direction.
+- Rerun this checkpoint after a material change to the issue's problem, requirements, constraints,
+  or acceptance criteria.
+
+### 4. Plan The Issue
 
 Use `issue-plan` on the selected implementation issue or planning parent. Require a clear direction
 that weighs correctness, performance, compatibility, and long-term maintainability against
@@ -51,18 +63,18 @@ repository guidance and known future constraints. For a planning parent, require
 acceptance criteria, coherent delivery slices, dependency order, and integration or rollout gates.
 Stop for a human decision when material alternatives remain tied.
 
-### 4. Challenge The Issue And Plan
+### 5. Challenge The Plan
 
-Use `issue-challenge` after planning. Do not treat the current issue boundary or smallest diff as a
-constraint on the best justified direction.
+Use `issue-challenge` at the `plan` checkpoint after planning. Do not treat the current issue
+boundary or smallest diff as a constraint on the best justified direction.
 
-- On `revise`, update the issue, run `issue-plan` again, and challenge the replacement plan.
+- On `revise`, update the issue, return to step 4, and challenge the replacement plan.
 - On `defer`, `recommend-close`, or `pending`, stop for human direction.
 - When the best direction needs multiple PRs, keep the current issue as the delivery parent. Use
   `issue-select` to materialize justified slices and select one open, unblocked child, then return
-  to step 3 to plan and challenge that child. A clean parent Challenge Review does not replace the
-  child's own Plan and Challenge Review. Repeat decomposition if a proposed child is still too
-  broad instead of implementing an umbrella issue.
+  to step 3 to screen, plan, and challenge that child. Clean parent framing and Plan Challenge
+  Reviews do not replace the child's own checkpoints. Repeat decomposition if a proposed child is
+  still too broad instead of implementing an umbrella issue.
 - Before leaving a `proceed` parent for its selected child, remove the workflow-owned
   `codex-pending` label only when this invocation authorizes continuing and comment chronology
   confirms that the label represented the now-resolved parent Plan wait. Preserve it when any
@@ -71,34 +83,34 @@ constraint on the best justified direction.
   gh issue edit <parent-issue> --remove-label codex-pending 2>/dev/null || true
   ```
 - If child planning changes the overall design, dependencies, or parent acceptance criteria,
-  return to `issue-plan` and `issue-challenge` for the delivery parent, then replan and rechallenge
-  every affected child before implementation.
-- Continue only after a `proceed` outcome for the latest Plan. This workflow invocation supplies
+  return to step 3 for the delivery parent, then rescreen, replan, and rechallenge every affected
+  child before implementation.
+- Continue only after a `plan:proceed` outcome for the latest Plan. This workflow invocation supplies
   implementation approval unless the user asked to pause after planning.
 
-### 5. Implement And Verify
+### 6. Implement And Verify
 
 Use `issue-implement` only for the selected PR-sized child or standalone implementation issue. Change
 code, tests, and documentation and run required validation. If implementation invalidates the
 challenged direction or parent delivery plan, return to the affected planning and challenge stages.
 
-### 6. Submit The PR
+### 7. Submit The PR
 
 Use `pr-submit` to commit and push intended changes and create or update the PR. Link the exact
 implementation issue; never use one child PR to close its delivery parent. Record the PR number,
 URL, submitted `headRefOid`, implementation issue, and parent when present.
 
-### 7. Self-Review The Submitted Head
+### 8. Self-Review The Submitted Head
 
 Use `pr-self-review`. Every fix must go through `pr-submit`, after which self-review restarts on the
 new submitted head. Continue only after a full clean loop on an unchanged `headRefOid`.
 
-### 8. Post The Current-Head Review
+### 9. Post The Current-Head Review
 
 Use `pr-review`. Require an `lgtm` marker for the current `headRefOid`. For `changes-requested` or
 `needs-discussion`, return to self-review; after any fix, submit it and repeat both review stages.
 
-### 9. Check CI, Feedback, And Merge State
+### 10. Check CI, Feedback, And Merge State
 
 Run `pr-check` in read-only `check` mode against the reviewed head.
 
@@ -107,18 +119,18 @@ people, bots, and GitHub Apps; automated feedback does not always affect `review
 
 - For pending checks, report readiness as pending. Use `watch` only when requested.
 - For an explicitly authorized mechanical lint or format fix, use `pr-check fix`, then return to
-  step 7 for the new head.
+  step 8 for the new head.
 - For type, test, build, or product failures, return to implementation, submit the fix, and restart
-  at step 7.
+  at step 8.
 - For actionable human, bot, or GitHub App feedback, run `pr-address-review address`. If it changes
-  the PR head, restart at step 7; for reply-only work on the same head, repeat step 9.
+  the PR head, restart at step 8; for reply-only work on the same head, repeat step 10.
 - For merge conflicts, use `rebase-default-branch`. Obtain explicit approval before rewriting a
-  pushed PR branch, then restart at step 7 for the rebased head.
+  pushed PR branch, then restart at step 8 for the rebased head.
 
-Repeat steps 7 through 9 until the same head has a clean self-review, an `lgtm` Code Review marker,
+Repeat steps 8 through 10 until the same head has a clean self-review, an `lgtm` Code Review marker,
 green required checks, no blocking feedback, and a clean merge state.
 
-### 10. Finish At Merge Readiness Or Merge
+### 11. Finish At Merge Readiness Or Merge
 
 Report the PR as ready with its reviewed head SHA and remaining unverified areas. If the original
 user request explicitly authorized merging, use `pr-merge`. Otherwise stop at readiness and wait

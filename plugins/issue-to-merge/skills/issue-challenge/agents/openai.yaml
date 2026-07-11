@@ -1,4 +1,4 @@
 interface:
   display_name: "Issue Challenge"
-  short_description: "Challenge issue assumptions and proposed solutions."
-  default_prompt: "Use $issue-challenge to challenge this issue and its proposed solution, then update it."
+  short_description: "Challenge issue framing or proposed solutions."
+  default_prompt: "Use $issue-challenge to challenge this issue's framing or current plan, then update it."

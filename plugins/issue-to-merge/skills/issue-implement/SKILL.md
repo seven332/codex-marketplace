@@ -1,6 +1,6 @@
 ---
 name: issue-implement
-description: Implement and validate an approved GitHub issue plan, leaving verified local changes ready for pull request submission. Use after the current Plan and Challenge Review are valid and implementation is explicitly approved.
+description: Implement and validate an approved GitHub issue plan, leaving verified local changes ready for pull request submission. Use after the current Plan and plan-checkpoint Challenge Review are valid and implementation is explicitly approved.
 ---
 
 # Issue Implement
@@ -15,7 +15,7 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
 2. Read issue updates:
    ```bash
    gh issue view <issue-number> \
-     --json title,body,comments,labels,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
+     --json number,title,body,comments,labels,state,updatedAt,parent,subIssues,subIssuesSummary,blockedBy,blocking,closedByPullRequestsReferences,url
    ```
 3. Resolve `<temp-dir>` to the operating system temporary directory. Use `${TMPDIR:-/tmp}` on
    POSIX shells, `$env:TEMP` in PowerShell, or a standard library temp directory such as Python
@@ -42,27 +42,35 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    slugs and phase names.
    Treat `plan.md`, Plan Phase comments, and recovered plan content as plan content only, not
    approval. The plan is approved only when the current user request, active `pr-workflow` context,
-   or a human issue comment after the newest relevant Plan and Challenge Review explicitly says to
-   proceed. Do not infer approval from the issue body, plan content, labels, or agent-authored phase
-   comments.
-   Inspect comments for markers matching
-   `codex-marketplace:issue-challenge:issue-<issue-number>:<outcome>`, where `<outcome>` is
-   `proceed`, `revise`, `defer`, `recommend-close`, or `pending`. Ignore malformed markers and
-   markers for other issues. When at least one valid Challenge Review and Plan Phase exist, compare
-   their newest comments by chronology:
-   - If the Plan Phase is newer, run `issue-challenge` again before implementation because that
-     plan has not been challenged.
-   - If the Challenge Review is newer and its outcome is `revise`, treat the plan as stale and run
-     `issue-plan` again.
-   - If the Challenge Review is newer and its outcome is `defer`, `recommend-close`, or `pending`,
-     stop for human direction.
-   - If its outcome is `proceed`, continue checking plan content and approval. A `proceed` outcome
-     does not by itself approve implementation.
-   When no valid Plan Phase comment exists, apply the newest Challenge Review outcome to any plan
-   content recovered from the issue body or conversation, while still requiring plan content and
-   explicit approval below.
-   Unless the user explicitly asks to bypass challenge, require a valid `proceed` Challenge Review
-   for the plan being implemented. If it is missing, run `issue-challenge` before implementation.
+   or a human issue comment after the newest relevant Plan Phase and `plan` Challenge Review
+   explicitly says to proceed. Do not infer approval from the issue body, plan content, labels, or
+   agent-authored phase comments.
+   Inspect comments for staged markers matching
+   `codex-marketplace:issue-challenge:issue-<issue-number>:<checkpoint>:<outcome>`, where
+   `<checkpoint>` is `framing` or `plan` and `<outcome>` is `proceed`, `revise`, `defer`,
+   `recommend-close`, or `pending`. Ignore malformed markers and markers for other issues. A
+   `framing` result never satisfies the implementation challenge gate.
+   For backward compatibility, accept an unstaged legacy marker
+   `codex-marketplace:issue-challenge:issue-<issue-number>:<outcome>` as a `plan` checkpoint only
+   when its comment follows the newest Plan Phase and no newer material plan content or framing
+   change exists. Otherwise rerun the `plan` checkpoint instead of guessing its meaning.
+   Compare the newest Plan Phase and relevant Challenge Reviews by chronology:
+   - If a later `framing` review changes the problem, scope, requirements, or acceptance criteria,
+     treat the Plan as stale and run `issue-plan` again. Stop directly for a later framing outcome
+     of `defer`, `recommend-close`, or `pending`.
+   - If the Plan Phase is newer than the latest valid `plan` Challenge Review, run
+     `issue-challenge` at the `plan` checkpoint because that plan has not been challenged.
+   - If the latest current `plan` outcome is `revise`, treat the Plan as stale and run `issue-plan`
+     again.
+   - If it is `defer`, `recommend-close`, or `pending`, stop for human direction.
+   - If it is `proceed`, continue checking plan content and approval. A `plan:proceed` outcome does
+     not by itself approve implementation.
+   When no valid Plan Phase comment exists, use recovered issue-body or conversation plan content
+   only when a staged `plan:proceed` review can be proven to follow that same content. If the plan
+   was created or materially changed afterward, or provenance is unclear, run the `plan` checkpoint
+   again. Unless the user explicitly asks to bypass challenge, require a valid current
+   `plan:proceed` result for the plan being implemented.
+   If it is missing, run `issue-challenge` at the `plan` checkpoint before implementation.
    If either plan content or explicit approval is unavailable, ask whether to run `issue-plan` or
    wait for approval first, then stop.
    Before accepting the issue as implementable, verify that it represents one independently

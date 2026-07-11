@@ -1,6 +1,6 @@
 ---
 name: issue-plan
-description: Research a GitHub issue, explore options, and post phase comments with an implementation plan.
+description: Pre-screen a GitHub issue's framing, research it, explore options, and post phase comments with an implementation plan. Use when planning must start from a necessary, correctly framed, and current issue.
 ---
 
 # Issue Plan
@@ -13,8 +13,17 @@ Use this skill when the user asks to start planning work for a GitHub issue.
 2. Fetch issue details:
    ```bash
    gh issue view <issue-number> \
-     --json title,body,comments,labels,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
+     --json number,title,body,comments,labels,state,updatedAt,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
    ```
+   Before creating or reusing planning artifacts, require an `issue-challenge` `framing` checkpoint
+   for the current issue body. Accept only staged markers matching
+   `codex-marketplace:issue-challenge:issue-<issue-number>:framing:<outcome>`. Treat the checkpoint
+   as stale after a material title, body, requirement, constraint, or human-comment change. If a
+   current marker is missing, run `issue-challenge` at `framing` and re-fetch the issue afterward.
+   Continue after `proceed`, or after `revise` successfully updates the issue with a plan-ready
+   framing. Stop on `defer`, `recommend-close`, or `pending`. An older unstaged Challenge marker
+   does not prove that framing was checked unless its comment explicitly identifies that checkpoint;
+   rerun the framing checkpoint when uncertain.
 3. Resolve `<temp-dir>` to the operating system temporary directory. Use `${TMPDIR:-/tmp}` on
    POSIX shells, `$env:TEMP` in PowerShell, or a standard library temp directory such as Python
    `tempfile.gettempdir()` or Node.js `os.tmpdir()` when scripting. Do not assume `/tmp` exists.
@@ -92,3 +101,4 @@ Use this skill when the user asks to start planning work for a GitHub issue.
    approval as the authoritative workflow state.
 
 Do not implement before the plan is approved unless the user explicitly asks to proceed.
+After publishing a Plan Phase, run `issue-challenge` at the `plan` checkpoint before implementation.

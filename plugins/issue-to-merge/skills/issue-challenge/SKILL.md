@@ -1,6 +1,6 @@
 ---
 name: issue-challenge
-description: Challenge a GitHub issue's necessity, problem framing, scope, risks, and proposed solution, then update the issue with the best supported direction. Use when deciding whether an issue or plan is worth doing, safe, correctly scoped, or better solved another way without optimizing for the smallest change or treating the current issue boundaries as fixed.
+description: Challenge a GitHub issue at the pre-plan framing checkpoint or the post-plan solution checkpoint, then update it with the best supported direction. Use when deciding whether an issue is necessary and correctly framed before planning, or whether a proposed plan is safe, well scoped, and better than credible alternatives without optimizing for the smallest change.
 ---
 
 # Issue Challenge
@@ -8,15 +8,27 @@ description: Challenge a GitHub issue's necessity, problem framing, scope, risks
 Critically test the issue and its proposed direction before implementation. Treat the existing
 scope and solution as hypotheses, not constraints.
 
+## Checkpoints
+
+- `framing` — run after issue selection and before planning. Validate necessity, evidence, problem
+  definition, scope, constraints, and acceptance criteria so planning starts from the right issue.
+- `plan` — run after `issue-plan`. Challenge the proposed solution, alternatives, delivery slices,
+  risks, and consequences. Only a current `plan:proceed` result can satisfy the implementation
+  challenge gate.
+
 ## Workflow
 
-1. Determine the issue number from the user request or conversation context. Ask if unclear.
+1. Determine the issue number and checkpoint from the request or workflow context. Ask if the issue
+   is unclear. Default to `plan` when a current Plan Phase or explicit proposed plan exists;
+   otherwise use `framing`.
 2. Fetch the current issue before analyzing or editing it:
    ```bash
-   gh issue view <issue-number> --json number,title,body,comments,labels,state,url
+   gh issue view <issue-number> \
+     --json number,title,body,comments,labels,state,updatedAt,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
    ```
-   Include relevant conversation context and planning artifacts when the challenge targets a
-   proposed plan. In issue comments, accept only `issue-plan` markers for this issue whose slug
+   At the `framing` checkpoint, use the current issue and verified repository context without
+   inventing a solution plan. At the `plan` checkpoint, include relevant conversation context and
+   planning artifacts. In issue comments, accept only `issue-plan` markers for this issue whose slug
    matches `issue-<issue-number>-[a-z0-9-]+` and whose phase is `research`, `options`, or `plan`.
    Use comment chronology to identify the newest Plan Phase and ignore malformed markers or markers
    for other issues. If a newer Research or Options Phase follows that Plan, treat the plan as stale
@@ -24,7 +36,8 @@ scope and solution as hypotheses, not constraints.
 3. Inspect enough repository context to verify the issue's assumptions. Read repository
    instructions, relevant code, tests, documentation, history, and related issues as needed. Do
    not accept claims in the issue as facts when they can be checked locally.
-4. Challenge the issue from these angles:
+4. Challenge the issue from these angles, emphasizing necessity and problem definition for
+   `framing`, then the proposed direction and consequences for `plan`:
    - **Necessity:** Identify the concrete problem, affected users or systems, supporting evidence,
      expected benefit, and cost of doing nothing. State when the need is speculative.
    - **Problem framing:** Distinguish root causes from symptoms. Surface hidden assumptions and
@@ -86,12 +99,14 @@ scope and solution as hypotheses, not constraints.
    problem. Avoid cosmetic churn when the existing issue already captures the conclusion.
 9. Post a concise audit comment after a successful body update, or as the issue update when no body
    change is needed. Inspect existing comments first. Skip an identical repeated conclusion only
-   when no newer valid Plan Phase or material issue update needs a fresh challenge record. Use the
+   when it is for the same checkpoint, no material issue update needs a fresh challenge record,
+   and, for the `plan` checkpoint, no newer valid Plan Phase exists. Include the checkpoint and
    matching outcome in the marker:
    ```markdown
-   <!-- codex-marketplace:issue-challenge:issue-<issue-number>:<outcome> -->
-   ## Challenge Review
+   <!-- codex-marketplace:issue-challenge:issue-<issue-number>:<checkpoint>:<outcome> -->
+   ## Challenge Review: <Framing / Plan>
 
+   **Checkpoint:** `<checkpoint>`
    **Outcome:** `<outcome>`
 
    <decision, strongest reasons, issue changes, and planning impact>
@@ -107,15 +122,17 @@ scope and solution as hypotheses, not constraints.
     gh issue edit <issue-number> --add-label codex-pending
     ```
     Treat the label as a visual signal, not the source of truth for the selected outcome.
-    If `revise` invalidates an existing Plan Phase, state that in the audit comment and run
-    `issue-plan` again before implementation. A `proceed` outcome is a design conclusion, not
-    implementation approval.
-11. Return the issue URL, selected outcome, material changes, whether this is now a delivery parent,
-    the supported slices and dependencies when applicable, and whether replanning or a human
-    decision is required. Do not implement code in this skill.
+    At the `framing` checkpoint, continue to `issue-plan` after a successful `proceed` or completed
+    `revise` body update. At the `plan` checkpoint, if `revise` invalidates an existing Plan Phase,
+    state that in the audit comment and run `issue-plan` again before implementation. A `proceed`
+    outcome is a design conclusion, not implementation approval.
+11. Return the issue URL, checkpoint, selected outcome, material changes, whether this is now a
+    delivery parent, the supported slices and dependencies when applicable, and whether planning,
+    replanning, or a human decision is required. Do not implement code in this skill.
 
 ## Related Skills
 
-- Use `issue-select` when the revised direction needs a different PR-sized issue or sub-issue.
-- Use `issue-plan` before challenging a detailed plan and again after a `revise` outcome.
+- Use `issue-select` before the framing checkpoint and when the revised direction needs a different
+  PR-sized issue or sub-issue.
+- Use `issue-plan` after the framing checkpoint and again after a `plan:revise` outcome.
 - Use `issue-implement` only after the current plan is valid and explicitly approved.
