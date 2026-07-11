@@ -26,8 +26,10 @@ delivery parent unless the request explicitly includes closing completed issues.
    Inspect current Plan and Challenge markers, child states, native `blockedBy` relationships,
    linked PRs, and previously recorded progress. If the parent lacks a valid challenged delivery
    direction, run its framing checkpoint, planning, and Plan checkpoint before selecting a child.
-   Never recreate an existing slice or restart a merged iteration merely because local context was
-   lost.
+   Treat a prior `:complete` marker as current only when it follows the latest material parent
+   update and current Plan and Challenge records, and still covers the accepted slice set. Ignore a
+   stale completion marker after reopening, reframing, replanning, or adding delivery work. Never
+   recreate an existing slice or restart a merged iteration merely because local context was lost.
 3. Select the next iteration:
    - In parent-bound mode, use `issue-select` to choose an open, unblocked child whose prerequisites
      are complete. Materialize another supported slice only when no existing child represents it.
@@ -75,7 +77,9 @@ delivery parent unless the request explicitly includes closing completed issues.
    direction must change, then use `issue-select` for another coherent slice; stop for any required
    human decision instead of marking the parent complete.
 8. In parent-bound mode, after the completion gate passes, inspect existing parent comments and
-   post the completion summary only when its marker is absent:
+   post the completion summary unless a current marker already records the same challenged plan,
+   accepted slice set, and completion evidence. An older marker does not suppress a refreshed
+   summary after a material parent change:
    ```markdown
    <!-- codex-marketplace:pr-workflow-loop:issue-<parent>:complete -->
    ## Delivery Complete
