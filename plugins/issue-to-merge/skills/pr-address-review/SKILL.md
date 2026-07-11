@@ -45,13 +45,16 @@ resolving threads prematurely.
 7. When a fix changes code, use `pr-submit` to commit, push, and refresh the PR. Re-fetch
    `headRefOid` afterward and verify that the submitted diff contains each intended fix. Skip
    `pr-submit` when the resolution requires only a reply and no PR metadata update.
-8. Reply concisely to each addressed review item with the resolution and relevant new commit or
-   behavior. Resolve a review thread only after its fix is present on the current PR head or its
-   question has been fully answered. Leave disputed, ambiguous, and still-actionable threads open.
-   Do not post replies to non-conversational status notifications that cannot benefit from one.
-   Use the review-comment reply endpoint for inline replies, a normal PR comment for top-level
-   feedback, and the GraphQL `resolveReviewThread` mutation only for a completed review thread.
-   Never treat posting a top-level reply as resolving an inline thread.
+8. Immediately before replying or resolving, re-fetch `headRefOid` and the target thread state. If
+   the head changed after the fix or classification was verified, restart feedback inspection on
+   the new head and do not resolve the thread yet. Otherwise reply concisely to each addressed
+   review item with the resolution and relevant new commit or behavior. Resolve a review thread
+   only after its fix is present on that current PR head or its question has been fully answered.
+   Leave disputed, ambiguous, and still-actionable threads open. Do not post replies to
+   non-conversational status notifications that cannot benefit from one. Use the review-comment
+   reply endpoint for inline replies, a normal PR comment for top-level feedback, and the GraphQL
+   `resolveReviewThread` mutation only for a completed review thread. Never treat posting a
+   top-level reply as resolving an inline thread.
 9. For valid out-of-scope work, link a suitable existing issue or create one only when the user or
    active workflow authorized issue recording. Do not use a follow-up issue to avoid a fix required
    for the current PR's correctness, tests, documentation, or reviewability.
