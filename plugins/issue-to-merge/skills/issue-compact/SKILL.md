@@ -44,6 +44,8 @@ Use this skill when the user asks to compact or consolidate a GitHub issue discu
    ```bash
    gh issue edit <issue-number> --body-file "$ISSUE_COMPACT_FILE"
    ```
+9. Remove the temporary compact body after a successful update or when the operation is abandoned.
+   Retain it only while awaiting the authorized confirmation or retry it was created for.
 
 Do not lose requirements, decisions, or blockers. Never delete issue comments: Plan, Challenge,
 approval, and blocker comments are the durable workflow audit trail. If the issue has no comments,

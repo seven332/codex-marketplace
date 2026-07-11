@@ -90,7 +90,9 @@ Use this skill when the user asks to start planning work for a GitHub issue.
    `gh issue comment <issue-number> --body-file <phase-comment-path>`.
    Before posting, ensure the comment fits GitHub's accepted body size. If a Research or Options
    artifact is too large, publish a self-contained summary and keep the complete local artifact.
-   Keep the Plan Phase complete enough to implement without relying on unpublished details.
+   Keep the Plan Phase complete enough to implement without relying on unpublished details. Remove
+   each transient phase-comment file after a successful post or abandoned retry; retain the
+   planning artifacts themselves because resume behavior depends on them.
 8. Add or create the workflow-owned `codex-pending` label when waiting for human input, including
    after posting a Plan Phase without explicit implementation approval:
    ```bash

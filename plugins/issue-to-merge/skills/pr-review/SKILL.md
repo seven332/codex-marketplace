@@ -48,7 +48,9 @@ description: Review the current head of a GitHub pull request with the code-qual
 7. Inspect existing PR comments before posting. If the same head already has an identical current
    verdict and no new evidence exists, report the existing review instead of posting a duplicate.
    Otherwise write the review to a temporary Markdown file and post it with
-   `gh pr comment <pr-number> --body-file "$PR_REVIEW_FILE"`.
+   `gh pr comment <pr-number> --body-file "$PR_REVIEW_FILE"`. Remove that transient file after a
+   successful post or when the attempt is abandoned. Keep any separate `code-quality` review
+   artifacts according to that skill's workflow.
 8. Re-fetch `headRefOid` after posting. If it changed during review, report the review as stale and
    do not treat its verdict as current.
 

@@ -59,6 +59,8 @@ request, investigation, or task.
    ```
    Return the issue number, URL, parent, and dependencies. Stop and repair an authorized missing
    relationship before handing the issue to planning.
+8. Remove the temporary issue body after successful creation, or after a failed attempt is no
+   longer being retried. Do not leave issue content in transient files unnecessarily.
 
 ## Bug Reports
 

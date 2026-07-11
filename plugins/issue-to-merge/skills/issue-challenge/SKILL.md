@@ -123,6 +123,9 @@ scope and solution as hypotheses, not constraints.
    ```bash
    gh issue comment <issue-number> --body-file "$ISSUE_CHALLENGE_COMMENT_FILE"
    ```
+   Remove both transient files after the update and comment succeed, or when a failed attempt is no
+   longer being retried. Delete a stale draft before regenerating it after a concurrent issue
+   change.
 10. If the outcome is `pending`, `defer`, or `recommend-close`, add the workflow-owned
     `codex-pending` label and stop. Never close the issue without explicit user approval:
     ```bash
