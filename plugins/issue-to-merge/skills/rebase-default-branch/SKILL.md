@@ -15,9 +15,15 @@ description: Rebase the current feature branch onto the latest repository defaul
    DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
    ```
    Stop if detection fails or returns an empty value. Do not guess a branch name.
-4. Stop if the current branch is the default branch. Fetch its latest remote state with
-   `git fetch origin "$DEFAULT_BRANCH"`.
-5. Rebase with `git rebase "origin/$DEFAULT_BRANCH"`.
+4. Stop if the current branch is the default branch. Resolve the default branch's configured
+   upstream and remote instead of assuming the remote is named `origin`:
+   ```bash
+   DEFAULT_UPSTREAM=$(git rev-parse --abbrev-ref "$DEFAULT_BRANCH@{upstream}" 2>/dev/null)
+   DEFAULT_REMOTE=$(git config --get "branch.$DEFAULT_BRANCH.remote")
+   ```
+   Stop if either value is empty. Do not guess a remote or rebase target. Fetch the configured
+   remote with `git fetch "$DEFAULT_REMOTE"`.
+5. Rebase with `git rebase "$DEFAULT_UPSTREAM"`.
 6. For each conflict:
    - understand the intended behavior on both sides;
    - edit the file to preserve the correct combined behavior;
