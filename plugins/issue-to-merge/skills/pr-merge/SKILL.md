@@ -42,9 +42,10 @@ merge approval.
    `gh repo view --json mergeCommitAllowed,rebaseMergeAllowed,squashMergeAllowed` and prefer squash
    when it is allowed.
 8. Immediately before merging, re-fetch `headRefOid`, `reviewDecision`, `mergeStateStatus`, and
-   `closingIssuesReferences`, and run one final `pr-address-review inspect`. Stop if the head differs
-   from the reviewed SHA, readiness regressed, or issue-closing scope changed. Merge with the
-   selected strategy, branch deletion, and the head guard, for example:
+   `closingIssuesReferences`, run `pr-check` once more in read-only `check` mode, and run one final
+   `pr-address-review inspect`. Stop if the head differs from the reviewed SHA, a required check is
+   now pending or failed, readiness regressed, feedback appeared, or issue-closing scope changed.
+   Merge with the selected strategy, branch deletion, and the head guard, for example:
    ```bash
    gh pr merge <pr-number> --squash --delete-branch --match-head-commit "$HEAD_OID"
    ```
