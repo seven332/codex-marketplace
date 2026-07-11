@@ -18,7 +18,7 @@
   "interface": {
     "displayName": "Issue to Merge",
     "shortDescription": "Manage issues through reviewed, CI-checked, explicitly merged PRs.",
-    "longDescription": "A Codex-native GitHub workflow plugin for issue selection and multi-PR decomposition, challenge, planning and implementation, PR submission, current-head self-review and code review, CI checking, human and automated review feedback, explicitly authorized merging, parent delivery tracking, branch rebasing, default-branch synchronization, and issue maintenance.",
+    "longDescription": "A Codex-native GitHub workflow plugin for issue selection and multi-PR decomposition, pre-plan framing challenge, planning, post-plan solution challenge, implementation, PR submission, current-head self-review and code review, CI checking, human and automated review feedback, explicitly authorized merging, parent delivery tracking, branch rebasing, default-branch synchronization, and issue maintenance.",
     "developerName": "codex-marketplace maintainers",
     "category": "Developer Tools",
     "capabilities": [

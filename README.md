@@ -71,6 +71,7 @@ same validation in GitHub Actions.
   own quality and testing documentation.
 - `research-to-plan` - Structured research, option exploration, and planning phases for complex software
   tasks before implementation.
-- `issue-to-merge` - GitHub issue and pull request workflows for challenging, planning,
-  PR-sized decomposition and parent delivery tracking, implementation, submission, human and
-  automated review feedback, CI checks, explicit merging, branch updates, and issue maintenance.
+- `issue-to-merge` - GitHub issue and pull request workflows for pre-plan framing challenge,
+  planning, post-plan solution challenge, PR-sized decomposition and parent delivery tracking,
+  implementation, submission, human and automated review feedback, CI checks, explicit merging,
+  branch updates, and issue maintenance.
