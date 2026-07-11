@@ -14,7 +14,8 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    artifacts when possible.
 2. Read issue updates:
    ```bash
-   gh issue view <issue-number> --json title,body,comments,labels,url
+   gh issue view <issue-number> \
+     --json title,body,comments,labels,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
    ```
 3. Resolve `<temp-dir>` to the operating system temporary directory. Use `${TMPDIR:-/tmp}` on
    POSIX shells, `$env:TEMP` in PowerShell, or a standard library temp directory such as Python
@@ -64,6 +65,11 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    for the plan being implemented. If it is missing, run `issue-challenge` before implementation.
    If either plan content or explicit approval is unavailable, ask whether to run `issue-plan` or
    wait for approval first, then stop.
+   Before accepting the issue as implementable, verify that it represents one independently
+   reviewable delivery slice. If it has planned child slices, or its current Plan or Challenge
+   Review says the direction requires multiple PRs, treat it as a delivery parent: stop, use
+   `issue-select` to choose an open unblocked child, and plan and challenge that child. Never
+   implement an umbrella issue directly merely because its overall plan is approved.
 5. Check `git status --short --branch` before branch changes. Stop if unrelated uncommitted changes
    are present. If on the repository default branch, create the feature branch before editing files.
 6. If human comments after the latest `issue-plan` Plan Phase comment request plan changes or ask
@@ -86,9 +92,9 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
 10. Add or update tests for behavior changes.
 11. Update documentation for behavior changes when relevant.
 12. Run documented validation commands.
-13. Report changed files, validation commands and results, remaining risks, and the issue URL. Hand
-    the verified working tree to `pr-submit`. Do not stage, commit, push, or create a PR in this
-    skill.
+13. Report changed files, validation commands and results, remaining risks, the implementation
+    issue URL, and its parent issue when present. Hand the verified working tree and that exact
+    issue context to `pr-submit`. Do not stage, commit, push, or create a PR in this skill.
 
 If implementation becomes blocked, post a concise issue comment with a stable marker explaining the
 blocker, create `codex-pending` if needed, add it, and stop:

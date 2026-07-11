@@ -16,10 +16,15 @@ merge approval.
 2. Identify the PR from an explicit number or URL, or from the current branch.
 3. Read current PR state:
    ```bash
-   gh pr view <pr-number> --json number,url,isDraft,reviewDecision,mergeable,mergeStateStatus,headRefOid,headRefName,baseRefName,comments
+   gh pr view <pr-number> --json number,url,isDraft,reviewDecision,mergeable,mergeStateStatus,headRefOid,headRefName,baseRefName,closingIssuesReferences,comments
    ```
    Stop for draft PRs, requested changes, missing required approval, an unknown or conflicting
    merge state, or a head branch that cannot be identified.
+   For an issue-backed workflow, verify closing references against the exact implementation issue
+   selected by `issue-implement`. Stop and return to `pr-submit` if the PR would close its delivery
+   parent, an unrelated sibling, or another unintended issue, or if an implementation issue that
+   should close on merge is missing. Do not require a closing reference for standalone PRs or when
+   the target branch and workflow intentionally use a non-closing issue link.
 4. Run `pr-check` in read-only `check` mode for the same PR and head commit. Stop when required
    checks are failed or pending. Do not enable auto-merge unless the user explicitly asks.
 5. Use `pr-address-review inspect` to inspect unresolved feedback. Stop while any
@@ -36,10 +41,10 @@ merge approval.
    inspect the allowed strategies with
    `gh repo view --json mergeCommitAllowed,rebaseMergeAllowed,squashMergeAllowed` and prefer squash
    when it is allowed.
-8. Immediately before merging, re-fetch `headRefOid`, `reviewDecision`, and `mergeStateStatus`, and
-   run one final `pr-address-review inspect`. Stop if the head differs from the reviewed SHA or any
-   readiness state regressed. Merge with the selected strategy, branch deletion, and the head
-   guard, for example:
+8. Immediately before merging, re-fetch `headRefOid`, `reviewDecision`, `mergeStateStatus`, and
+   `closingIssuesReferences`, and run one final `pr-address-review inspect`. Stop if the head differs
+   from the reviewed SHA, readiness regressed, or issue-closing scope changed. Merge with the
+   selected strategy, branch deletion, and the head guard, for example:
    ```bash
    gh pr merge <pr-number> --squash --delete-branch --match-head-commit "$HEAD_OID"
    ```

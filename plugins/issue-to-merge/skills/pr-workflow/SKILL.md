@@ -32,17 +32,24 @@ before switching branches.
 - When durable state cannot prove that a review or check completed for the current head, rerun that
   stage instead of assuming it passed.
 
-### 2. Select Or Create The PR Issue
+### 2. Select An Implementation Issue Or Planning Parent
 
-For new work, use `issue-select` to select or create one independently reviewable issue. This
-workflow invocation authorizes the issue or sub-issue creation and relationship updates needed for
-that selection.
+For new work, use `issue-select`. This workflow invocation authorizes the issue or sub-issue
+creation and relationship updates needed for a justified decomposition and selection.
+
+- Continue directly when it returns one independently reviewable implementation issue.
+- When an explicit issue is too broad and lacks a challenged delivery direction, retain it as the
+  planning parent and continue through steps 3 and 4 before creating child issues. Never send a
+  planning parent directly to implementation.
+- Preserve the selected parent, child, sibling, and dependency context throughout the workflow.
 
 ### 3. Plan The Issue
 
-Use `issue-plan`. Require a clear direction that weighs correctness, performance, compatibility,
-and long-term maintainability against repository guidance and known future constraints. Stop for a
-human decision when material alternatives remain tied.
+Use `issue-plan` on the selected implementation issue or planning parent. Require a clear direction
+that weighs correctness, performance, compatibility, and long-term maintainability against
+repository guidance and known future constraints. For a planning parent, require parent-level
+acceptance criteria, coherent delivery slices, dependency order, and integration or rollout gates.
+Stop for a human decision when material alternatives remain tied.
 
 ### 4. Challenge The Issue And Plan
 
@@ -51,20 +58,35 @@ constraint on the best justified direction.
 
 - On `revise`, update the issue, run `issue-plan` again, and challenge the replacement plan.
 - On `defer`, `recommend-close`, or `pending`, stop for human direction.
-- When the best direction needs multiple PRs, preserve it in the parent issue, use `issue-select`
-  for the next coherent sub-issue, then plan and challenge that issue.
+- When the best direction needs multiple PRs, keep the current issue as the delivery parent. Use
+  `issue-select` to materialize justified slices and select one open, unblocked child, then return
+  to step 3 to plan and challenge that child. A clean parent Challenge Review does not replace the
+  child's own Plan and Challenge Review. Repeat decomposition if a proposed child is still too
+  broad instead of implementing an umbrella issue.
+- Before leaving a `proceed` parent for its selected child, remove the workflow-owned
+  `codex-pending` label only when this invocation authorizes continuing and comment chronology
+  confirms that the label represented the now-resolved parent Plan wait. Preserve it when any
+  pending decision, blocker, `defer`, `recommend-close`, or stale Plan/Challenge state remains.
+  ```bash
+  gh issue edit <parent-issue> --remove-label codex-pending 2>/dev/null || true
+  ```
+- If child planning changes the overall design, dependencies, or parent acceptance criteria,
+  return to `issue-plan` and `issue-challenge` for the delivery parent, then replan and rechallenge
+  every affected child before implementation.
 - Continue only after a `proceed` outcome for the latest Plan. This workflow invocation supplies
   implementation approval unless the user asked to pause after planning.
 
 ### 5. Implement And Verify
 
-Use `issue-implement` to change code, tests, and documentation and to run required validation. If
-implementation invalidates the challenged direction, return to planning and challenge again.
+Use `issue-implement` only for the selected PR-sized child or standalone implementation issue. Change
+code, tests, and documentation and run required validation. If implementation invalidates the
+challenged direction or parent delivery plan, return to the affected planning and challenge stages.
 
 ### 6. Submit The PR
 
-Use `pr-submit` to commit and push intended changes and create or update the PR. Record its number,
-URL, and submitted `headRefOid`.
+Use `pr-submit` to commit and push intended changes and create or update the PR. Link the exact
+implementation issue; never use one child PR to close its delivery parent. Record the PR number,
+URL, submitted `headRefOid`, implementation issue, and parent when present.
 
 ### 7. Self-Review The Submitted Head
 
@@ -102,7 +124,14 @@ Report the PR as ready with its reviewed head SHA and remaining unverified areas
 user request explicitly authorized merging, use `pr-merge`. Otherwise stop at readiness and wait
 for a separate merge request.
 
-After a completed merge, use `sync-default-branch` before starting other work.
+For a child issue, also report the delivery parent, completed and remaining materialized siblings,
+blocked dependencies, and any planned slices not yet materialized. A single `pr-workflow` invocation
+never starts the next child PR automatically. Use `pr-workflow-loop` only after an explicit request
+for repeated merge-authorized iterations.
+
+After a completed merge, use `sync-default-branch`, confirm the implementation issue and parent
+relationship state, then report parent progress. Do not close the delivery parent unless the user
+explicitly authorized that action and its full acceptance criteria have been verified.
 
 ## Related Skills
 

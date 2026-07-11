@@ -1,4 +1,4 @@
 interface:
   display_name: "PR Workflow Loop"
-  short_description: "Run and merge repeated PR workflow cycles."
-  default_prompt: "Use $pr-workflow-loop to run and merge PR-sized workflow cycles until this scope is complete."
+  short_description: "Deliver broad work through merged PR cycles."
+  default_prompt: "Use $pr-workflow-loop to split and deliver this scope through merged PR-sized cycles until it is verified complete."

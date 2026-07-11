@@ -1,6 +1,6 @@
 ---
 name: issue-create
-description: Create clear GitHub issues from conversation context, bug reports, or feature requests.
+description: Create clear standalone or parent-linked GitHub issues from conversation context, bug reports, feature requests, or an approved multi-PR delivery slice.
 ---
 
 # Issue Create
@@ -20,6 +20,7 @@ request, investigation, or task.
    - What problem, task, or opportunity is being tracked?
    - What decisions, constraints, files, and examples matter?
    - What remains unknown?
+   - Is this a standalone issue or a delivery slice with a parent and prerequisite issues?
 2. Ask concise clarifying questions when required details are missing. Do not invent reproduction
    steps, priority, user impact, or acceptance criteria.
 3. Draft an issue title using a Conventional Commit-style prefix when appropriate:
@@ -34,18 +35,30 @@ request, investigation, or task.
    - Problem or requirement
    - Acceptance criteria or reproduction steps
    - Relevant files, links, logs, screenshots, or decisions
+   - Parent objective, slice boundary, dependencies, and intentionally deferred sibling work when
+     this is part of a multi-PR delivery
    - Open questions
 5. Choose labels if they exist in the repository, such as `bug`, `enhancement`, `documentation`,
    `tech-debt`, or `question`. Omit labels when no suitable label exists.
-6. Create the issue with exactly one of these forms:
+6. Create the issue with the form that matches its verified relationships. Pass parent and
+   dependency context supplied by `issue-select`; do not infer relationships from similar titles:
    ```bash
    # Without labels
    gh issue create --title "<title>" --body-file "$ISSUE_BODY_FILE"
 
    # With selected labels
    gh issue create --title "<title>" --body-file "$ISSUE_BODY_FILE" --label "<label-1>,<label-2>"
+
+   # As a delivery slice; omit --blocked-by when it has no prerequisite
+   gh issue create --title "<title>" --body-file "$ISSUE_BODY_FILE" \
+     --parent <parent-issue> --blocked-by <prerequisite-issue-numbers>
    ```
-7. Return the issue URL.
+7. For a parent-linked issue, verify GitHub recorded the intended relationships:
+   ```bash
+   gh issue view <issue-number> --json number,url,parent,blockedBy
+   ```
+   Return the issue number, URL, parent, and dependencies. Stop and repair an authorized missing
+   relationship before handing the issue to planning.
 
 ## Bug Reports
 

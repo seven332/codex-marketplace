@@ -12,13 +12,16 @@ Use this skill when the user asks to compact or consolidate a GitHub issue discu
 1. Determine the issue number from the user request or conversation context. Ask if unclear.
 2. Fetch issue content:
    ```bash
-   gh issue view <issue-number> --json number,title,body,comments,url
+   gh issue view <issue-number> \
+     --json number,title,body,comments,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
    ```
 3. Analyze the issue body, comments, and relevant conversation context.
 4. Draft a new issue body that preserves:
    - Original requirement and current scope
    - Decisions and rationale
    - Technical discoveries and constraints
+   - Delivery parent, child slices, dependencies, merged PR progress, and remaining acceptance
+     criteria when this is a multi-PR issue
    - Current status
    - Next steps
    - Open questions and blockers

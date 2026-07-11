@@ -58,10 +58,11 @@ scope and solution as hypotheses, not constraints.
    - Acceptance criteria
    - Delivery notes or open questions
 
-   When the best solution requires more than one reviewable PR, record the full direction in the
-   issue and describe coherent delivery slices. Do not compress the design into a weaker solution
-   or turn the current PR-sized issue into an unreviewable change; use `issue-select` afterward to
-   create or attach the appropriate sub-issue when implementation continues.
+   When the best solution requires more than one reviewable PR, treat the current issue as the
+   delivery parent. Record the full direction, parent-level acceptance criteria, coherent delivery
+   slices, dependency order, and integration or rollout gates. Do not compress the design into a
+   weaker solution or turn the parent into an unreviewable implementation change. Use
+   `issue-select` afterward to materialize justified slices and select the next unblocked child.
 7. Review the draft against the fetched issue before publishing it. Verify that it:
    - explains why the outcome follows from evidence;
    - does not silently discard requirements or unresolved objections;
@@ -109,7 +110,8 @@ scope and solution as hypotheses, not constraints.
     If `revise` invalidates an existing Plan Phase, state that in the audit comment and run
     `issue-plan` again before implementation. A `proceed` outcome is a design conclusion, not
     implementation approval.
-11. Return the issue URL, selected outcome, material changes, and whether replanning or a human
+11. Return the issue URL, selected outcome, material changes, whether this is now a delivery parent,
+    the supported slices and dependencies when applicable, and whether replanning or a human
     decision is required. Do not implement code in this skill.
 
 ## Related Skills

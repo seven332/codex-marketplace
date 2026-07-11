@@ -51,15 +51,21 @@ merge the PR in this skill.
    - For an existing open PR, verify that its base is the intended target branch. Update the body
      only when its summary, scope, issue link, or validation record is materially stale.
    - For a new PR, write the body to an operating-system temporary file. Include the behavior
-     changed, explicit exclusions, a linked issue such as `Closes #123` when applicable, and the
-     validation commands actually run. Use the repository's PR title convention, or a concise
+     changed, explicit exclusions, and the validation commands actually run. For issue-backed
+     work, link the exact implementation issue supplied by `issue-implement`. Use
+     `Closes #<implementation-issue>` when merging this PR is intended to complete that issue;
+     otherwise use a non-closing `Relates to #<implementation-issue>` link. When the implementation
+     issue has a delivery parent, link the parent as context without a closing keyword. Never close
+     an umbrella parent from one child PR. Use the repository's PR title convention, or a concise
      Conventional Commit-style title when none exists. Then create it:
      ```bash
      gh pr create --base "$TARGET_BRANCH" --head "$BRANCH" --title "<title>" --body-file "$PR_BODY_FILE"
      ```
    Never create a duplicate PR for the same branch.
-8. Fetch and return the PR number, URL, and current `headRefOid`. State whether the operation created
-   a PR, updated one with a new commit, or only refreshed metadata.
+8. Fetch and return the PR number, URL, current `headRefOid`, linked implementation issue, and
+   delivery parent when present. State whether the operation created a PR, updated one with a new
+   commit, or only refreshed metadata. Before handoff, verify that an issue-backed PR does not
+   accidentally close its parent or an unrelated sibling.
 
 ## Related Skills
 

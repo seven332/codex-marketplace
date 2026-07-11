@@ -1,34 +1,52 @@
 ---
 name: issue-select
-description: Select or create one PR-sized GitHub issue, including sub-issue selection and GitHub sub-issue relationships, before planning or implementation work.
+description: Select one PR-sized GitHub issue or decompose a broad parent into coherent, dependency-aware sub-issues before planning or implementation. Use when choosing the next PR, avoiding duplicate issues, or continuing a multi-PR delivery.
 ---
 
 # Issue Select
 
-Use this skill when the user asks to choose the next issue for a PR, avoid duplicate GitHub issues,
-or split a broad GitHub issue into one PR-sized sub-issue.
-
 ## Workflow
 
-Use one PR for one clear issue. Keep the PR small enough to review independently.
-
-- If a suitable issue already exists, use that issue instead of creating a duplicate.
-- If no suitable issue exists, use `issue-create` only when the user explicitly asked to create or
-  split work, or when an active `pr-workflow` already authorizes selecting or creating its issue.
-  Otherwise propose the issue to create and wait for approval.
-- If the parent issue is broad, create or choose one sub-issue that can be completed and merged on
-  its own.
-- When using a sub-issue, record the GitHub sub-issue relationship so the roadmap stays traceable:
-  create a new sub-issue with `gh issue create --parent <parent-issue>` or attach an existing issue
-  with `gh issue edit <parent-issue> --add-sub-issue <child-issue>`. Treat creating an issue or
-  changing this relationship as a write that requires the same explicit or `pr-workflow` approval.
-- Ensure the issue explains the problem this PR solves, what is intentionally out of scope, and
-  which later work remains in the parent issue.
-- Do not split tests or documentation into separate follow-up issues when they are needed to make
-  the code change reviewable. They belong in the same PR.
+1. Use one implementation issue for one independently reviewable PR. Include the tests,
+   documentation, migration, and compatibility work needed to make that PR complete; do not split
+   work only by file, layer, or team when the pieces cannot be safely merged on their own.
+2. Inspect each candidate before selecting or splitting it:
+   ```bash
+   gh issue view <issue-number> \
+     --json number,title,body,state,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
+   ```
+   Reuse an existing suitable issue or sub-issue instead of creating a duplicate. Exclude closed,
+   already implemented, blocked, or overlapping candidates unless the workflow is explicitly
+   resuming them.
+3. Classify a broad issue as a planning parent rather than an implementation issue. If its overall
+   direction and delivery boundaries have not been supported by a current Plan and `proceed`
+   Challenge Review, return it to `issue-plan` and `issue-challenge` before inventing child issues.
+   Selecting a planning parent is a valid intermediate result, but never hand it directly to
+   `issue-implement`.
+4. Once the parent has a challenged delivery direction, map coherent slices and their dependency
+   order. Materialize every slice whose problem, boundary, acceptance criteria, and dependency are
+   already justified. Keep speculative later work in the parent instead of creating placeholder
+   issues. Select exactly one open, unblocked child as the next implementation issue.
+5. Create a missing child through `issue-create`, passing the parent and any prerequisite issue
+   numbers so GitHub records native relationships. Attach a suitable existing issue when needed:
+   ```bash
+   gh issue edit <parent-issue> --add-sub-issue <child-issue>
+   gh issue edit <child-issue> --add-blocked-by <prerequisite-issue>
+   ```
+   Treat issue creation and relationship changes as writes. Perform them only when the user
+   explicitly asked to create or split work, or an active `pr-workflow` authorizes them; otherwise
+   show the proposed decomposition and wait for approval.
+6. Ensure each child states the parent objective, the problem and acceptance criteria delivered by
+   this PR, prerequisites, what is intentionally out of scope, and which parent slices remain. Do
+   not duplicate the parent's complete design when a concise link and slice-specific context are
+   sufficient.
+7. Re-fetch the parent and selected child after writes. Verify the parent, dependency relationships,
+   and open/blocked state before planning. Return the selected implementation issue, parent issue
+   when present, satisfied and outstanding dependencies, materialized sibling status, and any
+   unmaterialized slices retained in the parent.
 
 ## Related Skills
 
 - Use `issue-create` when a new issue must be created from conversation or repository context.
-- Use `issue-plan` after selecting the issue.
+- Use `issue-plan` on an unplanned broad parent, then on the selected implementation child.
 - Use `issue-challenge` after planning and before implementation.

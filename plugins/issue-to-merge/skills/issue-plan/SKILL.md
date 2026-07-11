@@ -12,7 +12,8 @@ Use this skill when the user asks to start planning work for a GitHub issue.
 1. Determine the issue number from the user request or conversation context. Ask if unclear.
 2. Fetch issue details:
    ```bash
-   gh issue view <issue-number> --json title,body,comments,labels,url
+   gh issue view <issue-number> \
+     --json title,body,comments,labels,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
    ```
 3. Resolve `<temp-dir>` to the operating system temporary directory. Use `${TMPDIR:-/tmp}` on
    POSIX shells, `$env:TEMP` in PowerShell, or a standard library temp directory such as Python
@@ -59,6 +60,11 @@ Use this skill when the user asks to start planning work for a GitHub issue.
      and stop instead of forcing a plan.
    - Complete Plan by running `research-to-plan:deep-plan` or reusing non-stale `plan.md`, then
      publish it through step 7.
+   - If the best direction cannot fit one independently reviewable PR, treat this issue as a
+     planning parent. Keep the end-to-end design and acceptance criteria in its Plan, define
+     coherent delivery slices and dependencies, and identify integration, migration, and rollout
+     gates. Do not disguise a multi-PR delivery as one implementation task or create weak slices
+     merely to minimize each diff.
    - This skill owns the phase transitions, issue comments, and approval label. Do not implement.
 7. To publish a phase comment, inspect existing issue comments first. Skip only when reusing a
    non-stale artifact whose matching marker already exists and no earlier phase comment was posted
