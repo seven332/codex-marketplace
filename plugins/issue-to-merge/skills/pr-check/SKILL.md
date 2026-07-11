@@ -21,8 +21,11 @@ description: Inspect a pull request's CI, review decision, head commit, and merg
    gh pr checks <pr-number> --required --json name,bucket,state,link,startedAt,completedAt
    gh pr checks <pr-number> --json name,bucket,state,link,startedAt,completedAt
    ```
-   Preserve and classify check output when `gh pr checks` returns its documented nonzero status for
-   failed or pending checks.
+   Preserve and classify check output when `gh pr checks` returns nonzero. The `--required` command
+   also returns exit status 1 with `no required checks reported` when the branch has no required
+   checks; classify that exact result as an empty required-check set, not a failure. Treat any other
+   nonzero result according to its returned check buckets and diagnostic, and stop on an
+   authentication, network, or query error instead of treating it as CI state.
 3. Classify the result against the returned `headRefOid`:
    - Report draft state, requested changes, outstanding review requests, conflicts, and a dirty or
      blocked merge state separately from CI.
