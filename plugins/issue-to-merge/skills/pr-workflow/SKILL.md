@@ -48,9 +48,10 @@ creation and relationship updates needed for a justified decomposition and selec
 
 ### 3. Challenge The Issue Framing
 
-Use `issue-challenge` at the `framing` checkpoint before investing in detailed planning. Verify
-that the issue is necessary, supported by evidence, describes the right problem, has a justified
-scope, and leaves plan-ready requirements and acceptance criteria.
+Reuse a current `framing` Challenge Review when no material issue update follows it; otherwise use
+`issue-challenge` at that checkpoint before investing in detailed planning. Verify that the issue
+is necessary, supported by evidence, describes the right problem, has a justified scope, and leaves
+plan-ready requirements and acceptance criteria.
 
 - On `proceed`, continue to planning.
 - On a completed `revise`, use the updated issue as planning input.
@@ -75,7 +76,7 @@ boundary or smallest diff as a constraint on the best justified direction.
 - On `defer`, `recommend-close`, or `pending`, stop for human direction.
 - When the best direction needs multiple PRs, keep the current issue as the delivery parent. Use
   `issue-select` to materialize justified slices and select one open, unblocked child, then return
-  to step 3 to screen, plan, and challenge that child. Clean parent framing and Plan Challenge
+  to step 3 to screen, plan, and challenge that child. Clean parent `framing` and `plan` Challenge
   Reviews do not replace the child's own checkpoints. Repeat decomposition if a proposed child is
   still too broad instead of implementing an umbrella issue.
 - Before leaving a `proceed` parent for its selected child, remove the workflow-owned
