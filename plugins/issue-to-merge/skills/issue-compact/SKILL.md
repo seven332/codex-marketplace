@@ -38,10 +38,7 @@ Use this skill when the user asks to compact or consolidate a GitHub issue discu
    ```bash
    gh issue edit <issue-number> --body-file "$ISSUE_COMPACT_FILE"
    ```
-9. Before deleting comments, list the exact comment IDs, authors, timestamps, and one-line summaries
-   that would be deleted. Ask for separate explicit confirmation unless the user already explicitly
-   requested deletion of those exact comments. If confirmed, delete only the listed superseded
-   comments through the GitHub API. Report how many comments were removed.
 
-Do not lose requirements, decisions, or blockers. If the issue has no comments, report that there
-is nothing to compact.
+Do not lose requirements, decisions, or blockers. Never delete issue comments: Plan, Challenge,
+approval, and blocker comments are the durable workflow audit trail. If the issue has no comments,
+report that there is nothing to compact.

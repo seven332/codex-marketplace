@@ -17,20 +17,21 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Issue to Merge",
-    "shortDescription": "Manage GitHub issues, PRs, reviews, CI checks, and branch updates.",
-    "longDescription": "A Codex-native GitHub workflow plugin for end-to-end PR workflows, issue planning and implementation, issue creation and compaction, pull request lifecycle management, PR review, CI checking, rebasing, and switching to the default branch.",
+    "shortDescription": "Manage issues through reviewed, CI-checked, explicitly merged PRs.",
+    "longDescription": "A Codex-native GitHub workflow plugin for issue selection, challenge, planning and implementation, PR submission, current-head self-review and code review, CI checking, human and automated review feedback, explicitly authorized merging, branch rebasing, default-branch synchronization, and issue maintenance.",
     "developerName": "codex-marketplace maintainers",
     "category": "Developer Tools",
     "capabilities": [
       "GitHub",
       "Issues",
       "Pull Requests",
-      "Review"
+      "Review",
+      "CI"
     ],
     "defaultPrompt": [
       "Run the full PR workflow for this issue.",
-      "Review this pull request and post findings.",
-      "Plan implementation for this GitHub issue."
+      "Challenge this issue's necessity, scope, risks, and proposed solution.",
+      "Review this pull request and post findings."
     ],
     "brandColor": "#24292F",
     "screenshots": []

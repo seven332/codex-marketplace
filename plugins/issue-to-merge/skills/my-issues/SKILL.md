@@ -1,11 +1,11 @@
 ---
 name: my-issues
-description: List open GitHub issues assigned to or created by the current user, deduplicated and prioritized.
+description: List open GitHub issues in the current repository that are assigned to or created by the current user, then deduplicate and prioritize them.
 ---
 
 # My Issues
 
-Use this skill when the user asks what GitHub issues they should work on.
+Use this skill when the user asks what GitHub issues they should work on in the current repository.
 
 ## Workflow
 

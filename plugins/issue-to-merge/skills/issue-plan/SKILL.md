@@ -55,8 +55,8 @@ Use this skill when the user asks to start planning work for a GitHub issue.
    - Complete Options by running `research-to-plan:deep-innovate` or reusing non-stale
      `innovate.md`, then publish it through step 7 before continuing.
    - Select an approach only when the issue context, research, and option analysis make the choice
-     clear. If a human decision is needed, add `pending` using the label command in step 8, and stop
-     instead of forcing a plan.
+     clear. If a human decision is needed, add `codex-pending` using the label command in step 8,
+     and stop instead of forcing a plan.
    - Complete Plan by running `research-to-plan:deep-plan` or reusing non-stale `plan.md`, then
      publish it through step 7.
    - This skill owns the phase transitions, issue comments, and approval label. Do not implement.
@@ -73,11 +73,16 @@ Use this skill when the user asks to start planning work for a GitHub issue.
    Use marker suffixes `research`, `options`, and `plan`. Build each comment body in a temporary
    file by copying the relevant artifact below the heading, then post it with
    `gh issue comment <issue-number> --body-file <phase-comment-path>`.
-8. Add or create a `pending` label when waiting for human input, including after posting a Plan
-   Phase without explicit implementation approval:
+   Before posting, ensure the comment fits GitHub's accepted body size. If a Research or Options
+   artifact is too large, publish a self-contained summary and keep the complete local artifact.
+   Keep the Plan Phase complete enough to implement without relying on unpublished details.
+8. Add or create the workflow-owned `codex-pending` label when waiting for human input, including
+   after posting a Plan Phase without explicit implementation approval:
    ```bash
-   gh label create pending --description "Waiting for human input" --color FFA500 2>/dev/null || true
-   gh issue edit <issue-number> --add-label pending
+   gh label create codex-pending --description "Waiting for Codex workflow input" --color FFA500 2>/dev/null || true
+   gh issue edit <issue-number> --add-label codex-pending
    ```
+   Treat the label as a visual signal only. Use phase markers, comment chronology, and explicit
+   approval as the authoritative workflow state.
 
 Do not implement before the plan is approved unless the user explicitly asks to proceed.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rebase Default Branch"
+  short_description: "Rebase a feature branch onto the default branch."
+  default_prompt: "Use $rebase-default-branch to rebase this feature branch onto the latest default branch."

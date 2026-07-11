@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Submit"
+  short_description: "Submit local changes to a GitHub pull request."
+  default_prompt: "Use $pr-submit to commit, push, and create or update this pull request."

@@ -1,76 +1,112 @@
 ---
 name: pr-workflow
-description: Run an end-to-end GitHub pull request workflow from an up-to-date default branch through issue selection, planning, implementation, commit, PR creation, PR self-review, final PR review, and merge readiness checks.
+description: Start or resume an end-to-end GitHub pull request workflow through issue selection, planning, challenge, implementation, submission, current-head review, CI and feedback handling, and merge readiness. Merge only when the original request explicitly authorizes it.
 ---
 
 # PR Workflow
 
-Use this skill when the user asks to run, follow, or enforce a full pull request workflow rather
-than a single PR command.
-
-Follow repository-specific instructions over this generic workflow. Treat instructions tied to a
-specific project, directory, product, platform, or technology as applicable only when the current
-repository has the same context.
+Follow repository-specific instructions over this generic workflow. Treat an explicit request to
+run this workflow as approval for normal issue creation or updates, implementation, PR submission,
+in-scope fixes, and review comments. It does not authorize merging, history rewrites, discarding
+changes, or bypassing protections unless the user explicitly includes those actions.
 
 ## Workflow
 
-### 1. Start From Main
+### 1. Start Or Resume
 
-Always begin from an up-to-date default branch before creating, planning, or implementing the next
-PR-sized issue.
+Inspect `git status --short --branch`, the current branch, conversation context, and GitHub state
+before switching branches.
 
-Use `main` for the branch switch and pull.
+- If the current branch has an open PR that matches the requested scope, resume at the earliest
+  incomplete PR stage for its current `headRefOid`. Stop for direction when it belongs to different
+  work.
+- If an explicit issue has a linked open PR, resume that PR only when switching to its head branch
+  is safe.
+- If an explicit issue has valid Plan, Challenge, approval, or blocker markers but no PR, resume
+  from the earliest incomplete issue or implementation stage on a safe branch instead of selecting
+  a new issue.
+- If a feature branch has approved implementation work but no PR, resume implementation or
+  submission on that branch.
+- Only for genuinely new work, use `sync-default-branch` before issue selection.
+- Stop rather than overwrite, stash, or mix unrelated uncommitted changes.
+- When durable state cannot prove that a review or check completed for the current head, rerun that
+  stage instead of assuming it passed.
 
 ### 2. Select Or Create The PR Issue
 
-Use `issue-select` to select or create one PR-sized issue before planning.
+For new work, use `issue-select` to select or create one independently reviewable issue. This
+workflow invocation authorizes the issue or sub-issue creation and relationship updates needed for
+that selection.
 
 ### 3. Plan The Issue
 
-Use `issue-plan` for the issue before coding.
+Use `issue-plan`. Require a clear direction that weighs correctness, performance, compatibility,
+and long-term maintainability against repository guidance and known future constraints. Stop for a
+human decision when material alternatives remain tied.
 
-The plan must choose the best clear direction for the current issue, weighing correctness,
-performance, and long-term maintainability against repository guidance, public contracts, and known
-future constraints when they matter. If planning leaves multiple viable approaches with no clear
-best choice, stop for a human decision.
+### 4. Challenge The Issue And Plan
 
-Treat the user's explicit request to run this end-to-end `pr-workflow` as approval to continue from
-the completed plan into implementation unless the user asks to wait for separate approval.
+Use `issue-challenge` after planning. Do not treat the current issue boundary or smallest diff as a
+constraint on the best justified direction.
 
-### 4. Implement The Approved Plan
+- On `revise`, update the issue, run `issue-plan` again, and challenge the replacement plan.
+- On `defer`, `recommend-close`, or `pending`, stop for human direction.
+- When the best direction needs multiple PRs, preserve it in the parent issue, use `issue-select`
+  for the next coherent sub-issue, then plan and challenge that issue.
+- Continue only after a `proceed` outcome for the latest Plan. This workflow invocation supplies
+  implementation approval unless the user asked to pause after planning.
 
-Use `issue-implement` after the plan is approved.
+### 5. Implement And Verify
 
-Keep implementation scoped to the approved plan and return to planning if the approved direction
-needs to change.
+Use `issue-implement` to change code, tests, and documentation and to run required validation. If
+implementation invalidates the challenged direction, return to planning and challenge again.
 
-### 5. Verify Locally
+### 6. Submit The PR
 
-Use the validation commands required by the repository and by the implementation and PR creation
-skills before opening or updating the PR.
+Use `pr-submit` to commit and push intended changes and create or update the PR. Record its number,
+URL, and submitted `headRefOid`.
 
-### 6. Self-Review The PR
+### 7. Self-Review The Submitted Head
 
-Use `pr-self-review` after the branch has been pushed and the PR has been created or updated.
+Use `pr-self-review`. Every fix must go through `pr-submit`, after which self-review restarts on the
+new submitted head. Continue only after a full clean loop on an unchanged `headRefOid`.
 
-### 7. Post The PR Review
+### 8. Post The Current-Head Review
 
-After PR self-review has no new findings, run `pr-review`. If it finds new issues, fix them and
-return to `pr-self-review` before merging.
+Use `pr-review`. Require an `lgtm` marker for the current `headRefOid`. For `changes-requested` or
+`needs-discussion`, return to self-review; after any fix, submit it and repeat both review stages.
 
-### 8. Merge
+### 9. Check CI, Feedback, And Merge State
 
-Use `pr-check` and `pull-request` merge only when `pr-self-review` is clean, `pr-review` has no
-blocking findings, CI is green, and GitHub reports a clean merge state.
+Run `pr-check` in read-only `check` mode against the reviewed head.
 
-After merge, continue from the latest default branch before starting the next issue.
+Also run `pr-address-review inspect` to scan top-level and inline feedback from
+people, bots, and GitHub Apps; automated feedback does not always affect `reviewDecision`.
+
+- For pending checks, report readiness as pending. Use `watch` only when requested.
+- For an explicitly authorized mechanical lint or format fix, use `pr-check fix`, then return to
+  step 7 for the new head.
+- For type, test, build, or product failures, return to implementation, submit the fix, and restart
+  at step 7.
+- For actionable human, bot, or GitHub App feedback, run `pr-address-review address`. If it changes
+  the PR head, restart at step 7; for reply-only work on the same head, repeat step 9.
+- For merge conflicts, use `rebase-default-branch`. Obtain explicit approval before rewriting a
+  pushed PR branch, then restart at step 7 for the rebased head.
+
+Repeat steps 7 through 9 until the same head has a clean self-review, an `lgtm` Code Review marker,
+green required checks, no blocking feedback, and a clean merge state.
+
+### 10. Finish At Merge Readiness Or Merge
+
+Report the PR as ready with its reviewed head SHA and remaining unverified areas. If the original
+user request explicitly authorized merging, use `pr-merge`. Otherwise stop at readiness and wait
+for a separate merge request.
+
+After a completed merge, use `sync-default-branch` before starting other work.
 
 ## Related Skills
 
-- Use `main` to update the default branch.
-- Use `issue-select`, `issue-create`, `issue-plan`, and `issue-implement` for issue-driven work.
-- Use `pull-request` to create, update, comment on, or merge PRs.
-- Use `pr-check` for CI and merge-state checks.
-- Use `pr-self-review` for repeated focused PR self-review.
-- Use `pr-review` for the final PR review comment.
-- Use `pr-workflow-loop` only when the user asks to run multiple `pr-workflow` cycles.
+- Use `pr-workflow-loop` only for an explicitly requested sequence of merged PR-sized iterations.
+- Use `pr-submit`, `pr-self-review`, `pr-review`, `pr-check`, and `pr-address-review` for the PR
+  feedback loop.
+- Use `pr-merge` only with explicit merge authorization.
