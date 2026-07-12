@@ -26,8 +26,8 @@ owned by repository-native tools.
 ## Layout And Lifetime
 
 - Keep planning phases under `<codex-work>/research/<issue-task>/`.
-- Keep a user-reviewable issue draft under `<codex-work>/drafts/issue-to-merge/` while it awaits
-  confirmation or a retry.
+- Keep each user-reviewable issue draft under `<codex-work>/drafts/issue-to-merge/` with an issue
+  identifier and a unique attempt identifier while it awaits confirmation or a retry.
 - Create unique command body and comment files under
   `<codex-work>/tmp/issue-to-merge/<skill-name>/`. On POSIX, `mktemp` may be used only with a
   template in that directory. On PowerShell or another platform, use its random-name API with that

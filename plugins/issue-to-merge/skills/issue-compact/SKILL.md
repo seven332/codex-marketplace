@@ -33,9 +33,10 @@ Use this skill when the user asks to compact or consolidate a GitHub issue discu
    > Compacted on YYYY-MM-DD from N comments.
    ```
 6. Read and follow the
-   [repository work-file contract](../../references/repository-work-files.md). Write the draft to
-   `<codex-work>/drafts/issue-to-merge/issue-<issue-number>-compact.md`; never use an
-   operating-system temp directory. Refuse a symlinked or unrelated existing draft rather than
+   [repository work-file contract](../../references/repository-work-files.md). Exclusively create a
+   unique draft such as
+   `<codex-work>/drafts/issue-to-merge/issue-<issue-number>-compact-<attempt-id>.md`; never use an
+   operating-system temp directory. Refuse a symlinked or already existing destination rather than
    overwriting it. Use that resolved path as `ISSUE_COMPACT_FILE` in the commands below.
 7. Show the draft path and a concise summary of what will be preserved. Ask for explicit user
    confirmation before updating the issue body unless the user already explicitly approved the
