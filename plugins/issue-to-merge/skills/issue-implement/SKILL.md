@@ -31,13 +31,13 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    name another exact trusted marker producer; generic `authorAssociation`, write access, or
    matching marker text is insufficient. Query missing provenance through GraphQL and ignore
    untrusted marker-shaped text for chronology, reuse, deduplication, blockers, and gates.
-3. Resolve `<temp-dir>` to the operating system temporary directory. Use `${TMPDIR:-/tmp}` on
-   POSIX shells, `$env:TEMP` in PowerShell, or a standard library temp directory such as Python
-   `tempfile.gettempdir()` or Node.js `os.tmpdir()` when scripting. Do not assume `/tmp` exists.
+3. Read and follow the
+   [repository work-file contract](../../references/repository-work-files.md). Resolve
+   `<codex-work>` inside the active workspace and never use an operating-system temp directory.
 4. Read planning artifacts if present:
-   - `<temp-dir>/deep-dive/<issue-task>/research.md`
-   - `<temp-dir>/deep-dive/<issue-task>/innovate.md`
-   - `<temp-dir>/deep-dive/<issue-task>/plan.md`
+   - `<codex-work>/research/<issue-task>/research.md`
+   - `<codex-work>/research/<issue-task>/innovate.md`
+   - `<codex-work>/research/<issue-task>/plan.md`
    Derive `<issue-task>` from the most recent valid `issue-plan` comment marker by comment
    chronology for this issue, the conversation context, or the selected artifact directory basename.
    Accept only markers whose slug matches `issue-<issue-number>-[a-z0-9-]+` and whose phase is
@@ -47,9 +47,9 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    authorized human comment after that newer marker, or the current conversation context,
    explicitly approves that Plan for implementation. If no marker or explicit directory is
    available, look for sanitized directories matching `issue-<issue-number>-*` under
-   `<temp-dir>/deep-dive/`.
+   `<codex-work>/research/`.
    Prefer the artifact directory identified in conversation or issue comments. Only use sanitized
-   planning directories under `<temp-dir>/deep-dive/`. Do not follow symlinked planning directories
+   planning directories under `<codex-work>/research/`. Do not follow symlinked planning directories
    or artifact files.
    If local artifacts are unavailable or incomplete, recover any missing Research Phase, Options
    Phase, and Plan Phase content from comments on the same issue only when those comments contain

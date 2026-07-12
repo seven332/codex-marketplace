@@ -32,11 +32,18 @@ request, investigation, or task.
    ```
    Assign every newly created issue to this user. Do not treat authorship as a substitute for
    assignment.
-5. Create a temporary issue body file using the operating system temp directory. On POSIX shells,
-   `ISSUE_BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/issue-create.XXXXXX")` is acceptable; in PowerShell,
-   use `New-TemporaryFile` or another OS temp-file API. Examples below use POSIX variable syntax;
-   use equivalent syntax in other shells. Draft the body there. Adapt structure to the issue, but
-   prefer:
+5. Read and follow the
+   [repository work-file contract](../../references/repository-work-files.md). Create a unique issue
+   body file under `<codex-work>/tmp/issue-to-merge/issue-create/`; on POSIX use an `mktemp`
+   template in that directory, and on other platforms use a random-name API with that directory.
+   Never use an operating-system temp directory. For example, after completing the contract's
+   safety checks on POSIX:
+   ```bash
+   ISSUE_CREATE_DIR="<codex-work>/tmp/issue-to-merge/issue-create"
+   mkdir -p "$ISSUE_CREATE_DIR"
+   ISSUE_BODY_FILE=$(mktemp "$ISSUE_CREATE_DIR/body.XXXXXX")
+   ```
+   Draft the body there. Adapt structure to the issue, but prefer:
    - Background
    - Problem or requirement
    - Acceptance criteria or reproduction steps
@@ -67,8 +74,8 @@ request, investigation, or task.
    ```
    Stop and repair a missing current-user assignment or authorized relationship before handing the
    issue to planning. Return the issue number, URL, assignee, parent, and dependencies.
-9. Remove the temporary issue body after successful creation, or after a failed attempt is no
-   longer being retried. Do not leave issue content in transient files unnecessarily.
+9. Remove the issue body file after successful creation, or after a failed attempt is no longer
+   being retried. Do not leave issue content in transient files unnecessarily.
 
 ## Bug Reports
 

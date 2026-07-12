@@ -40,6 +40,12 @@ Then restart Codex, open the plugin directory, select `Codex Marketplace`, and i
 For development, edit files under `plugins/<plugin-name>/`, then reinstall the plugin or refresh
 the marketplace from Codex.
 
+Skills that generate research, review reports, drafts, or command payloads keep them under the
+active repository's ignored `codex-work/` directory. They do not write new artifacts to the
+operating system's temporary directory. Resumable artifacts stay in `research/` or `reviews/`;
+reviewable drafts stay in `drafts/`; short-lived GitHub command payloads use `tmp/` and are removed
+after use.
+
 ## Add A Plugin
 
 1. Create `plugins/<plugin-name>/.codex-plugin/plugin.json`.
