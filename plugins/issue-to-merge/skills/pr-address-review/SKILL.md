@@ -14,6 +14,10 @@ resolving threads prematurely.
 - `address` — implement clear fixes, submit them, reply, and resolve completed threads when the
   user or active `pr-workflow` authorizes those writes.
 
+If a reply or comment needs a local command payload, read and follow the
+[repository work-file contract](../../references/repository-work-files.md) and create it under
+`<codex-work>/tmp/issue-to-merge/pr-address-review/`. Do not create an operating-system temp file.
+
 ## Workflow
 
 1. Identify the PR from an explicit number or URL, or from the current branch. Use `inspect` for an

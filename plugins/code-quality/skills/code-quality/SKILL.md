@@ -145,11 +145,14 @@ conflict when it matters to the review.
    - Prefer commands documented by the repo over guessed commands.
 3. Build a project-specific review rubric from the docs discovered above.
 4. Create review artifacts when the review spans commits or a PR:
-   - Create `codereviews/YYYYMMDD/` using the current local date.
-   - Create `codereviews/YYYYMMDD/commit-list.md`.
-   - Create one `codereviews/YYYYMMDD/review-{short-hash}.md` file for each reviewed commit.
-   - For working-tree or path-only reviews, create `codereviews/YYYYMMDD/review-working-tree.md`
-     when a durable report is useful.
+   - Read and follow the
+     [repository work-file contract](../../references/repository-work-files.md).
+   - Create `<codex-work>/reviews/YYYYMMDD/<review-scope>/` using the current local date and the
+     scope naming rules from that contract.
+   - Create `commit-list.md` in the scope directory.
+   - Create one `review-{short-hash}.md` file there for each reviewed commit.
+   - For working-tree or path-only reviews, create `review-working-tree.md` there when a durable
+     report is useful.
 5. Review changed behavior, not just changed lines:
    - Trace callers and public entry points.
    - Check data validation, error propagation, concurrency, IO, authorization, and state changes.

@@ -10,12 +10,15 @@ Repo-local marketplace scaffold for Codex plugins.
 ├── plugins/
 │   ├── code-quality/
 │   │   ├── .codex-plugin/plugin.json
+│   │   ├── references/repository-work-files.md
 │   │   └── skills/code-quality/SKILL.md
 │   ├── issue-to-merge/
 │   │   ├── .codex-plugin/plugin.json
+│   │   ├── references/repository-work-files.md
 │   │   └── skills/
 │   └── research-to-plan/
 │       ├── .codex-plugin/plugin.json
+│       ├── references/repository-work-files.md
 │       └── skills/
 ├── schemas/
 │   ├── marketplace.schema.json
@@ -24,6 +27,10 @@ Repo-local marketplace scaffold for Codex plugins.
     ├── validate-marketplace.mjs
     └── validate-marketplace.test.mjs
 ```
+
+Each `repository-work-files.md` is an internal contract shared by skills in that independently
+installable plugin. It is packaged with the plugin and loaded only when a referencing skill needs
+to create or read workflow-owned files.
 
 ## Use Locally
 
@@ -39,6 +46,12 @@ Then restart Codex, open the plugin directory, select `Codex Marketplace`, and i
 
 For development, edit files under `plugins/<plugin-name>/`, then reinstall the plugin or refresh
 the marketplace from Codex.
+
+Skills that generate research, review reports, drafts, or command payloads keep them under the
+active repository's ignored `codex-work/` directory. They do not write new artifacts to the
+operating system's temporary directory. Resumable artifacts stay in `research/` or `reviews/`;
+reviewable drafts stay in `drafts/`; short-lived GitHub command payloads use `tmp/` and are removed
+after use.
 
 ## Add A Plugin
 

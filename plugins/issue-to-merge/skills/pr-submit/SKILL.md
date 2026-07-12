@@ -50,7 +50,11 @@ merge the PR in this skill.
 7. Create or update the PR:
    - For an existing open PR, verify that its base is the intended target branch. Update the body
      only when its summary, scope, issue link, or validation record is materially stale.
-   - For a new PR, write the body to an operating-system temporary file. Include the behavior
+   - For a new PR, read and follow the
+     [repository work-file contract](../../references/repository-work-files.md), then create a unique
+     body file under `<codex-work>/tmp/issue-to-merge/pr-submit/`. On POSIX use an `mktemp` template
+     in that directory; on other platforms use a random-name API with that directory. Never use an
+     operating-system temp directory. Use the resolved path as `PR_BODY_FILE`. Include the behavior
      changed, explicit exclusions, and the validation commands actually run. For issue-backed
      work, link the exact implementation issue supplied by `issue-implement`. Use
      `Closes #<implementation-issue>` only when this PR completes that issue and GitHub will apply
@@ -63,7 +67,7 @@ merge the PR in this skill.
      ```bash
      gh pr create --base "$TARGET_BRANCH" --head "$BRANCH" --title "<title>" --body-file "$PR_BODY_FILE"
      ```
-     Remove the temporary PR body after successful creation, or when a failed creation is no longer
+     Remove the PR body file after successful creation, or when a failed creation is no longer
      being retried.
    Never create a duplicate PR for the same branch.
 8. Fetch the submitted PR state:

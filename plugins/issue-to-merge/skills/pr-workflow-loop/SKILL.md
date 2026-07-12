@@ -10,6 +10,10 @@ current-head readiness. It does not authorize admin bypasses, destructive cleanu
 without the separate approval required by those actions. It also does not authorize closing a
 delivery parent unless the request explicitly includes closing completed issues.
 
+If a progress or completion comment needs a local command payload, read and follow the
+[repository work-file contract](../../references/repository-work-files.md) and create it under
+`<codex-work>/tmp/issue-to-merge/pr-workflow-loop/`. Do not create an operating-system temp file.
+
 ## Workflow
 
 1. Determine and retain one loop mode:

@@ -19,23 +19,19 @@ Use the user's language unless repository guidance requires another language.
 When another workflow skill calls this phase, follow that caller's scope and return the research
 artifact without asking phase-transition questions unless required context is missing.
 
-Resolve `<temp-dir>` to the operating system temporary directory before creating artifacts. Use
-`${TMPDIR:-/tmp}` on POSIX shells, `$env:TEMP` in PowerShell, or a standard library temp directory
-such as Python `tempfile.gettempdir()` or Node.js `os.tmpdir()` when scripting. Do not assume
-`/tmp` exists.
-
-Keep generated artifacts under `<temp-dir>/deep-dive/` unless the user explicitly requests another
-output location. Use sanitized task slugs and avoid `..` path segments.
+Before creating artifacts, read and follow the
+[repository work-file contract](../../references/repository-work-files.md). Keep generated files in
+the active workspace under `<codex-work>/research/`; never use an operating-system temp directory.
 
 ## Workflow
 
 1. Clarify the task only when the scope is ambiguous.
 2. Resolve the artifact directory:
-   - Use the caller-provided artifact directory only when it is under `<temp-dir>/deep-dive/` or
-     the user explicitly requested that location.
+   - Use the caller-provided artifact directory only when it satisfies the repository work-file
+     contract.
    - Otherwise use the caller-provided task slug if present.
    - Otherwise choose a sanitized task slug using lowercase letters, numbers, and hyphens.
-   The default artifact directory is `<temp-dir>/deep-dive/<task-slug>/`.
+   The default artifact directory is `<codex-work>/research/<task-slug>/`.
 3. Create `research.md` in the resolved artifact directory.
 4. Read repository guidance first, such as `AGENTS.md`, `CONTRIBUTING.md`, README files, docs,
    package scripts, test configuration, and nearby tests.

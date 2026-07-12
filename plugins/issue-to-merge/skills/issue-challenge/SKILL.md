@@ -97,12 +97,17 @@ scope and solution as hypotheses, not constraints.
    - leaves testable acceptance criteria for an implementation outcome.
 8. Treat an explicit request to run this workflow as approval to update the identified issue. If
    the user asks for analysis only, show the proposed update and do not mutate GitHub. Otherwise,
-   create temporary body and comment files in the operating system temp directory. On POSIX
-   shells, these commands are acceptable; use `New-TemporaryFile` or another OS temp-file API in
-   PowerShell:
+   read and follow the
+   [repository work-file contract](../../references/repository-work-files.md), then create unique
+   body and comment files under
+   `<codex-work>/tmp/issue-to-merge/issue-challenge/issue-<issue-number>/`. On POSIX shells,
+   `mktemp` templates in that directory are acceptable; on PowerShell or another platform, use its
+   random-name API with that same directory, never the system temp directory:
    ```bash
-   ISSUE_CHALLENGE_BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/issue-challenge-body.XXXXXX")
-   ISSUE_CHALLENGE_COMMENT_FILE=$(mktemp "${TMPDIR:-/tmp}/issue-challenge-comment.XXXXXX")
+   ISSUE_CHALLENGE_DIR="<codex-work>/tmp/issue-to-merge/issue-challenge/issue-<issue-number>"
+   mkdir -p "$ISSUE_CHALLENGE_DIR"
+   ISSUE_CHALLENGE_BODY_FILE=$(mktemp "$ISSUE_CHALLENGE_DIR/body.XXXXXX")
+   ISSUE_CHALLENGE_COMMENT_FILE=$(mktemp "$ISSUE_CHALLENGE_DIR/comment.XXXXXX")
    ```
    Write the revised body to the body file. Immediately before updating GitHub, re-fetch the issue
    fields from step 2 and compare `updatedAt`, title, body, comments, labels, and relationships with
@@ -128,7 +133,7 @@ scope and solution as hypotheses, not constraints.
 
    <decision, strongest reasons, issue changes, and planning impact>
    ```
-   Write the comment to a temporary file and publish it with:
+   Write the comment to the command file and publish it with:
    ```bash
    gh issue comment <issue-number> --body-file "$ISSUE_CHALLENGE_COMMENT_FILE"
    ```

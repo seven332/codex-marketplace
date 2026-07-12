@@ -38,9 +38,9 @@ Use this skill when the user asks to start planning work for a GitHub issue.
    framing. Stop on `defer`, `recommend-close`, or `pending`. An older unstaged Challenge marker
    does not prove that framing was checked unless its comment explicitly identifies that checkpoint;
    rerun the framing checkpoint when uncertain.
-3. Resolve `<temp-dir>` to the operating system temporary directory. Use `${TMPDIR:-/tmp}` on
-   POSIX shells, `$env:TEMP` in PowerShell, or a standard library temp directory such as Python
-   `tempfile.gettempdir()` or Node.js `os.tmpdir()` when scripting. Do not assume `/tmp` exists.
+3. Read and follow the
+   [repository work-file contract](../../references/repository-work-files.md). Resolve
+   `<codex-work>` inside the active workspace and never use an operating-system temp directory.
 4. Choose an `<issue-task>` slug that starts with `issue-<issue-number>-`, followed by a sanitized
    short title. Use only lowercase letters, numbers, and hyphens. If the sanitized title would be
    empty, use `task` as the title segment. This keeps artifact directories and comment markers
@@ -50,16 +50,16 @@ Use this skill when the user asks to start planning work for a GitHub issue.
      from the most recent marker by comment chronology before checking local artifact directories.
      Accept only markers whose slug matches `issue-<issue-number>-[a-z0-9-]+` and whose phase is
      `research`, `options`, or `plan`; ignore malformed markers and markers for other issues.
-   - Check `<temp-dir>/deep-dive/<issue-task>/` for `research.md`, `innovate.md`, and `plan.md`.
+   - Check `<codex-work>/research/<issue-task>/` for `research.md`, `innovate.md`, and `plan.md`.
    - When resuming planning work, also look for directories matching `issue-<issue-number>-*` under
-     `<temp-dir>/deep-dive/`. If multiple plausible directories exist and the intended one is
+     `<codex-work>/research/`. If multiple plausible directories exist and the intended one is
      unclear, ask which directory to use.
-   - Use only sanitized artifact directories under `<temp-dir>/deep-dive/`. Do not follow symlinked
+   - Use only sanitized artifact directories under `<codex-work>/research/`. Do not follow symlinked
      artifact directories or files.
    - If reusing an existing directory whose basename differs from the initial slug, use that
      basename as `<issue-task>` so artifact paths and comment markers stay aligned.
    - Prefer an existing directory with artifacts. If none exists, use
-     `<temp-dir>/deep-dive/<issue-task>/`.
+     `<codex-work>/research/<issue-task>/`.
    - Before reusing an existing phase artifact, compare it with later issue updates. Treat a phase
      as stale when the issue title, body, labels, or human comments after that phase was created or
      posted materially change its inputs. An authorized human comment that only selects one of the
@@ -73,7 +73,7 @@ Use this skill when the user asks to start planning work for a GitHub issue.
    `research-to-plan` plugin. Use the Research to Plan skills in sequence for the planning phases:
    - Pass the issue title, body, comments, labels, and URL as the task context.
    - Pass the selected `<issue-task>` slug and artifact directory so all phases write to the same
-     `<temp-dir>/deep-dive/<issue-task>/` directory.
+     `<codex-work>/research/<issue-task>/` directory.
    - Complete Research by running `research-to-plan:deep-research` or reusing non-stale
      `research.md`, then publish it through step 7 before continuing.
    - Complete Options by running `research-to-plan:deep-innovate` or reusing non-stale
@@ -99,9 +99,11 @@ Use this skill when the user asks to start planning work for a GitHub issue.
 
    <research.md content>
    ```
-   Use marker suffixes `research`, `options`, and `plan`. Build each comment body in a temporary
-   file by copying the relevant artifact below the heading, then post it with
-   `gh issue comment <issue-number> --body-file <phase-comment-path>`.
+   Use marker suffixes `research`, `options`, and `plan`. Build each comment body in a unique
+   command file under `<codex-work>/tmp/issue-to-merge/issue-plan/` by copying the relevant
+   artifact below the heading. After completing the contract's safety checks on POSIX, create each
+   file with an `mktemp` template in that directory, then post it with
+   `gh issue comment <issue-number> --body-file "$PHASE_COMMENT_FILE"`.
    Before posting, ensure the comment fits GitHub's accepted body size. If a Research or Options
    artifact is too large, publish a self-contained summary and keep the complete local artifact.
    Keep the Plan Phase complete enough to implement without relying on unpublished details. Remove

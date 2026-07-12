@@ -10,30 +10,26 @@ alternatives, or trade-off analysis before choosing a direction.
 
 ## Boundaries
 
-Explore options but do not create a step-by-step implementation plan, write code, edit files,
-commit to one solution, or estimate timelines unless the user explicitly asks for that kind of
-decision support. Keep implementation details high level.
+Explore options but do not create a step-by-step implementation plan, write code, edit repository
+source files, commit to one solution, or estimate timelines unless the user explicitly asks for
+that kind of decision support. Keep implementation details high level.
 
 Use the user's language unless repository guidance requires another language.
 
 When another workflow skill calls this phase, follow that caller's scope and return the innovation
 artifact without asking phase-transition questions unless required context is missing.
 
-Resolve `<temp-dir>` to the operating system temporary directory before reading or creating
-artifacts. Use `${TMPDIR:-/tmp}` on POSIX shells, `$env:TEMP` in PowerShell, or a standard library
-temp directory such as Python `tempfile.gettempdir()` or Node.js `os.tmpdir()` when scripting. Do
-not assume `/tmp` exists.
-
-Keep generated artifacts under `<temp-dir>/deep-dive/` unless the user explicitly requests another
-output location. Use sanitized task slugs and avoid `..` path segments.
+Before reading or creating artifacts, read and follow the
+[repository work-file contract](../../references/repository-work-files.md). Keep generated files in
+the active workspace under `<codex-work>/research/`; never use an operating-system temp directory.
 
 ## Workflow
 
 1. Resolve the artifact directory:
-   - Use the caller-provided artifact directory only when it is under `<temp-dir>/deep-dive/` or
-     the user explicitly requested that location.
+   - Use the caller-provided artifact directory only when it satisfies the repository work-file
+     contract.
    - Otherwise use the caller-provided task slug if present.
-   - Otherwise locate the matching `<temp-dir>/deep-dive/<task-slug>/` directory.
+   - Otherwise locate the matching `<codex-work>/research/<task-slug>/` directory.
    If no matching `research.md` exists, ask whether to run `deep-research` first.
 2. Read `research.md` from the resolved artifact directory and relevant repository guidance it
    references.
