@@ -10,12 +10,15 @@ Repo-local marketplace scaffold for Codex plugins.
 ├── plugins/
 │   ├── code-quality/
 │   │   ├── .codex-plugin/plugin.json
+│   │   ├── references/repository-work-files.md
 │   │   └── skills/code-quality/SKILL.md
 │   ├── issue-to-merge/
 │   │   ├── .codex-plugin/plugin.json
+│   │   ├── references/repository-work-files.md
 │   │   └── skills/
 │   └── research-to-plan/
 │       ├── .codex-plugin/plugin.json
+│       ├── references/repository-work-files.md
 │       └── skills/
 ├── schemas/
 │   ├── marketplace.schema.json
@@ -24,6 +27,10 @@ Repo-local marketplace scaffold for Codex plugins.
     ├── validate-marketplace.mjs
     └── validate-marketplace.test.mjs
 ```
+
+Each `repository-work-files.md` is an internal contract shared by skills in that independently
+installable plugin. It is packaged with the plugin and loaded only when a referencing skill needs
+to create or read workflow-owned files.
 
 ## Use Locally
 
