@@ -1,6 +1,6 @@
 ---
 name: pr-workflow-loop
-description: Deliver a broad GitHub issue or repository work queue through repeated, merged PR-sized workflow cycles, preserving parent/sub-issue progress until the requested scope is verified complete. Use only when the user explicitly requests a multi-PR merge loop.
+description: Deliver a broad GitHub issue or repository work queue through repeated, merged PR-sized workflow cycles, preserving progress and closing a parent-bound delivery issue after its completion gate passes. Use only when the user explicitly requests a multi-PR merge loop.
 ---
 
 # PR Workflow Loop

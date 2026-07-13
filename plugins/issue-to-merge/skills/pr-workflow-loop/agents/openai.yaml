@@ -1,4 +1,4 @@
 interface:
   display_name: "PR Workflow Loop"
-  short_description: "Deliver broad work through merged PR cycles."
-  default_prompt: "Use $pr-workflow-loop to split and deliver this scope through merged PR-sized cycles until it is verified complete."
+  short_description: "Deliver and close broad work through merged PR cycles."
+  default_prompt: "Use $pr-workflow-loop to split and deliver this scope through merged PR-sized cycles, then close its parent-bound delivery issue after the completion gate passes."
