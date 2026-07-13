@@ -116,12 +116,22 @@ If a progress or completion comment needs a local command payload, read and foll
    verify it:
    ```bash
    gh issue close <parent-issue-url> --reason completed
+   gh issue view <parent-issue-url> \
+     --json number,title,body,state,stateReason,closedAt,updatedAt,labels,comments,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
+   ```
+   Require `state` to be `CLOSED` and `stateReason` to be `COMPLETED`, and compare the full result
+   with the pre-close snapshot. Ignore only the expected changes to `state`, `stateReason`,
+   `closedAt`, and `updatedAt` caused by this run's close. If another material change invalidated
+   step 7 while the close was in flight, compensate immediately:
+   ```bash
+   gh issue reopen <parent-issue-url>
    gh issue view <parent-issue-url> --json state,stateReason,closedAt,url
    ```
-   Require `state` to be `CLOSED` and `stateReason` to be `COMPLETED`. Treat an already closed parent
-   as complete only with that reason; report any other closed reason as a state mismatch. When the
-   user explicitly asked to leave the parent open, report it as verified ready to close instead.
-   In repository-queue mode, retain per-PR progress on affected parents, but do not infer parent
+   Require the parent to be `OPEN`, then rerun the completion gate. Stop and report the state
+   mismatch if reopening or verification fails. Treat an already closed parent as complete only
+   with reason `COMPLETED`; report any other closed reason as a state mismatch. When the user
+   explicitly asked to leave the parent open, report it as verified ready to close instead. In
+   repository-queue mode, retain per-PR progress on affected parents, but do not infer parent
    completion from queue exhaustion; skip the parent completion summary and parent closure, then
    continue selecting within the queue scope.
 9. Stop when the requested scope passes its completion gate and every authorized terminal issue
