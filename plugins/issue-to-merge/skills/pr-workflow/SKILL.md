@@ -154,8 +154,9 @@ never starts the next child PR automatically. Use `pr-workflow-loop` only after 
 for repeated merge-authorized iterations.
 
 After a completed merge, use `sync-default-branch`, confirm the implementation issue and parent
-relationship state, then report parent progress. Do not close the delivery parent unless the user
-explicitly authorized that action and its full acceptance criteria have been verified.
+relationship state, then report parent progress. A single child `pr-workflow` never closes its
+delivery parent. When a parent-bound `pr-workflow-loop` invoked this workflow, return the parent
+state to that loop so it can own the full completion gate and terminal parent closure.
 
 ## Related Skills
 

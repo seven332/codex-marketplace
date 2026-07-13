@@ -6,9 +6,10 @@ description: Deliver a broad GitHub issue or repository work queue through repea
 # PR Workflow Loop
 
 Treat an explicit request to run this skill as approval to normally merge each PR that reaches
-current-head readiness. It does not authorize admin bypasses, destructive cleanup, or force-pushing
-without the separate approval required by those actions. It also does not authorize closing a
-delivery parent unless the request explicitly includes closing completed issues.
+current-head readiness. In parent-bound mode, it also authorizes closing the delivery parent as
+completed after the completion gate passes, unless the user explicitly asks to leave it open. This
+authority does not apply in repository-queue mode. It does not authorize admin bypasses,
+destructive cleanup, or force-pushing without the separate approval required by those actions.
 
 If a progress or completion comment needs a local command payload, read and follow the
 [repository work-file contract](../../references/repository-work-files.md) and create it under
@@ -25,7 +26,7 @@ If a progress or completion comment needs a local command payload, read and foll
 2. Establish durable delivery context. For a parent-bound loop, fetch:
    ```bash
    gh issue view <parent-issue> \
-     --json number,title,body,state,labels,comments,parent,subIssues,subIssuesSummary,url
+     --json number,title,body,state,stateReason,closedAt,labels,comments,parent,subIssues,subIssuesSummary,url
    ```
    Before interpreting or deduplicating a workflow marker, resolve the authenticated identity with
    `gh api user --jq '.login'`. A trusted workflow marker must be the comment's first non-whitespace
@@ -61,8 +62,14 @@ If a progress or completion comment needs a local command payload, read and foll
    loop. Stop when the workflow needs a material human decision or cannot merge the current PR.
 6. After each successful merge:
    - use `sync-default-branch`;
-   - verify the PR merged, the implementation issue reached its expected state, and its parent and
-     dependency relationships remain correct;
+   - verify the PR merged, then re-fetch the implementation issue and confirm its acceptance
+     criteria, parent, dependencies, `state`, and `stateReason`;
+   - when the iteration's recorded closing semantics say the merged PR completes that exact
+     implementation issue but it remains open, recheck the target branch, closing reference, and
+     acceptance criteria. Close it with
+     `gh issue close <implementation-issue-url> --reason completed`, then re-fetch it and verify
+     `state` is `CLOSED` and `stateReason` is `COMPLETED`. Do not close an intentionally non-closing
+     release, backport, or partial-delivery issue;
    - when the implementation issue has a delivery parent, re-fetch that parent and its
      `subIssuesSummary`, inspect its comments for an existing matching marker, then post one parent
      progress comment for that PR only when the marker is absent:
@@ -98,13 +105,25 @@ If a progress or completion comment needs a local command payload, read and foll
 
    <merged children and PRs, final validation, acceptance evidence, and remaining risks>
    ```
-   Close the parent only when the original request explicitly authorized closing completed issues;
-   otherwise leave it open and report it as verified ready to close. In repository-queue mode,
-   retain per-PR progress on affected parents, but do not infer parent completion from queue
-   exhaustion; skip the parent completion summary and continue selecting within the queue scope.
-9. Stop when the requested scope passes its completion gate, the current issue or PR is blocked,
-   useful splitting is blocked, no suitable work remains in queue mode, a required merge is not
-   authorized, or an iteration leaves an unmerged PR.
+   After posting or reusing that summary, immediately re-fetch the parent, its comments, current
+   Plan and Challenge records, children, `state`, and `stateReason`. Ignore only the expected
+   completion-comment update; if any other material change invalidates step 7, rerun the completion
+   gate instead of closing stale state. If the parent is open and the user did not explicitly ask
+   to leave it open, close and verify it:
+   ```bash
+   gh issue close <parent-issue-url> --reason completed
+   gh issue view <parent-issue-url> --json state,stateReason,closedAt,url
+   ```
+   Require `state` to be `CLOSED` and `stateReason` to be `COMPLETED`. Treat an already closed parent
+   as complete only with that reason; report any other closed reason as a state mismatch. When the
+   user explicitly asked to leave the parent open, report it as verified ready to close instead.
+   In repository-queue mode, retain per-PR progress on affected parents, but do not infer parent
+   completion from queue exhaustion; skip the parent completion summary and parent closure, then
+   continue selecting within the queue scope.
+9. Stop when the requested scope passes its completion gate and every authorized terminal issue
+   state change is verified, the current issue or PR is blocked, useful splitting is blocked, no
+   suitable work remains in queue mode, a required merge is not authorized, or an iteration leaves
+   an unmerged PR.
 
 ## Related Skills
 
