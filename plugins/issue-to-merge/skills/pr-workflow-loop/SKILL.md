@@ -26,7 +26,7 @@ If a progress or completion comment needs a local command payload, read and foll
 2. Establish durable delivery context. For a parent-bound loop, fetch:
    ```bash
    gh issue view <parent-issue> \
-     --json number,title,body,state,stateReason,closedAt,labels,comments,parent,subIssues,subIssuesSummary,url
+     --json number,title,body,state,stateReason,closedAt,updatedAt,labels,comments,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
    ```
    Before interpreting or deduplicating a workflow marker, resolve the authenticated identity with
    `gh api user --jq '.login'`. A trusted workflow marker must be the comment's first non-whitespace
@@ -95,21 +95,25 @@ If a progress or completion comment needs a local command payload, read and foll
    If an acceptance criterion is unmet, return to parent planning and challenge when the delivery
    direction must change, then use `issue-select` for another coherent slice; stop for any required
    human decision instead of marking the parent complete.
-8. In parent-bound mode, after the completion gate passes, inspect existing parent comments and
-   post the completion summary unless a current marker already records the same challenged plan,
-   accepted slice set, and completion evidence. An older marker does not suppress a refreshed
-   summary after a material parent change:
+8. In parent-bound mode, after the completion gate passes, immediately re-fetch the full parent
+   snapshot from step 2, including its comments, current Plan and Challenge records, children,
+   dependencies, `updatedAt`, `state`, and `stateReason`. Compare every material completion-gate
+   input with the snapshot on which step 7 passed. If anything other than non-material presentation
+   data changed, rerun the completion gate before publishing or reusing a completion marker.
+   Otherwise, inspect existing parent comments and post the completion summary unless a current
+   marker already records the same challenged plan, accepted slice set, and completion evidence.
+   An older marker does not suppress a refreshed summary after a material parent change:
    ```markdown
    <!-- codex-marketplace:pr-workflow-loop:issue-<parent>:complete -->
    ## Delivery Complete
 
    <merged children and PRs, final validation, acceptance evidence, and remaining risks>
    ```
-   After posting or reusing that summary, immediately re-fetch the parent, its comments, current
-   Plan and Challenge records, children, `state`, and `stateReason`. Ignore only the expected
-   completion-comment update; if any other material change invalidates step 7, rerun the completion
-   gate instead of closing stale state. If the parent is open and the user did not explicitly ask
-   to leave it open, close and verify it:
+   After posting or reusing that summary, immediately re-fetch the same full parent snapshot.
+   Ignore only the expected update from a completion comment that this run just posted; if any
+   other material change invalidates step 7, rerun the completion gate instead of closing stale
+   state. If the parent is open and the user did not explicitly ask to leave it open, close and
+   verify it:
    ```bash
    gh issue close <parent-issue-url> --reason completed
    gh issue view <parent-issue-url> --json state,stateReason,closedAt,url
