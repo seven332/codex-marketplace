@@ -43,6 +43,11 @@ If a progress or completion comment needs a local command payload, read and foll
    update and current Plan and Challenge records, and still covers the accepted slice set. Ignore a
    stale completion marker after reopening, reframing, replanning, or adding delivery work. Never
    recreate an existing slice or restart a merged iteration merely because local context was lost.
+   If accepted work is now incomplete while the parent remains closed, inspect the latest issue
+   close event. Reopen and verify the parent only when a trusted prior completion marker exists,
+   that close event follows the marker, its actor matches the authenticated identity, and a later
+   material update made the marker stale. Stop for direction on any other closed-parent mismatch
+   instead of silently reopening it.
 3. Select the next iteration:
    - In parent-bound mode, use `issue-select` to choose an open, unblocked child whose prerequisites
      are complete. Materialize another supported slice only when no existing child represents it.
@@ -70,6 +75,10 @@ If a progress or completion comment needs a local command payload, read and foll
      `gh issue close <implementation-issue-url> --reason completed`, then re-fetch it and verify
      `state` is `CLOSED` and `stateReason` is `COMPLETED`. Do not close an intentionally non-closing
      release, backport, or partial-delivery issue;
+   - for an iteration recorded as completing its implementation issue, require that exact issue to
+     be `CLOSED` with `stateReason` `COMPLETED` before recording parent progress. Treat every other
+     close reason as a state mismatch unless the current challenged plan explicitly replaced or
+     removed that slice with a rationale;
    - when the implementation issue has a delivery parent, re-fetch that parent and its
      `subIssuesSummary`, inspect its comments for an existing matching marker, then post one parent
      progress comment for that PR only when the marker is absent:
@@ -86,8 +95,8 @@ If a progress or completion comment needs a local command payload, read and foll
 7. Before declaring a parent-bound delivery complete, verify all of these conditions against the
    current default branch and GitHub state. Record the remote default-branch head OID used for this
    validation as part of the completion-gate snapshot:
-   - every accepted delivery slice is represented and closed, or was explicitly replaced or
-     removed with a recorded rationale;
+   - every accepted delivery slice is represented by an issue closed with reason `COMPLETED`, or
+     was explicitly replaced or removed with a recorded rationale;
    - no open or blocked child remains inside the requested delivery scope;
    - the merged result satisfies the parent's acceptance criteria, including cross-slice tests,
      documentation, compatibility, migration, integration, and rollout work where applicable; and
