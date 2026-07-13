@@ -84,7 +84,8 @@ If a progress or completion comment needs a local command payload, read and foll
    parent plan only when evidence materially changes its direction, slices, dependencies, or
    acceptance criteria; avoid cosmetic body churn.
 7. Before declaring a parent-bound delivery complete, verify all of these conditions against the
-   current default branch and GitHub state:
+   current default branch and GitHub state. Record the remote default-branch head OID used for this
+   validation as part of the completion-gate snapshot:
    - every accepted delivery slice is represented and closed, or was explicitly replaced or
      removed with a recorded rationale;
    - no open or blocked child remains inside the requested delivery scope;
@@ -95,34 +96,36 @@ If a progress or completion comment needs a local command payload, read and foll
    If an acceptance criterion is unmet, return to parent planning and challenge when the delivery
    direction must change, then use `issue-select` for another coherent slice; stop for any required
    human decision instead of marking the parent complete.
-8. In parent-bound mode, after the completion gate passes, immediately re-fetch the full parent
-   snapshot from step 2, including its comments, current Plan and Challenge records, children,
-   dependencies, `updatedAt`, `state`, and `stateReason`. Compare every material completion-gate
-   input with the snapshot on which step 7 passed. If anything other than non-material presentation
-   data changed, rerun the completion gate before publishing or reusing a completion marker.
-   Otherwise, inspect existing parent comments and post the completion summary unless a current
-   marker already records the same challenged plan, accepted slice set, and completion evidence.
-   An older marker does not suppress a refreshed summary after a material parent change:
+8. In parent-bound mode, after the completion gate passes, immediately re-fetch the remote
+   default-branch head OID and the full parent snapshot from step 2, including its comments, current
+   Plan and Challenge records, children, dependencies, `updatedAt`, `state`, and `stateReason`.
+   Compare them with the completion-gate snapshot on which step 7 passed. If the head OID or any
+   parent snapshot field changed, rerun the completion gate before publishing or reusing a
+   completion marker. Otherwise, inspect existing parent comments and post the completion summary
+   unless a current marker already records the same challenged plan, accepted slice set, and
+   completion evidence. An older marker does not suppress a refreshed summary after a material
+   parent change:
    ```markdown
    <!-- codex-marketplace:pr-workflow-loop:issue-<parent>:complete -->
    ## Delivery Complete
 
    <merged children and PRs, final validation, acceptance evidence, and remaining risks>
    ```
-   After posting or reusing that summary, immediately re-fetch the same full parent snapshot.
-   Ignore only the expected update from a completion comment that this run just posted; if any
-   other material change invalidates step 7, rerun the completion gate instead of closing stale
-   state. If the parent is open and the user did not explicitly ask to leave it open, close and
-   verify it:
+   After posting or reusing that summary, immediately re-fetch the remote default-branch head OID
+   and the same full parent snapshot. Ignore only the expected update from a completion comment
+   that this run just posted; if the head OID or anything else changed, rerun the completion gate
+   instead of closing stale state. If the parent is open and the user did not explicitly ask to
+   leave it open, close and verify it:
    ```bash
    gh issue close <parent-issue-url> --reason completed
    gh issue view <parent-issue-url> \
      --json number,title,body,state,stateReason,closedAt,updatedAt,labels,comments,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
    ```
-   Require `state` to be `CLOSED` and `stateReason` to be `COMPLETED`, and compare the full result
-   with the pre-close snapshot. Ignore only the expected changes to `state`, `stateReason`,
-   `closedAt`, and `updatedAt` caused by this run's close. If another material change invalidated
-   step 7 while the close was in flight, compensate immediately:
+   Require `state` to be `CLOSED` and `stateReason` to be `COMPLETED`, re-fetch the remote
+   default-branch head OID, and compare both results with the pre-close snapshot. Ignore only the
+   expected changes to `state`, `stateReason`, `closedAt`, and `updatedAt` caused by this run's
+   close. If the head OID changed or another material change invalidated step 7 while the close was
+   in flight, compensate immediately:
    ```bash
    gh issue reopen <parent-issue-url>
    gh issue view <parent-issue-url> --json state,stateReason,closedAt,url
