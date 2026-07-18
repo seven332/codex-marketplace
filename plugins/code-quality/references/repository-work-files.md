@@ -38,8 +38,8 @@ change where files belong, or replace Git and repository-native tools that own t
    known files is sufficient.
 3. For a file that must be unique, prefer a built-in non-overwriting create operation. Only when
    built-in tools cannot guarantee exclusive creation, use `mktemp` with a template in the
-   destination directory on POSIX, or a platform API that creates a unique destination file without
-   overwriting elsewhere. Never use a system-temp directory.
+   destination directory on POSIX, or an equivalent platform API that atomically creates a unique,
+   non-overwriting file in that directory. Never use a system-temp directory.
 
 ## Review Layout
 

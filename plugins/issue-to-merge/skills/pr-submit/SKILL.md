@@ -68,8 +68,8 @@ merge the PR in this skill.
      ```bash
      gh pr create --base "$TARGET_BRANCH" --head "$BRANCH" --title "<title>" --body-file "$PR_BODY_FILE"
      ```
-   Remove `PR_BODY_FILE` after a successful create or update, or when a failed attempt is no longer
-   being retried.
+   If `PR_BODY_FILE` was created, remove it after a successful create or update, or when a failed
+   attempt is no longer being retried.
    Never create a duplicate PR for the same branch.
 8. Fetch the submitted PR state:
    ```bash
