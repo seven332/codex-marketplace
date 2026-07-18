@@ -34,16 +34,9 @@ request, investigation, or task.
    assignment.
 5. Read and follow the
    [repository work-file contract](../../references/repository-work-files.md). Create a unique issue
-   body file under `<codex-work>/tmp/issue-to-merge/issue-create/`; on POSIX use an `mktemp`
-   template in that directory, and on other platforms use a random-name API with that directory.
-   Never use an operating-system temp directory. For example, after completing the contract's
-   safety checks on POSIX:
-   ```bash
-   ISSUE_CREATE_DIR="<codex-work>/tmp/issue-to-merge/issue-create"
-   mkdir -p "$ISSUE_CREATE_DIR"
-   ISSUE_BODY_FILE=$(mktemp "$ISSUE_CREATE_DIR/body.XXXXXX")
-   ```
-   Draft the body there. Adapt structure to the issue, but prefer:
+   body file under `<codex-work>/tmp/issue-to-merge/issue-create/` according to that contract's
+   filesystem-tool rules, and use its resolved path as `ISSUE_BODY_FILE`. Draft the body there.
+   Adapt structure to the issue, but prefer:
    - Background
    - Problem or requirement
    - Acceptance criteria or reproduction steps

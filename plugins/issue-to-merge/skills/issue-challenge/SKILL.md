@@ -100,15 +100,9 @@ scope and solution as hypotheses, not constraints.
    read and follow the
    [repository work-file contract](../../references/repository-work-files.md), then create unique
    body and comment files under
-   `<codex-work>/tmp/issue-to-merge/issue-challenge/issue-<issue-number>/`. On POSIX shells,
-   `mktemp` templates in that directory are acceptable; on PowerShell or another platform, use its
-   random-name API with that same directory, never the system temp directory:
-   ```bash
-   ISSUE_CHALLENGE_DIR="<codex-work>/tmp/issue-to-merge/issue-challenge/issue-<issue-number>"
-   mkdir -p "$ISSUE_CHALLENGE_DIR"
-   ISSUE_CHALLENGE_BODY_FILE=$(mktemp "$ISSUE_CHALLENGE_DIR/body.XXXXXX")
-   ISSUE_CHALLENGE_COMMENT_FILE=$(mktemp "$ISSUE_CHALLENGE_DIR/comment.XXXXXX")
-   ```
+   `<codex-work>/tmp/issue-to-merge/issue-challenge/issue-<issue-number>/` according to that
+   contract's filesystem-tool rules. Use their resolved paths as `ISSUE_CHALLENGE_BODY_FILE` and
+   `ISSUE_CHALLENGE_COMMENT_FILE`.
    Write the revised body to the body file. Immediately before updating GitHub, re-fetch the issue
    fields from step 2 and compare `updatedAt`, title, body, comments, labels, and relationships with
    the analyzed snapshot. If a concurrent material change exists, discard the stale draft and

@@ -52,11 +52,10 @@ merge the PR in this skill.
      only when its summary, scope, issue link, or validation record is materially stale.
    - For a new PR, read and follow the
      [repository work-file contract](../../references/repository-work-files.md), then create a unique
-     body file under `<codex-work>/tmp/issue-to-merge/pr-submit/`. On POSIX use an `mktemp` template
-     in that directory; on other platforms use a random-name API with that directory. Never use an
-     operating-system temp directory. Use the resolved path as `PR_BODY_FILE`. Include the behavior
-     changed, explicit exclusions, and the validation commands actually run. For issue-backed
-     work, link the exact implementation issue supplied by `issue-implement`. Use
+     body file under `<codex-work>/tmp/issue-to-merge/pr-submit/` according to that contract's
+     filesystem-tool rules, and use the resolved path as `PR_BODY_FILE`. Include the behavior
+     changed, explicit exclusions, and the validation commands actually run. For issue-backed work,
+     link the exact implementation issue supplied by `issue-implement`. Use
      `Closes #<implementation-issue>` only when this PR completes that issue and GitHub will apply
      the closing keyword for the target branch, normally the repository default branch. Use a
      non-closing `Relates to #<implementation-issue>` link for release, backport, or other target

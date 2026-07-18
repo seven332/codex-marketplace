@@ -59,9 +59,8 @@ description: Review the current head of a GitHub pull request with the code-qual
 7. Inspect existing PR comments before posting. If the same head already has an identical current
    verdict and no new evidence exists, report the existing review instead of posting a duplicate.
    Otherwise create a unique Markdown file under
-   `<codex-work>/tmp/issue-to-merge/pr-review/`, and use its resolved path as `PR_REVIEW_FILE`. On
-   POSIX, use an `mktemp` template in that directory after completing the contract's safety checks.
-   Post it with
+   `<codex-work>/tmp/issue-to-merge/pr-review/` according to the contract's filesystem-tool rules,
+   and use its resolved path as `PR_REVIEW_FILE`. Post it with
    `gh pr comment <pr-number> --body-file "$PR_REVIEW_FILE"`. Remove that command file after a
    successful post or when the attempt is abandoned. Keep any separate `code-quality` review
    artifacts according to that skill's workflow.
