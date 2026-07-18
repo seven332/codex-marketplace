@@ -100,9 +100,9 @@ Use this skill when the user asks to start planning work for a GitHub issue.
    <research.md content>
    ```
    Use marker suffixes `research`, `options`, and `plan`. Build each comment body in a unique
-   command file under `<codex-work>/tmp/issue-to-merge/issue-plan/` by copying the relevant
-   artifact below the heading. After completing the contract's safety checks on POSIX, create each
-   file with an `mktemp` template in that directory, then post it with
+   command file under `<codex-work>/tmp/issue-to-merge/issue-plan/` according to the contract's
+   filesystem-tool rules, composing the heading and relevant artifact content in that file. Use
+   its resolved path as `PHASE_COMMENT_FILE`, then post it with
    `gh issue comment <issue-number> --body-file "$PHASE_COMMENT_FILE"`.
    Before posting, ensure the comment fits GitHub's accepted body size. If a Research or Options
    artifact is too large, publish a self-contained summary and keep the complete local artifact.

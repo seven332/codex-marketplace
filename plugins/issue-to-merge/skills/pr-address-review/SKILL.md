@@ -14,9 +14,11 @@ resolving threads prematurely.
 - `address` — implement clear fixes, submit them, reply, and resolve completed threads when the
   user or active `pr-workflow` authorizes those writes.
 
-If a reply or comment needs a local command payload, read and follow the
+For direct changes to repository files, follow the
+[filesystem-tool rules](../../references/repository-work-files.md#filesystem-tools). If a reply or
+comment needs a local command payload, read and follow the full
 [repository work-file contract](../../references/repository-work-files.md) and create it under
-`<codex-work>/tmp/issue-to-merge/pr-address-review/`. Do not create an operating-system temp file.
+`<codex-work>/tmp/issue-to-merge/pr-address-review/`; do not create an operating-system temp file.
 
 ## Workflow
 
