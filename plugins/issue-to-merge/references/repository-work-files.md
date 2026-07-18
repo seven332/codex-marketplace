@@ -25,13 +25,18 @@ owned by repository-native tools.
 
 ## Filesystem Tools
 
-1. Prefer a built-in filesystem or file-editing tool for creating, modifying, moving, and deleting
-   workflow-owned files and directories. Do not use shell filesystem commands, shell content
-   redirection, or ad hoc scripts when a built-in tool can perform the operation.
-2. Use a shell fallback only when the required filesystem operation is unavailable through built-in
-   tools. Scope it to the exact contract-authorized path, then return to built-in tools for the
-   remaining supported operations. Do not use broad or recursive cleanup when deleting known files
-   is sufficient.
+These rules choose tools for direct filesystem operations on workspace paths already authorized by
+the task, including repository content and workflow-owned files. They do not authorize new paths,
+change where files belong, or replace Git and repository-native tools that own their outputs.
+
+1. Prefer a Codex-provided built-in filesystem or file-editing tool for directly creating,
+   modifying, moving, and deleting authorized workspace files and directories. Do not substitute
+   shell filesystem commands, shell redirection that writes workspace files, or ad hoc scripts when
+   a built-in tool can perform the operation.
+2. Use a shell fallback only when the required direct filesystem operation is unavailable through
+   built-in tools. Scope it to the exact authorized workspace path, then return to built-in tools
+   for the remaining supported operations. Do not use broad or recursive cleanup when deleting
+   known files is sufficient.
 3. For a file that must be unique, prefer a built-in non-overwriting create operation. Only when
    built-in tools cannot guarantee exclusive creation, use `mktemp` with a template in the
    destination directory on POSIX, or a platform API that creates a unique destination file without

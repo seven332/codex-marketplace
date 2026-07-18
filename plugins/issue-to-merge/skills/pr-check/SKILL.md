@@ -44,6 +44,9 @@ description: Inspect a pull request's CI, review decision, head commit, and merg
    - require a clean working tree;
    - confirm the current branch matches the PR head branch; and
    - record the starting `headRefOid`.
+   For any direct filesystem operation, read and follow the
+   [repository work-file contract](../../references/repository-work-files.md). Repository-native
+   fix commands remain the source of truth for outputs they own.
    Run the documented fix command, rerun the failed check locally and the relevant validation, and
    inspect the diff. If the result is purely mechanical and valid, use `pr-submit` to commit, push,
    and update the PR. Otherwise stop and report the product or test failure for implementation work.
