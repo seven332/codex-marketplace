@@ -26,9 +26,9 @@ description: Rebase the current feature branch onto the latest repository defaul
 5. Rebase with `git rebase "$DEFAULT_UPSTREAM"`.
 6. For each conflict:
    - understand the intended behavior on both sides;
-   - read and follow the
-     [repository work-file contract](../../references/repository-work-files.md) for direct conflict
-     file edits;
+   - follow the
+     [filesystem-tool rules](../../references/repository-work-files.md#filesystem-tools) for direct
+     conflict file edits;
    - edit the file to preserve the correct combined behavior;
    - stage only resolved files with `git add`; and
    - continue with `git rebase --continue` until complete.

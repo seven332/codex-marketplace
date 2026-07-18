@@ -113,8 +113,9 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    Never remove a repository's generic `pending` label.
 8. Create or switch to a feature branch, for example `feat/issue-<number>-short-name`.
 9. Implement the approved plan in small steps. For direct filesystem operations on repository
-   content, follow the contract's filesystem-tool rules. Do not silently diverge from the approved
-   direction.
+   content, follow the
+   [filesystem-tool rules](../../references/repository-work-files.md#filesystem-tools). Do not
+   silently diverge from the approved direction.
 10. Add or update tests for behavior changes.
 11. Update documentation for behavior changes when relevant.
 12. Run documented validation commands.
