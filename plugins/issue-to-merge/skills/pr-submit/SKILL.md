@@ -48,12 +48,10 @@ merge the PR in this skill.
 6. Push the current branch. Set its upstream on the first push. Do not force-push; a history rewrite
    belongs to an explicitly approved rebase workflow.
 7. Create or update the PR:
-   - For an existing open PR, verify that its base is the intended target branch. Update the body
-     only when its summary, scope, issue link, or validation record is materially stale.
-   - For a new PR, read and follow the
-     [repository work-file contract](../../references/repository-work-files.md), then create a unique
-     body file under `<codex-work>/tmp/issue-to-merge/pr-submit/` according to that contract's
-     filesystem-tool rules, and use the resolved path as `PR_BODY_FILE`. Include the behavior
+   - When either operation needs a PR body, read and follow the
+     [repository work-file contract](../../references/repository-work-files.md), create a unique body
+     file under `<codex-work>/tmp/issue-to-merge/pr-submit/` according to that contract's
+     filesystem-tool rules, and use its resolved path as `PR_BODY_FILE`. Include the behavior
      changed, explicit exclusions, and the validation commands actually run. For issue-backed work,
      link the exact implementation issue supplied by `issue-implement`. Use
      `Closes #<implementation-issue>` only when this PR completes that issue and GitHub will apply
@@ -61,13 +59,17 @@ merge the PR in this skill.
      non-closing `Relates to #<implementation-issue>` link for release, backport, or other target
      branches where closing semantics do not apply. When the implementation issue has a delivery
      parent, link the parent as context without a closing keyword. Never close an umbrella parent
-     from one child PR. Use the repository's PR title convention, or a concise Conventional
-     Commit-style title when none exists. Then create it:
+     from one child PR.
+   - For an existing open PR, verify that its base is the intended target branch. Update the body
+     only when its summary, scope, issue link, or validation record is materially stale. Submit an
+     updated body with `gh pr edit <pr-number> --body-file "$PR_BODY_FILE"`.
+   - For a new PR, use the repository's PR title convention, or a concise Conventional Commit-style
+     title when none exists. Prepare `PR_BODY_FILE` as above, then create the PR:
      ```bash
      gh pr create --base "$TARGET_BRANCH" --head "$BRANCH" --title "<title>" --body-file "$PR_BODY_FILE"
      ```
-     Remove the PR body file after successful creation, or when a failed creation is no longer
-     being retried.
+   Remove `PR_BODY_FILE` after a successful create or update, or when a failed attempt is no longer
+   being retried.
    Never create a duplicate PR for the same branch.
 8. Fetch the submitted PR state:
    ```bash
