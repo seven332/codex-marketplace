@@ -18,4 +18,4 @@ description: Switch to the repository default branch and fast-forward it to the 
 5. Pull with `git pull --ff-only`.
 6. Report the latest commit and whether the branch fast-forwarded.
 
-Do not stash, discard, amend, reset, or force-push unless the user explicitly asks.
+Do not stash, discard, amend, reset, or force-push in this skill.

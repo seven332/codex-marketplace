@@ -44,4 +44,7 @@ and link relevant source material when a plugin is adapted from another project.
 ## Agent-Specific Instructions
 
 Do not overwrite an existing plugin without checking its manifest and marketplace entry. Preserve
-unrelated user changes. Avoid `git commit --amend` and force pushes unless the user explicitly asks.
+unrelated user changes. Avoid `git commit --amend` and plain `git push --force`. Rebasing a feature
+or PR branch onto the latest default branch and updating that same remote branch with
+`git push --force-with-lease` do not require separate approval. Ask before other history rewrites or
+force pushes.
