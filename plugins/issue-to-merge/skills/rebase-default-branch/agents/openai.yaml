@@ -1,4 +1,4 @@
 interface:
   display_name: "Rebase Default Branch"
-  short_description: "Rebase a feature branch onto the default branch."
-  default_prompt: "Use $rebase-default-branch to rebase this feature branch onto the latest default branch."
+  short_description: "Rebase a branch and safely update its remote."
+  default_prompt: "Use $rebase-default-branch to rebase this feature branch onto the latest default branch and update its remote branch with force-with-lease when needed."

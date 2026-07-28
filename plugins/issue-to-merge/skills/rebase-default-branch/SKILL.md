@@ -1,6 +1,6 @@
 ---
 name: rebase-default-branch
-description: Rebase the current feature branch onto the latest repository default branch and resolve conflicts carefully. Use when updating an active branch or resolving a PR merge conflict.
+description: Rebase the current feature branch onto the latest repository default branch, resolve conflicts, and safely update its pushed branch with force-with-lease. Use when updating an active branch or resolving a PR merge conflict.
 ---
 
 # Rebase Default Branch
@@ -33,7 +33,11 @@ description: Rebase the current feature branch onto the latest repository defaul
    - stage only resolved files with `git add`; and
    - continue with `git rebase --continue` until complete.
 7. Run the relevant validation required by repository guidance.
-8. A pushed branch now requires a history rewrite. Use `git push --force-with-lease` only when the
-   user explicitly authorized updating that remote PR branch. Re-fetch PR state after the push.
+8. If the current branch was already pushed, update that same remote branch with
+   `git push --force-with-lease`. Treat a request to run this skill, or an active `pr-workflow` or
+   `pr-workflow-loop`, as authorization for the rebase and this lease-protected update; do not ask
+   for separate approval. Re-fetch PR state after the push. If the lease rejects the update, stop,
+   re-fetch, and re-evaluate the remote changes instead of retrying with `--force`.
 
-Do not use `git reset --hard`, bypass conflicts, or discard changes without explicit approval.
+Do not use `git reset --hard`, `git push --force`, bypass conflicts, or discard changes without
+explicit approval.

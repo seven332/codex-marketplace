@@ -9,7 +9,9 @@ Treat an explicit request to run this skill as approval to normally merge each P
 current-head readiness. In parent-bound mode, it also authorizes closing the delivery parent as
 completed after the completion gate passes, unless the user explicitly asks to leave it open. This
 authority does not apply in repository-queue mode. It does not authorize admin bypasses,
-destructive cleanup, or force-pushing without the separate approval required by those actions.
+destructive cleanup, plain `git push --force`, or history rewrites outside the current iteration's
+`rebase-default-branch` flow. That flow may rebase the current PR branch and update the same remote
+branch with `git push --force-with-lease` without separate approval.
 
 If a progress or completion comment needs a local command payload, read and follow the
 [repository work-file contract](../../references/repository-work-files.md) and create it under

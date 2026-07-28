@@ -45,8 +45,9 @@ merge the PR in this skill.
    Do not amend existing commits. If there are no new changes, continue only when the branch has
    commits that still need to be pushed or submitted, or an existing PR needs an authorized
    metadata refresh.
-6. Push the current branch. Set its upstream on the first push. Do not force-push; a history rewrite
-   belongs to an explicitly approved rebase workflow.
+6. Push the current branch. Set its upstream on the first push. Do not force-push in this skill;
+   delegate a required rebase and lease-protected remote branch update to
+   `rebase-default-branch`.
 7. Create or update the PR:
    - When either operation needs a PR body, read and follow the
      [repository work-file contract](../../references/repository-work-files.md), create a unique body
