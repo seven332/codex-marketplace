@@ -1,50 +1,46 @@
-# Repository Guidelines
+# 仓库指南
 
-## Project Structure & Module Organization
+## 项目结构与模块组织
 
-This repository is a Codex plugin marketplace. Marketplace metadata lives in
-`.agents/plugins/marketplace.json`. Installable plugins live under
-`plugins/<plugin-name>/`, and each plugin must include
-`plugins/<plugin-name>/.codex-plugin/plugin.json`. Plugin skills belong in
-`plugins/<plugin-name>/skills/<skill-name>/SKILL.md`. JSON Schemas live in
-`schemas/`. Validation tooling is in `scripts/`, currently
-`scripts/validate-marketplace.mjs` and `scripts/validate-marketplace.test.mjs`.
+本仓库是一个 Codex plugin marketplace。Marketplace 元数据位于
+`.agents/plugins/marketplace.json`。可安装的 plugin 位于 `plugins/<plugin-name>/` 下，
+每个 plugin 必须包含 `plugins/<plugin-name>/.codex-plugin/plugin.json`。Plugin 的
+skill 应放在 `plugins/<plugin-name>/skills/<skill-name>/SKILL.md`。JSON Schema 位于
+`schemas/`。校验工具位于 `scripts/`，目前是 `scripts/validate-marketplace.mjs` 和
+`scripts/validate-marketplace.test.mjs`。
 
-## Build, Test, and Development Commands
+## 构建、测试与开发命令
 
-- `npm run validate` - validates marketplace entries, plugin manifests, plugin paths, and skill files.
-- `npm test` - runs validator regression tests, then runs marketplace validation.
-- `python3 /Users/liangyou/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py plugins/<plugin-name>` - validates an individual plugin against Codex plugin manifest rules.
+- `npm run validate` - 校验 marketplace 条目、plugin 清单、plugin 路径和 skill 文件。
+- `npm test` - 先运行校验器的回归测试，再运行 marketplace 校验。
+- `python3 /Users/liangyou/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py plugins/<plugin-name>` - 按 Codex plugin 清单规则校验单个 plugin。
 
-Run validation before opening or updating a pull request.
+在创建或更新 pull request 之前先运行校验。
 
-## Coding Style & Naming Conventions
+## 代码风格与命名约定
 
-Use JSON for marketplace and plugin manifests, with two-space indentation. Plugin names should be
-lowercase kebab-case, for example `code-quality` or `github-tools`. Keep paths relative and
-prefixed with `./` where Codex expects relative paths, such as `./plugins/code-quality` and
-`./skills/`. Markdown files should be concise, structured with clear headings, and written in
-English.
+Marketplace 和 plugin 清单使用 JSON，采用两空格缩进。Plugin 名称应使用小写 kebab-case，
+例如 `code-quality` 或 `github-tools`。路径保持相对路径，并在 Codex 期望相对路径处使用
+`./` 前缀，例如 `./plugins/code-quality` 和 `./skills/`。Markdown 文件应简洁，用清晰的
+标题组织结构，并使用英文撰写。
 
-## Testing Guidelines
+## 测试指南
 
-There is no application runtime test suite yet. Treat validation as the required test surface:
-`npm test` for validator regression coverage and marketplace validation. Also run
-`validate_plugin.py` for every plugin changed when the change should satisfy the stricter
-plugin-creator contract. When editing a skill, read it as rendered Markdown and check for broken
-code fences, stale paths, and project-specific assumptions that should not apply globally.
+目前还没有应用运行时测试套件。把校验当作必需的测试面：用 `npm test` 覆盖校验器回归测试和
+marketplace 校验。当改动需要满足更严格的 plugin-creator 契约时，还要为每个被改动的
+plugin 运行 `validate_plugin.py`。编辑 skill 时，按渲染后的 Markdown 阅读，检查损坏的
+代码围栏、过时的路径，以及不应全局适用的项目特定假设。
 
-## Commit & Pull Request Guidelines
+## Commit 与 Pull Request 指南
 
-Use Conventional Commits, matching existing history:
-`feat: add code quality plugin (#2)`. Prefer lowercase descriptions and no trailing period. Pull
-requests should explain what plugin or marketplace behavior changed, list validation commands run,
-and link relevant source material when a plugin is adapted from another project.
+使用 Conventional Commits，与现有历史保持一致：
+`feat: add code quality plugin (#2)`。描述优先使用小写，结尾不加句号。Pull request
+应说明 plugin 或 marketplace 的行为发生了什么变化，列出运行过的校验命令；当 plugin 改编自
+其他项目时，附上相关源材料的链接。
 
-## Agent-Specific Instructions
+## Agent 专属说明
 
-Do not overwrite an existing plugin without checking its manifest and marketplace entry. Preserve
-unrelated user changes. Avoid `git commit --amend` and plain `git push --force`. Rebasing a feature
-or PR branch onto the latest default branch and updating that same remote branch with
-`git push --force-with-lease` do not require separate approval. Ask before other history rewrites or
-force pushes.
+在未检查 plugin 清单和 marketplace 条目之前，不要覆盖已有 plugin。保留无关的用户改动。
+避免使用 `git commit --amend` 和普通的 `git push --force`。把 feature 或 PR branch
+rebase 到最新的默认分支，并用 `git push --force-with-lease` 更新同一远端 branch，无需
+单独批准。其他历史重写或强制推送前请先询问。

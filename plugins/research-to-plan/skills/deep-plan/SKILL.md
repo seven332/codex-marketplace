@@ -1,51 +1,46 @@
 ---
 name: deep-plan
-description: Create a concrete implementation plan from research notes and option analysis without editing code or running implementation steps.
+description: 基于研究笔记和方案分析制定具体的实施计划，不编辑代码，也不执行实施步骤。
 ---
 
 # Deep Plan
 
-Use this skill after `deep-research` and `deep-innovate` when the user wants a concrete
-implementation plan for an approved or selected direction.
+在 `deep-research` 和 `deep-innovate` 之后，当用户希望针对已批准或已选定的方向制定具体的实施计划时，使用本 skill。
 
 ## Boundaries
 
-Plan the work only. Do not modify repository source files, write code, run tests, create commits, or
-execute the implementation. If the chosen direction is unclear, ask for confirmation before
-writing the final plan.
+只做工作计划。不要修改仓库源文件、编写代码、运行测试、创建 commit 或执行实施。
+如果所选方向不明确，在撰写最终计划之前先请求确认。
 
-Use the user's language unless repository guidance requires another language.
+使用用户的语言，除非仓库指引要求使用其他语言。
 
-When another workflow skill calls this phase, follow that caller's scope, write the plan artifact,
-and let the caller handle approval or publication.
+当其他工作流 skill 调用本阶段时，遵循调用方的范围，撰写计划产物，
+批准或发布事宜交由调用方处理。
 
-Before reading or creating artifacts, read and follow the
-[repository work-file contract](../../references/repository-work-files.md). Keep generated files in
-the active workspace under `<codex-work>/research/`; never use an operating-system temp directory.
+在读取或创建产物之前，先阅读并遵循
+[仓库工作文件契约](../../references/repository-work-files.md)。将生成的文件保存在当前工作区的
+`<codex-work>/research/` 目录下；切勿使用操作系统的临时目录。
 
 ## Workflow
 
-1. Resolve the artifact directory:
-   - Use the caller-provided artifact directory only when it satisfies the repository work-file
-     contract.
-   - Otherwise use the caller-provided task slug if present.
-   - Otherwise locate the matching `<codex-work>/research/<task-slug>/` directory.
-2. Read `research.md` and `innovate.md` from the resolved artifact directory. If either is missing,
-   ask whether to run the missing phase first.
-3. Confirm the chosen approach if the user or caller workflow has not already selected one.
-4. Create `plan.md` in the resolved artifact directory.
-5. Write a concrete plan with:
-   - Goal and chosen approach
-   - Ordered implementation tasks
-   - Files or modules likely to change
-   - Data, API, migration, compatibility, or rollout notes when relevant
-   - Test strategy and validation commands from repository docs
-   - Risks, blockers, and open questions
-   - Definition of done
-6. Keep each task actionable, but avoid writing code or pseudo-code unless the user specifically
-   requested technical sketching.
+1. 解析产物目录：
+   - 只有当调用方提供的产物目录符合仓库工作文件契约时才使用它。
+   - 否则，如果调用方提供了 task slug，则使用它。
+   - 否则，定位匹配的 `<codex-work>/research/<task-slug>/` 目录。
+2. 从解析出的产物目录中读取 `research.md` 和 `innovate.md`。如果缺少任何一个，
+   询问是否先运行缺失的阶段。
+3. 如果用户或调用方工作流尚未选定方案，则先确认所选方案。
+4. 在解析出的产物目录中创建 `plan.md`。
+5. 撰写具体的计划，包含：
+   - 目标与所选方案
+   - 按顺序排列的实施任务
+   - 可能变更的文件或模块
+   - 相关时的数据、API、迁移、兼容性或发布说明
+   - 来自仓库文档的测试策略与验证命令
+   - 风险、阻碍与未决问题
+   - 完成标准
+6. 让每个任务都可执行，但除非用户明确要求技术草图，否则避免编写代码或伪代码。
 
 ## Output
 
-Report the plan file path and summarize the plan. Ask for approval before implementation unless a
-caller workflow owns approval handling.
+报告计划文件的路径并总结计划。在开始实施之前请求批准，除非批准事宜由调用方工作流负责。

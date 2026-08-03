@@ -1,174 +1,155 @@
 ---
 name: code-quality
-description: Review code changes, identify quality risks, and guide focused cleanup across general software projects.
+description: 审查代码变更，识别质量风险，并在各类通用软件项目中指导有针对性的清理。
 ---
 
 # Code Quality
 
-Use this skill when the user asks for a code review, quality audit, bug-risk scan, test-quality
-review, refactoring recommendation, or cleanup of avoidable defensive code.
+当用户请求代码 review、质量审计、bug 风险扫描、测试质量审查、重构建议，或清理可避免的
+防御性代码时，使用本 skill。
 
 ## Operations
 
-This skill supports two explicit operations:
+本 skill 支持两种显式操作：
 
-1. `review <pr-id|commit-id|commit-range|description>` - Review code changes and write review
-   artifacts.
-2. `cleanup` - Find and clean up a narrow class of quality issues when the user asks for code
-   changes.
+1. `review <pr-id|commit-id|commit-range|description>` - 审查代码变更并写出 review
+   产物。
+2. `cleanup` - 当用户要求修改代码时，发现并清理一小类特定的质量问题。
 
-If the user does not name an operation, infer the likely operation from their request. Use `review`
-for audit/review requests and `cleanup` only when the user asks to modify code.
+如果用户没有指明操作，从其请求推断可能的操作。审计/审查请求使用 `review`，仅当用户
+要求修改代码时才使用 `cleanup`。
 
 ## First Principles
 
-- Read the repository's own guidance first: `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, README
-  files, project docs, package scripts, lint/type/test configuration, and nearby tests.
-- Treat local project conventions as the source of truth when they are explicit.
-- Do not assume framework, language, test runner, package manager, or service layout before
-  inspecting the repository.
-- Prefer concrete findings over broad style commentary.
-- For reviews, lead with bugs, regressions, security issues, and missing tests.
-- For cleanup, make small behavior-preserving changes and verify them with the narrowest reliable
-  command set available in the project.
+- 先阅读仓库自身的指引：`AGENTS.md`、`CLAUDE.md`、`CONTRIBUTING.md`、README
+  文件、项目文档、package scripts、lint/type/test 配置，以及附近的测试。
+- 当本地项目约定明确时，将其视为事实来源。
+- 在检查仓库之前，不要假设框架、语言、测试运行器、包管理器或服务布局。
+- 具体的发现优先于宽泛的风格评论。
+- 做 review 时，优先报告 bug、回归、安全问题和缺失的测试。
+- 做 cleanup 时，进行保持行为的小改动，并用项目中可用的最窄的可靠命令集进行验证。
 
 ## Project Documentation Discovery
 
-Before reviewing code, look for project-owned quality rules and test strategy documents. Search
-common locations with `rg --files` and read the relevant files before applying generic heuristics.
+在审查代码之前，先寻找项目自有的质量规则和测试策略文档。用 `rg --files` 搜索常见位置，
+并在套用通用启发式之前阅读相关文件。
 
-Prioritize files whose names or paths include:
+优先查找名称或路径中包含以下内容的文件：
 
-- `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `DEVELOPMENT.md`, `README.md`
-- `docs/`, `.github/`, `guides/`, `architecture/`, `adr/`
-- `quality`, `code-quality`, `bad-smell`, `testing`, `test`, `lint`, `typecheck`, `style`
-- framework-specific testing docs such as `api-testing`, `cli-testing`, `app-testing`, or
+- `AGENTS.md`、`CLAUDE.md`、`CONTRIBUTING.md`、`DEVELOPMENT.md`、`README.md`
+- `docs/`、`.github/`、`guides/`、`architecture/`、`adr/`
+- `quality`、`code-quality`、`bad-smell`、`testing`、`test`、`lint`、`typecheck`、`style`
+- 特定框架的测试文档，如 `api-testing`、`cli-testing`、`app-testing` 或
   `e2e-testing`
 
-Extract these facts from the docs:
+从文档中提取这些事实：
 
-- Required verification commands and where they must be run.
-- Commit, PR, language, and review conventions.
-- Test strategy: unit vs integration vs E2E, mock boundaries, fixture setup, cleanup, and
-  framework-specific helpers.
-- Code quality rules: type strictness, lint suppressions, error handling, configuration,
-  dependency loading, public API expectations, and security requirements.
-- Known exceptions or technical debt that should not be treated as a new finding.
+- 必需的验证命令以及必须在哪里运行它们。
+- Commit、PR、语言和 review 约定。
+- 测试策略：单元 vs 集成 vs E2E、mock 边界、fixture 准备、清理，以及
+  特定框架的辅助工具。
+- 代码质量规则：类型严格度、lint 豁免、错误处理、配置、依赖加载、公开 API 预期，
+  以及安全要求。
+- 不应作为新发现对待的已知例外或技术债。
 
-If the project has no explicit docs, say that and continue with the generic checklist below.
+如果项目没有明确的文档，说明这一点，并继续使用下面的通用清单。
 
 ## Default Baseline Bad Smells
 
-Use these defaults when the repository has no explicit rule, or when local docs do not cover the
-area. If local project guidance conflicts with this list, follow the local guidance and mention the
-conflict when it matters to the review.
+当仓库没有明确规则，或本地文档未覆盖某个方面时，使用这些默认值。如果本地项目指引与本
+清单冲突，遵循本地指引，并在对 review 有影响时提及该冲突。
 
 ### Type Safety
 
-- Unjustified `any`, unsafe casts, broad type assertions, or erased generics.
-- `unknown` values used without type narrowing.
-- Public functions, API responses, or serialized data without clear types.
+- 无正当理由的 `any`、不安全的类型转换、宽泛的类型断言，或被擦除的泛型。
+- 未经类型收窄就使用的 `unknown` 值。
+- 缺少明确类型的公开函数、API 响应或序列化数据。
 
 ### Suppressed Diagnostics
 
-- `eslint-disable`, `@ts-ignore`, `@ts-nocheck`, `@ts-expect-error`, formatter ignores, or
-  equivalent suppression comments without a narrow documented reason.
-- Configuration changes that weaken linting, typechecking, tests, or CI instead of fixing the
-  underlying issue.
+- 没有狭小且有据可查的理由的 `eslint-disable`、`@ts-ignore`、`@ts-nocheck`、
+  `@ts-expect-error`、格式化工具忽略或等价豁免注释。
+- 通过削弱 lint、类型检查、测试或 CI 的配置来绕过问题，而不是修复底层问题。
 
 ### Mocking Boundaries
 
-- Tests that mock internal modules, relative imports, database layers, filesystem layers, or core
-  business services when a public entry point can exercise the real behavior.
-- Tests that assert only mock calls rather than user-visible, API-visible, CLI-visible, or
-  persisted behavior.
-- Direct HTTP/fetch mocking when the project has a network-level mock pattern such as MSW, VCR, or
-  local fake services.
+- 当公开入口可以执行真实行为时，却 mock 内部模块、相对导入、数据库层、文件系统层或
+  核心业务服务的测试。
+- 只断言 mock 调用，而不是用户可见、API 可见、CLI 可见或已持久化行为的测试。
+- 当项目已有网络级 mock 模式（如 MSW、VCR 或本地假服务）时，直接 mock HTTP/fetch。
 
 ### Test Realism And Stability
 
-- Unit tests for private/internal functions when the same behavior can be covered through a public
-  entry point.
-- Fake timers, arbitrary sleeps, timeout increases, polling loops, or artificial delays used to
-  make tests pass.
-- Filesystem, database, queue, cache, or clock mocks that hide behavior the project can test with
-  isolated real resources.
-- Tests that verify framework/library behavior instead of project behavior.
-- Missing regression tests for bug fixes, migrations, authorization changes, parsing changes, or
-  cross-boundary workflows.
+- 当同样的行为可以通过公开入口覆盖时，却为私有/内部函数编写单元测试。
+- 为了让测试通过而使用假定时器、任意 sleep、增大超时、轮询循环或人为延迟。
+- 隐藏了项目本可以用隔离的真实资源测试的行为的文件系统、数据库、队列、缓存或时钟 mock。
+- 验证框架/库行为而不是项目行为的测试。
+- 对 bug 修复、迁移、授权变更、解析变更或跨边界工作流缺失回归测试。
 
 ### Error Handling And Fallbacks
 
-- Catch blocks that only log and rethrow, return a generic fallback, silently return
-  `null`/`undefined`, or hide the original error.
-- Fallback configuration, default secrets, fallback URLs, permissive retries, or recovery branches
-  that mask deployment/configuration errors.
-- Retrying without limits, backoff, cancellation, idempotency, or visibility.
-- Swallowed promise rejections and fire-and-forget work without ownership or failure reporting.
+- 只记录日志并重抛、返回通用 fallback、静默返回 `null`/`undefined` 或隐藏原始错误的
+  catch 块。
+- 掩盖部署/配置错误的 fallback 配置、默认密钥、fallback URL、宽松重试或恢复分支。
+- 没有限制、退避、取消、幂等性或可见性的重试。
+- 被吞掉的 promise rejection，以及没有归属或失败报告的发射后不管式工作。
 
 ### Configuration And Dependency Loading
 
-- Hardcoded environment-specific URLs, credentials, paths, feature flags, model names, or service
-  endpoints.
-- Dynamic imports or lazy dependency loading without a real boundary such as optional dependency
-  support, code splitting, or plugin loading.
-- Runtime configuration reads spread through business logic instead of centralized validation.
+- 硬编码的环境相关 URL、凭据、路径、功能开关、模型名或服务端点。
+- 没有真实边界（如可选依赖支持、代码分割或 plugin 加载）的动态导入或惰性依赖加载。
+- 散布在业务逻辑中、而非集中校验的运行时配置读取。
 
 ### API, Data, And Security
 
-- Public API contract changes without compatibility handling, migration notes, or tests.
-- Authorization, tenancy, ownership, or permission checks that are missing on new read/write paths.
-- Sensitive data in logs, errors, telemetry, snapshots, test fixtures, or generated artifacts.
-- Non-idempotent writes, partial failure paths, migration drift, or cleanup gaps.
-- Injection, path traversal, SSRF, unsafe deserialization, command construction, or unsafe file
-  access.
+- 没有兼容性处理、迁移说明或测试的公开 API 契约变更。
+- 新的读/写路径上缺失的授权、租户、归属或权限检查。
+- 出现在日志、错误、遥测、快照、测试 fixture 或生成产物中的敏感数据。
+- 非幂等写入、部分失败路径、迁移漂移或清理缺口。
+- 注入、路径穿越、SSRF、不安全的反序列化、命令构造或不安全的文件访问。
 
 ### Maintainability And Design
 
-- Premature abstractions, broad helpers, duplicated business rules, dead code, and options added
-  without current callers.
-- Changes that make the common path harder to understand in order to support speculative cases.
-- Large mixed-purpose commits that combine behavior changes, formatting, renames, and refactors.
-- New dependencies where a standard library, existing local helper, or smaller scoped change would
-  suffice.
+- 过早抽象、宽泛的辅助函数、重复的业务规则、死代码，以及没有当前调用方的选项。
+- 为了支持假想场景而让常用路径更难理解的改动。
+- 混合行为变更、格式化、重命名和重构的大而杂的 commit。
+- 在标准库、已有本地辅助函数或更小范围的改动即可满足需求时引入新依赖。
 
 ## Review Workflow
 
-1. Determine scope from the user's request:
-   - Pull request number: inspect PR metadata and commits with `gh pr view` when available.
-   - Commit range: use `git rev-list`, `git diff`, and `git show`.
-   - Single commit: inspect that commit and its affected tests.
-   - Working tree: inspect `git status`, staged changes, and unstaged changes.
-   - Path or feature description: search with `rg` and inspect the relevant modules.
-2. Identify the verification surface:
-   - Build, lint, typecheck, unit tests, integration tests, and targeted smoke checks.
-   - Prefer commands documented by the repo over guessed commands.
-3. Build a project-specific review rubric from the docs discovered above.
-4. Create review artifacts when the review spans commits or a PR:
-   - Read and follow the
-     [repository work-file contract](../../references/repository-work-files.md).
-   - Create `<codex-work>/reviews/YYYYMMDD/<review-scope>/` using the current local date and the
-     scope naming rules from that contract.
-   - Create `commit-list.md` in the scope directory.
-   - Create one `review-{short-hash}.md` file there for each reviewed commit.
-   - For working-tree or path-only reviews, create `review-working-tree.md` there when a durable
-     report is useful.
-5. Review changed behavior, not just changed lines:
-   - Trace callers and public entry points.
-   - Check data validation, error propagation, concurrency, IO, authorization, and state changes.
-   - Inspect tests for meaningful coverage of behavior and failure modes.
-6. Track issue counts by rubric category so summaries show the shape of the risk, not just a list
-   of findings.
-7. Report findings in severity order:
-   - `P0`: correctness, data loss, security, or release-blocking regression.
-   - `P1`: likely user-visible bug, broken workflow, or important missing test.
-   - `P2`: maintainability risk, brittle test, unclear API, or follow-up cleanup.
-8. Include file and line references when possible.
-9. If no findings are found, say that clearly and call out remaining test gaps or unverified areas.
+1. 从用户请求确定 scope：
+   - Pull request 编号：可用时用 `gh pr view` 查看 PR 元数据和 commit。
+   - Commit 区间：使用 `git rev-list`、`git diff` 和 `git show`。
+   - 单个 commit：检查该 commit 及其受影响的测试。
+   - 工作树：检查 `git status`、已暂存变更和未暂存变更。
+   - 路径或功能描述：用 `rg` 搜索并检查相关模块。
+2. 确定验证面：
+   - 构建、lint、类型检查、单元测试、集成测试和有针对性的冒烟检查。
+   - 优先使用仓库文档中记载的命令，而不是猜测的命令。
+3. 根据上面发现的项目文档构建项目专属的 review 评分标准。
+4. 当 review 跨多个 commit 或 PR 时创建 review 产物：
+   - 阅读并遵循
+     [repository work-file contract](../../references/repository-work-files.md)。
+   - 使用当前本地日期和该约定中的 scope 命名规则创建
+     `<codex-work>/reviews/YYYYMMDD/<review-scope>/`。
+   - 在 scope 目录中创建 `commit-list.md`。
+   - 为每个被审查的 commit 在那里创建一个 `review-{short-hash}.md` 文件。
+   - 对于工作树或纯路径 review，当持久化报告有用时，在那里创建 `review-working-tree.md`。
+5. 审查变更的行为，而不只是变更的行：
+   - 追踪调用方和公开入口。
+   - 检查数据校验、错误传播、并发、IO、授权和状态变更。
+   - 检查测试是否对行为和失败模式有实质性覆盖。
+6. 按评分标准分类跟踪问题数量，让摘要展示风险的形态，而不只是一份发现清单。
+7. 按严重度排序报告发现：
+   - `P0`：正确性、数据丢失、安全，或阻断发布的回归。
+   - `P1`：可能用户可见的 bug、损坏的工作流，或重要的缺失测试。
+   - `P2`：可维护性风险、脆弱的测试、不清晰的 API，或后续清理。
+8. 尽可能包含文件和行引用。
+9. 如果没有发现，明确说明，并指出遗留的测试缺口或未验证的区域。
 
 ## Review Artifact Format
 
-Use this structure for `commit-list.md`:
+`commit-list.md` 使用以下结构：
 
 ```markdown
 # Code Review: YYYYMMDD
@@ -215,7 +196,7 @@ Use this structure for `commit-list.md`:
 - [ ] ...
 ```
 
-Use this structure for each `review-{short-hash}.md`:
+每个 `review-{short-hash}.md` 使用以下结构：
 
 ````markdown
 # Code Review: short-hash
@@ -259,78 +240,69 @@ git show --stat output
 - Not run: `...`
 ````
 
-After reviewing, update `commit-list.md` so each commit checkbox is checked, links point to review
-files, severity totals are accurate, and quality statistics count concrete findings. Avoid inflated
-counts: count one root problem once even if it appears in several nearby lines.
+review 结束后，更新 `commit-list.md`：勾选每个 commit 的复选框、链接指向 review
+文件、严重度合计准确、质量统计计入具体发现。避免虚高计数：即使某个根因问题出现在相邻的
+多行中，也只计一次。
 
 ## Review Commands
 
-Useful commands for gathering review context:
+用于收集 review 上下文的有用命令：
 
-- PR commits: `gh pr view <pr-id> --json commits --jq '.commits[].oid'`
-- Commit range: `git rev-list <range> --reverse`
-- Single commit metadata: `git show --stat <commit>`
-- Commit patch: `git show <commit>`
-- Working tree: `git status --short`, `git diff`, and `git diff --cached`
-- Recent commits for a description-only review: `git log --since="1 week ago" --pretty=format:"%H"`
+- PR commits：`gh pr view <pr-id> --json commits --jq '.commits[].oid'`
+- Commit 区间：`git rev-list <range> --reverse`
+- 单个 commit 元数据：`git show --stat <commit>`
+- Commit patch：`git show <commit>`
+- 工作树：`git status --short`、`git diff` 和 `git diff --cached`
+- 仅描述式 review 的近期 commit：`git log --since="1 week ago" --pretty=format:"%H"`
 
-Do not treat these as mandatory if the repository documents a better workflow.
+如果仓库文档记载了更好的工作流，不要把这些命令视为必须使用。
 
 ## Quality Checklist
 
-Check the relevant items for the scoped change:
+检查 scope 内变更的相关项：
 
-- Correctness: edge cases, null/empty inputs, error paths, retries, ordering, time zones, and
-  backwards compatibility.
-- API and interface design: breaking changes, confusing names, leaky abstractions, and undocumented
-  contract changes.
-- Tests: meaningful assertions, integration coverage for public behavior, flaky timing, excessive
-  mocking, test isolation, and missing regression tests.
-- Mock boundaries: prefer mocking external services over internal implementation; check whether the
-  project documents exceptions.
-- Test realism: avoid tests that only assert mock calls, implementation details, or library behavior
-  unless the project explicitly wants that coverage.
-- IO tests: prefer real filesystem, database, and HTTP boundaries with controlled fixtures when the
-  project supports them; otherwise follow local test infrastructure.
-- Time and async: avoid artificial sleeps, broad fake timers, floating promises, and race-prone
-  cleanup unless local docs prescribe a safe pattern.
-- Error handling: swallowed errors, generic fallbacks, log-and-return patterns, retry loops without
-  limits, and catch blocks that cannot recover meaningfully.
-- Security and privacy: injection, authorization checks, secret handling, unsafe filesystem access,
-  SSRF, path traversal, and sensitive logging.
-- Data and migrations: idempotency, rollback behavior, default values, schema drift, and partial
-  failures.
-- Performance: avoidable N+1 work, unbounded loops, unnecessary network calls, blocking IO, and
-  memory growth.
-- Maintainability: duplicated logic, unused abstractions, over-broad helpers, confusing control
-  flow, type escapes, dynamic imports without a clear need, hardcoded configuration, and suppressed
-  diagnostics.
+- 正确性：边界情况、null/空输入、错误路径、重试、顺序、时区和向后兼容。
+- API 与接口设计：破坏性变更、易混淆的命名、漏抽象，以及未记录的契约变更。
+- 测试：有意义的断言、对公开行为的集成覆盖、不稳定的时序、过度 mock、测试隔离，
+  以及缺失的回归测试。
+- Mock 边界：优先 mock 外部服务而非内部实现；检查项目是否记载了例外。
+- 测试真实性：避免只断言 mock 调用、实现细节或库行为的测试，除非项目明确要求这种覆盖。
+- IO 测试：当项目支持时，优先使用受控 fixture 的真实文件系统、数据库和 HTTP 边界；
+  否则遵循本地测试基础设施。
+- 时间与异步：除非本地文档规定安全模式，否则避免人为 sleep、宽泛的假定时器、
+  悬空 promise 和易竞态的清理。
+- 错误处理：被吞掉的错误、通用 fallback、记日志即返回的模式、无限制的重试循环，
+  以及无法有效恢复的 catch 块。
+- 安全与隐私：注入、授权检查、密钥处理、不安全的文件系统访问、SSRF、路径穿越，
+  以及敏感信息日志。
+- 数据与迁移：幂等性、回滚行为、默认值、schema 漂移和部分失败。
+- 性能：可避免的 N+1 工作、无界循环、不必要的网络调用、阻塞 IO 和内存增长。
+- 可维护性：重复逻辑、未使用的抽象、过于宽泛的辅助函数、混乱的控制流、类型逃逸、
+  没有明确必要的动态导入、硬编码配置，以及被豁免的诊断。
 
 ## Cleanup Workflow
 
-Use this mode only when the user asks to modify code.
+仅当用户要求修改代码时才使用此模式。
 
-1. Find a narrow cleanup target, such as avoidable defensive `try`/`catch` blocks, duplicated
-   branches, unused abstractions, stale suppressions, or brittle test setup.
-2. Confirm each change is behavior-preserving or intentionally behavior-changing.
-3. Prefer deleting unnecessary code over adding replacement abstraction.
-4. Keep commits focused and use Conventional Commit messages.
-5. Run the most relevant verification command before reporting completion.
+1. 找到窄小的清理目标，例如可避免的防御性 `try`/`catch` 块、重复分支、未使用的抽象、
+   过期的豁免或脆弱的测试准备代码。
+2. 确认每个改动是保持行为的，还是有意改变行为的。
+3. 优先删除不必要的代码，而不是添加替代抽象。
+4. 保持 commit 聚焦，并使用 Conventional Commit 消息。
+5. 在报告完成前运行最相关的验证命令。
 
-For defensive error handling cleanup, remove a catch block only when:
+对于防御性错误处理清理，仅在以下条件全部满足时才移除 catch 块：
 
-- The catch block only logs and rethrows, returns a generic fallback, or silently returns
-  `null`/`undefined`.
-- There is no required cleanup, rollback, retry, audit, or domain error translation.
-- The caller or framework has a clearer error boundary.
-- The change does not hide a user-facing error message requirement.
+- catch 块只记录日志并重抛、返回通用 fallback，或静默返回 `null`/`undefined`。
+- 没有必需的清理、回滚、重试、审计或领域错误转换。
+- 调用方或框架有更清晰的错误边界。
+- 该改动不会隐藏面向用户的错误消息要求。
 
-Do not remove catch blocks that perform meaningful recovery, resource cleanup, per-item isolation,
-security auditing, or domain-specific error conversion.
+不要移除执行有意义恢复、资源清理、逐项隔离、安全审计或特定领域错误转换的 catch 块。
 
 ## Output
 
-For review tasks, use this structure:
+对于 review 任务，使用以下结构：
 
 ```markdown
 Findings:
@@ -346,15 +318,14 @@ Verification:
 - Not run: ...
 ```
 
-For cleanup tasks, summarize:
+对于 cleanup 任务，总结：
 
-- Files changed.
-- Behavior preserved or intentionally changed.
-- Verification run.
-- Remaining risks or follow-up work.
+- 变更的文件。
+- 行为是保持不变还是有意改变。
+- 运行的验证。
+- 遗留风险或后续工作。
 
 ## Source Inspiration
 
-This workflow was generalized from common repository quality practices and from public vm0 project
-docs covering bad smells and testing strategy. Do not assume vm0-specific paths, commands, or rules
-unless reviewing the vm0 repository itself.
+本工作流概括自常见仓库质量实践，以及公开 vm0 项目文档中关于坏味道和测试策略的内容。
+除非正在审查 vm0 仓库本身，否则不要假设 vm0 特有的路径、命令或规则。

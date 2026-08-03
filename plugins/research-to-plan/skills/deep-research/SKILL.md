@@ -1,58 +1,50 @@
 ---
 name: deep-research
-description: Research a complex software task before solution discussion by gathering facts, mapping code, and writing structured research notes.
+description: 在讨论解决方案之前研究复杂的软件任务：收集事实、梳理代码结构，并撰写结构化的研究笔记。
 ---
 
 # Deep Research
 
-Use this skill for the research phase of complex work when the user wants investigation, codebase
-understanding, root-cause analysis, or technical discovery before discussing solutions.
+当用户希望在讨论解决方案之前先做调研、理解代码库、进行根因分析或技术探索时，对复杂工作的研究阶段使用本 skill。
 
 ## Boundaries
 
-During this phase, gather facts only. Do not propose fixes, designs, implementation approaches,
-roadmaps, or recommendations. It is acceptable to record constraints, risks, unknowns, and observed
-trade-offs as facts.
+在此阶段只收集事实。不要提出修复方案、设计、实现方式、路线图或建议。可以将约束、风险、未知项以及观察到的权衡作为事实记录下来。
 
-Use the user's language unless repository guidance requires another language.
+使用用户的语言，除非仓库指引要求使用其他语言。
 
-When another workflow skill calls this phase, follow that caller's scope and return the research
-artifact without asking phase-transition questions unless required context is missing.
+当其他工作流 skill 调用本阶段时，遵循调用方的范围，并直接返回研究产物；除非缺少必要的上下文，否则不要询问阶段切换相关的问题。
 
-Before creating artifacts, read and follow the
-[repository work-file contract](../../references/repository-work-files.md). Keep generated files in
-the active workspace under `<codex-work>/research/`; never use an operating-system temp directory.
+在创建产物之前，先阅读并遵循
+[仓库工作文件契约](../../references/repository-work-files.md)。将生成的文件保存在当前工作区的
+`<codex-work>/research/` 目录下；切勿使用操作系统的临时目录。
 
 ## Workflow
 
-1. Clarify the task only when the scope is ambiguous.
-2. Resolve the artifact directory:
-   - Use the caller-provided artifact directory only when it satisfies the repository work-file
-     contract.
-   - Otherwise use the caller-provided task slug if present.
-   - Otherwise choose a sanitized task slug using lowercase letters, numbers, and hyphens.
-   The default artifact directory is `<codex-work>/research/<task-slug>/`.
-3. Create `research.md` in the resolved artifact directory.
-4. Read repository guidance first, such as `AGENTS.md`, `CONTRIBUTING.md`, README files, docs,
-   package scripts, test configuration, and nearby tests.
-5. Research systematically:
-   - Identify relevant entry points, modules, commands, data flows, and dependencies.
-   - Trace callers and state changes rather than only reading changed lines.
-   - Separate known facts from assumptions and unknowns.
-   - Check project docs before applying generic conventions.
-   - For third-party APIs, SDKs, protocols, or current external behavior, use official
-     documentation or current sources when needed.
-6. Write findings to `research.md` as you go. Prefer concise sections such as:
+1. 仅在范围不明确时才澄清任务。
+2. 解析产物目录：
+   - 只有当调用方提供的产物目录符合仓库工作文件契约时才使用它。
+   - 否则，如果调用方提供了 task slug，则使用它。
+   - 否则，选择一个经过净化的 task slug，仅使用小写字母、数字和连字符。
+   默认产物目录为 `<codex-work>/research/<task-slug>/`。
+3. 在解析出的产物目录中创建 `research.md`。
+4. 先阅读仓库指引，例如 `AGENTS.md`、`CONTRIBUTING.md`、README 文件、文档、
+   包脚本、测试配置以及附近的测试。
+5. 系统性地开展研究：
+   - 识别相关的入口点、模块、命令、数据流和依赖。
+   - 追踪调用方和状态变化，而不是只阅读变更的行。
+   - 区分已知事实与假设和未知项。
+   - 在套用通用约定之前先检查项目文档。
+   - 对于第三方 API、SDK、协议或当前的外部行为，必要时使用官方文档或最新来源。
+6. 边研究边将发现写入 `research.md`。推荐使用简洁的章节，例如：
    - Scope
    - Repository Guidance Read
    - Relevant Files And Flows
    - Constraints
    - Unknowns
    - Verification Surface
-7. Finish by summarizing factual findings and asking what should happen next, unless a caller
-   workflow owns the next step.
+7. 最后总结事实性发现，并询问接下来应该做什么；除非后续步骤由调用方工作流负责。
 
 ## Output
 
-Report the research file path and a short facts-only summary. Do not include recommendations in the
-research summary.
+报告研究文件的路径，并给出简短的、仅包含事实的摘要。研究摘要中不要包含建议。
