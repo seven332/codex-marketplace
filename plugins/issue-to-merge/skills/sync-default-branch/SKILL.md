@@ -1,21 +1,21 @@
 ---
 name: sync-default-branch
-description: Switch to the repository default branch and fast-forward it to the latest remote state. Use before starting new work or after a pull request is merged.
+description: 切换到仓库默认 branch 并将其快进到最新远端状态。在开始新工作之前或 pull request 合并之后使用。
 ---
 
 # Sync Default Branch
 
-## Workflow
+## 工作流
 
-1. Check working-tree state with `git status --short --branch`.
-2. If uncommitted changes are present, stop and ask how to handle them.
-3. Detect the default branch:
+1. 用 `git status --short --branch` 检查工作树状态。
+2. 如果存在未提交改动，停下来询问如何处理。
+3. 检测默认 branch：
    ```bash
    DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
    ```
-   Stop if detection fails or returns an empty value. Do not guess a branch name.
-4. Switch with `git switch "$DEFAULT_BRANCH"`.
-5. Pull with `git pull --ff-only`.
-6. Report the latest commit and whether the branch fast-forwarded.
+   检测失败或返回空值时停止。不要猜测 branch 名称。
+4. 用 `git switch "$DEFAULT_BRANCH"` 切换。
+5. 用 `git pull --ff-only` 拉取。
+6. 报告最新的 commit 以及 branch 是否完成了快进。
 
-Do not stash, discard, amend, reset, or force-push in this skill.
+不要在本 skill 中 stash、丢弃、amend、reset 或强制推送。

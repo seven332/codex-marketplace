@@ -1,10 +1,9 @@
-# Notice
+# 声明
 
-This plugin was adapted for Codex from the public `deep-dive` skills in
-`vm0-ai/team-skills`.
+本插件改编自 `vm0-ai/team-skills` 中公开的 `deep-dive` skill，并适配到 Codex。
 
-Source:
+来源：
 https://github.com/vm0-ai/team-skills/tree/main/deep-dive
 
-The upstream README identifies the project license as MIT. The skill text here is rewritten for
-Codex and generalized away from Claude-specific commands and vm0-specific workflow assumptions.
+上游 README 标明该项目采用 MIT 许可证。此处的 skill 文本已为 Codex 重写，
+并做了通用化处理，去除了 Claude 专属命令和 vm0 专属的工作流假设。

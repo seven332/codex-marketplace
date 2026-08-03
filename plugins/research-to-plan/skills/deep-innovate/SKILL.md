@@ -1,52 +1,46 @@
 ---
 name: deep-innovate
-description: Explore multiple solution approaches and trade-offs from existing research notes without committing to an implementation plan.
+description: 基于已有的研究笔记探索多种解决方案及其权衡，而不锁定具体的实施计划。
 ---
 
 # Deep Innovate
 
-Use this skill after `deep-research` when the user wants solution exploration, architectural
-alternatives, or trade-off analysis before choosing a direction.
+在 `deep-research` 之后，当用户希望在选定方向之前先探索解决方案、架构备选方案或权衡分析时，使用本 skill。
 
 ## Boundaries
 
-Explore options but do not create a step-by-step implementation plan, write code, edit repository
-source files, commit to one solution, or estimate timelines unless the user explicitly asks for
-that kind of decision support. Keep implementation details high level.
+只探索备选方案，不要制定分步实施计划、编写代码、编辑仓库源文件、锁定某个方案，
+也不要估算时间线，除非用户明确要求这类决策支持。实现细节保持在较高层次。
 
-Use the user's language unless repository guidance requires another language.
+使用用户的语言，除非仓库指引要求使用其他语言。
 
-When another workflow skill calls this phase, follow that caller's scope and return the innovation
-artifact without asking phase-transition questions unless required context is missing.
+当其他工作流 skill 调用本阶段时，遵循调用方的范围，并直接返回创新产物；除非缺少必要的上下文，否则不要询问阶段切换相关的问题。
 
-Before reading or creating artifacts, read and follow the
-[repository work-file contract](../../references/repository-work-files.md). Keep generated files in
-the active workspace under `<codex-work>/research/`; never use an operating-system temp directory.
+在读取或创建产物之前，先阅读并遵循
+[仓库工作文件契约](../../references/repository-work-files.md)。将生成的文件保存在当前工作区的
+`<codex-work>/research/` 目录下；切勿使用操作系统的临时目录。
 
 ## Workflow
 
-1. Resolve the artifact directory:
-   - Use the caller-provided artifact directory only when it satisfies the repository work-file
-     contract.
-   - Otherwise use the caller-provided task slug if present.
-   - Otherwise locate the matching `<codex-work>/research/<task-slug>/` directory.
-   If no matching `research.md` exists, ask whether to run `deep-research` first.
-2. Read `research.md` from the resolved artifact directory and relevant repository guidance it
-   references.
-3. Create `innovate.md` in the resolved artifact directory.
-4. Generate at least two credible approaches when possible. For each approach, document:
-   - Core idea
-   - Advantages
-   - Risks and trade-offs
-   - Fit with existing architecture and project conventions
-   - Validation implications
-5. Compare approaches explicitly:
-   - Where they differ
-   - What assumptions they depend on
-   - What constraints from research matter most
-6. Record open questions that should be answered before planning.
+1. 解析产物目录：
+   - 只有当调用方提供的产物目录符合仓库工作文件契约时才使用它。
+   - 否则，如果调用方提供了 task slug，则使用它。
+   - 否则，定位匹配的 `<codex-work>/research/<task-slug>/` 目录。
+   如果不存在匹配的 `research.md`，询问是否先运行 `deep-research`。
+2. 从解析出的产物目录中读取 `research.md`，以及其中引用的相关仓库指引。
+3. 在解析出的产物目录中创建 `innovate.md`。
+4. 尽可能给出至少两个可信的方案。对每个方案记录：
+   - 核心思路
+   - 优势
+   - 风险与权衡
+   - 与现有架构和项目约定的契合度
+   - 对验证的影响
+5. 明确比较各方案：
+   - 差异所在
+   - 各自依赖的假设
+   - 研究中最重要的约束
+6. 记录在规划之前应当解决的未决问题。
 
 ## Output
 
-Report the innovation file path, summarize the main options, and ask which direction to plan unless
-a caller workflow owns that decision.
+报告创新文件的路径，总结主要备选方案，并询问接下来规划哪个方向；除非该决策由调用方工作流负责。

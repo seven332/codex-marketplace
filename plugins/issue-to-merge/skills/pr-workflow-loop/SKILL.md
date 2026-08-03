@@ -1,89 +1,85 @@
 ---
 name: pr-workflow-loop
-description: Deliver a broad GitHub issue or repository work queue through repeated, merged PR-sized workflow cycles, preserving progress and closing a parent-bound delivery issue after its completion gate passes. Use only when the user explicitly requests a multi-PR merge loop.
+description: 通过重复的、可 merge 的 PR 级工作流循环交付宽泛的 GitHub issue 或仓库工作队列，保留进度，并在完成门禁通过后关闭绑定 parent 的交付 issue。仅当用户明确请求多 PR merge 循环时使用。
 ---
 
 # PR Workflow Loop
 
-Treat an explicit request to run this skill as approval to normally merge each PR that reaches
-current-head readiness. In parent-bound mode, it also authorizes closing the delivery parent as
-completed after the completion gate passes, unless the user explicitly asks to leave it open. This
-authority does not apply in repository-queue mode. It does not authorize admin bypasses,
-destructive cleanup, plain `git push --force`, or history rewrites outside the current iteration's
-`rebase-default-branch` flow. That flow may rebase the current PR branch and update the same remote
-branch with `git push --force-with-lease` without separate approval.
+将运行本 skill 的明确请求视为批准正常 merge 每个达到当前 head 就绪状态的 PR。
+在绑定 parent 模式下，它还授权在完成门禁通过后将交付 parent 关闭为已完成，
+除非用户明确要求保持其开放。此权限在仓库队列模式下不适用。它不授权 admin 绕过、
+破坏性清理、普通的 `git push --force`，或当前迭代 `rebase-default-branch` 流程之外的
+历史重写。该流程可以 rebase 当前 PR branch 并用 `git push --force-with-lease` 更新
+同一远端 branch，无需单独批准。
 
-If a progress or completion comment needs a local command payload, read and follow the
-[repository work-file contract](../../references/repository-work-files.md) and create it under
-`<codex-work>/tmp/issue-to-merge/pr-workflow-loop/`. Do not create an operating-system temp file.
+如果进度或完成评论需要本地命令载荷，阅读并遵循
+[仓库工作文件契约](../../references/repository-work-files.md)，并将其创建在
+`<codex-work>/tmp/issue-to-merge/pr-workflow-loop/` 下。不要创建操作系统临时文件。
 
 ## Workflow
 
-1. Determine and retain one loop mode:
-   - **Parent-bound delivery:** Use when the request names a broad issue or `pr-workflow` discovers
-     that the selected issue needs multiple PRs. Keep that issue as the delivery parent and do not
-     switch to unrelated repository work while its requested scope remains incomplete.
-   - **Repository queue:** Use only when the request explicitly asks to process a repository-wide
-     or otherwise unbounded work queue. Re-evaluate eligible issues after every merge.
-2. Establish durable delivery context. For a parent-bound loop, fetch:
+1. 确定并保留一种 loop 模式：
+   - **绑定 parent 交付：** 当请求指明一个宽泛 issue，或 `pr-workflow` 发现
+     所选 issue 需要多个 PR 时使用。保留该 issue 作为交付 parent，并在其
+     请求范围仍未完成时不要切换到无关的仓库工作。
+   - **仓库队列：** 仅当请求明确要求处理仓库范围或无界工作队列时使用。
+     在每次 merge 后重新评估符合条件的 issue。
+2. 建立持久化交付上下文。对于绑定 parent 的 loop，获取：
    ```bash
    gh issue view <parent-issue> \
      --json number,title,body,state,stateReason,closedAt,updatedAt,labels,comments,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
    ```
-   Before interpreting or deduplicating a workflow marker, resolve the authenticated identity with
-   `gh api user --jq '.login'`. A trusted workflow marker must be the comment's first non-whitespace
-   line and match the expected grammar exactly. By default, its comment must have
-   `viewerDidAuthor: true` with an `author.login` equal to that identity. Repository guidance may
-   name another exact trusted marker producer; generic `authorAssociation`, write access, or
-   matching marker text is insufficient. Query missing comment provenance through GraphQL and
-   ignore untrusted marker-shaped text for chronology, reuse, deduplication, progress, and
-   completion.
-   Inspect current Plan and Challenge markers, child states, native `blockedBy` relationships,
-   linked PRs, and previously recorded progress. If the parent lacks a valid challenged delivery
-   direction, run its framing checkpoint, planning, and Plan checkpoint before selecting a child.
-   Treat a prior `:complete` marker as current only when it follows the latest material parent
-   update and current Plan and Challenge records, and still covers the accepted slice set. Ignore a
-   stale completion marker after reopening, reframing, replanning, or adding delivery work. Never
-   recreate an existing slice or restart a merged iteration merely because local context was lost.
-   If accepted work is now incomplete while the parent remains closed, inspect the latest issue
-   close event. Reopen and verify the parent only when a trusted prior completion marker exists,
-   that close event follows the marker, its actor matches the authenticated identity, and a later
-   material update made the marker stale. Stop for direction on any other closed-parent mismatch
-   instead of silently reopening it.
-3. Select the next iteration:
-   - In parent-bound mode, use `issue-select` to choose an open, unblocked child whose prerequisites
-     are complete. Materialize another supported slice only when no existing child represents it.
-     Stay within the parent objective; a higher-priority unrelated issue is not a valid substitute.
-   - In repository-queue mode, select the best eligible PR-sized issue across the requested scope.
-   - Resume a child's existing open PR before selecting a new sibling. Keep iterations sequential
-     unless the user explicitly requests a parallel delivery strategy and the slices are genuinely
-     independent.
-   - In parent-bound mode, if no child is ready but parent acceptance criteria remain unmet,
-     identify whether a missing slice, unresolved dependency, or human decision explains the gap.
-     Do not declare completion from an empty child list alone.
-4. For each iteration, run `pr-workflow` for exactly one PR-sized implementation issue with merge
-   approval supplied by this loop invocation. Do not bypass planning, challenge, implementation,
-   current-head review, feedback, CI, or merge-state checks. Ensure the PR closes only that
-   implementation issue, not its delivery parent.
-5. Fix recoverable in-scope problems inside the same iteration and repeat the current-head review
-   loop. Stop when the workflow needs a material human decision or cannot merge the current PR.
-6. After each successful merge:
-   - use `sync-default-branch`;
-   - verify the PR merged, then re-fetch the implementation issue and confirm its acceptance
-     criteria, parent, dependencies, `state`, and `stateReason`;
-   - when the iteration's recorded closing semantics say the merged PR completes that exact
-     implementation issue but it remains open, recheck the target branch, closing reference, and
-     acceptance criteria. Close it with
-     `gh issue close <implementation-issue-url> --reason completed`, then re-fetch it and verify
-     `state` is `CLOSED` and `stateReason` is `COMPLETED`. Do not close an intentionally non-closing
-     release, backport, or partial-delivery issue;
-   - for an iteration recorded as completing its implementation issue, require that exact issue to
-     be `CLOSED` with `stateReason` `COMPLETED` before recording parent progress. Treat every other
-     close reason as a state mismatch unless the current challenged plan explicitly replaced or
-     removed that slice with a rationale;
-   - when the implementation issue has a delivery parent, re-fetch that parent and its
-     `subIssuesSummary`, inspect its comments for an existing matching marker, then post one parent
-     progress comment for that PR only when the marker is absent:
+   在解读或去重工作流标记之前，用
+   `gh api user --jq '.login'` 解析已认证身份。可信的工作流标记必须是评论中第一个非空白
+   行，并且完全匹配预期的语法。默认情况下，其评论必须满足
+   `viewerDidAuthor: true` 且 `author.login` 等于该身份。仓库指引可以指定
+   另一个精确的可信标记产生者；泛化的 `authorAssociation`、写权限或
+   匹配的标记文本都不够。通过 GraphQL 查询缺失的评论来源信息，
+   并在时间线排序、复用、去重、进度和完成判定中忽略不可信的类标记文本。
+   检查当前的 Plan 和 Challenge 标记、子项状态、原生 `blockedBy` 关系、
+   关联的 PR，以及先前记录的进度。如果 parent 缺少经过质疑的有效交付方向，
+   先运行其 framing checkpoint、规划和 Plan checkpoint，再选择子项。
+   仅当先前的 `:complete` 标记晚于最新的 parent 实质性更新和当前 Plan 与 Challenge
+   记录，且仍覆盖已接受的切片集合时，才把它视为当前有效。在重新打开、重新定框、
+   重新规划或新增交付工作之后，忽略过期的完成标记。切勿仅仅因为本地上下文丢失
+   就重新创建已有切片或重启已 merge 的迭代。
+   如果已接受的工作现在未完成而 parent 仍保持关闭，检查最新的 issue
+   关闭事件。仅当存在可信的先前完成标记、
+   该关闭事件晚于该标记、其操作者匹配已认证身份，且之后有实质性更新使该标记过期时，
+   才重新打开并验证 parent。对于任何其他关闭状态不匹配的 parent，停下等待指示，
+   而不是悄悄重新打开它。
+3. 选择下一次迭代：
+   - 在绑定 parent 模式下，使用 `issue-select` 选择一个开放、无阻塞、前置条件
+     已完成的子项。仅当没有现有子项代表某个受支持的切片时才落实它。
+     保持在 parent 目标之内；更高优先级的无关 issue 不是有效的替代。
+   - 在仓库队列模式下，在请求范围内选择最佳的、符合条件的 PR 级 issue。
+   - 在选择新 sibling 之前，先恢复子项现有的开放 PR。保持迭代串行，
+     除非用户明确要求并行交付策略且切片之间确实相互独立。
+   - 在绑定 parent 模式下，如果没有就绪的子项但 parent 验收标准仍未满足，
+     查明是缺失切片、未解决依赖还是人工决定造成了缺口。
+     不要仅凭空的子项列表宣布完成。
+4. 每次迭代，针对恰好一个 PR 级实现 issue 运行 `pr-workflow`，merge
+   批准由本次 loop 调用提供。不要绕过规划、质疑、实现、
+   当前 head 审查、反馈、CI 或 merge 状态检查。确保 PR 只关闭那个
+   实现 issue，而不是其交付 parent。
+5. 在同一迭代内修复可恢复的范围内问题，并重复当前 head 审查
+   循环。当工作流需要实质性人工决定或无法 merge 当前 PR 时停下。
+6. 每次成功 merge 之后：
+   - 使用 `sync-default-branch`；
+   - 验证 PR 已 merge，然后重新获取实现 issue 并确认其验收
+     标准、parent、依赖、`state` 和 `stateReason`；
+   - 当迭代记录的关闭语义表明已 merge 的 PR 完成了那个确切的
+     实现 issue 但它仍然开放时，重新检查目标 branch、关闭引用和
+     验收标准。用
+     `gh issue close <implementation-issue-url> --reason completed` 关闭它，然后重新获取并验证
+     `state` 为 `CLOSED` 且 `stateReason` 为 `COMPLETED`。不要关闭有意不关闭的
+     release、backport 或部分交付 issue；
+   - 对于记录为完成其实现 issue 的迭代，要求那个确切的 issue
+     处于 `CLOSED` 且 `stateReason` 为 `COMPLETED`，才能记录 parent 进度。除非当前经过质疑的 plan
+     明确以理由替换或移除了该切片，否则把其他任何关闭原因视为状态不匹配；
+   - 当实现 issue 有交付 parent 时，重新获取该 parent 及其
+     `subIssuesSummary`，检查其评论中是否已有匹配的标记，然后仅当标记缺失时
+     为该 PR 发布一条 parent 进度评论：
      ```markdown
      <!-- codex-marketplace:pr-workflow-loop:issue-<parent>:pr-<pr>:merged -->
      ## Delivery Progress
@@ -91,70 +87,66 @@ If a progress or completion comment needs a local command payload, read and foll
      <merged child and PR, validation outcome, completed slices, remaining or blocked slices,
      and the next eligible slice>
      ```
-   Skip parent-only actions for a standalone repository-queue issue. Update and rechallenge a
-   parent plan only when evidence materially changes its direction, slices, dependencies, or
-   acceptance criteria; avoid cosmetic body churn.
-7. Before declaring a parent-bound delivery complete, verify all of these conditions against the
-   current default branch and GitHub state. Record the remote default-branch head OID used for this
-   validation as part of the completion-gate snapshot:
-   - every accepted delivery slice is represented by an issue closed with reason `COMPLETED`, or
-     was explicitly replaced or removed with a recorded rationale;
-   - no open or blocked child remains inside the requested delivery scope;
-   - the merged result satisfies the parent's acceptance criteria, including cross-slice tests,
-     documentation, compatibility, migration, integration, and rollout work where applicable; and
-   - no unresolved parent comment, pending decision, blocker marker, or stale Plan/Challenge state
-     remains.
-   If an acceptance criterion is unmet, return to parent planning and challenge when the delivery
-   direction must change, then use `issue-select` for another coherent slice; stop for any required
-   human decision instead of marking the parent complete.
-8. In parent-bound mode, after the completion gate passes, immediately re-fetch the remote
-   default-branch head OID and the full parent snapshot from step 2, including its comments, current
-   Plan and Challenge records, children, dependencies, `updatedAt`, `state`, and `stateReason`.
-   Compare them with the completion-gate snapshot on which step 7 passed. If the head OID or any
-   parent snapshot field changed, rerun the completion gate before publishing or reusing a
-   completion marker. Otherwise, inspect existing parent comments and post the completion summary
-   unless a current marker already records the same challenged plan, accepted slice set, and
-   completion evidence. An older marker does not suppress a refreshed summary after a material
-   parent change:
+   对于独立的仓库队列 issue，跳过仅针对 parent 的动作。仅当证据实质性地改变了
+   parent plan 的方向、切片、依赖或验收标准时才更新并重新质疑它；
+   避免对正文做无实质意义的改动。
+7. 在宣布绑定 parent 的交付完成之前，对照当前默认 branch 和 GitHub 状态验证以下
+   所有条件。把本次验证所用的远端默认 branch head OID 记录为
+   完成门禁快照的一部分：
+   - 每个已接受的交付切片都由一个以 `COMPLETED` 原因关闭的 issue 代表，或
+     者已被明确替换或移除并记录了理由；
+   - 请求的交付范围内没有残留的开放或被阻塞的子项；
+   - merge 结果满足 parent 的验收标准，包括适用时的跨切片测试、
+     文档、兼容性、迁移、集成和上线工作；并且
+   - 没有残留的未解决 parent 评论、待决决定、阻塞标记或过期的 Plan/Challenge 状态。
+   如果某个验收标准未满足，且交付方向必须改变，返回 parent 规划和质疑，
+   然后用 `issue-select` 选择另一个连贯的切片；对于任何必需的人工决定，停下等待，
+   而不是把 parent 标记为完成。
+8. 在绑定 parent 模式下，完成门禁通过后，立即重新获取远端
+   默认 branch head OID 和步骤 2 的完整 parent 快照，包括其评论、当前
+   Plan 和 Challenge 记录、子项、依赖、`updatedAt`、`state` 和 `stateReason`。
+   把它们与步骤 7 通过时依据的完成门禁快照比较。如果 head OID 或任何
+   parent 快照字段发生变化，在发布或复用完成标记之前重新运行完成门禁。
+   否则，检查现有 parent 评论，除非当前标记已记录了相同的经过质疑的 plan、已接受的切片集合和
+   完成证据，否则发布完成总结。较旧的标记不会在 parent 实质性变化后压制更新过的总结：
    ```markdown
    <!-- codex-marketplace:pr-workflow-loop:issue-<parent>:complete -->
    ## Delivery Complete
 
    <merged children and PRs, final validation, acceptance evidence, and remaining risks>
    ```
-   After posting or reusing that summary, immediately re-fetch the remote default-branch head OID
-   and the same full parent snapshot. Ignore only the expected update from a completion comment
-   that this run just posted; if the head OID or anything else changed, rerun the completion gate
-   instead of closing stale state. If the parent is open and the user did not explicitly ask to
-   leave it open, close and verify it:
+   在发布或复用该总结之后，立即重新获取远端默认 branch head OID
+   和同一份完整 parent 快照。仅忽略本次运行刚发布的完成评论带来的预期更新；
+   如果 head OID 或其他任何内容发生变化，重新运行完成门禁，
+   而不是关闭过期状态。如果 parent 处于开放状态且用户没有明确要求保持其开放，
+   关闭并验证它：
    ```bash
    gh issue close <parent-issue-url> --reason completed
    gh issue view <parent-issue-url> \
      --json number,title,body,state,stateReason,closedAt,updatedAt,labels,comments,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
    ```
-   Require `state` to be `CLOSED` and `stateReason` to be `COMPLETED`, re-fetch the remote
-   default-branch head OID, and compare both results with the pre-close snapshot. Ignore only the
-   expected changes to `state`, `stateReason`, `closedAt`, and `updatedAt` caused by this run's
-   close. If the head OID changed or another material change invalidated step 7 while the close was
-   in flight, compensate immediately:
+   要求 `state` 为 `CLOSED` 且 `stateReason` 为 `COMPLETED`，重新获取远端
+   默认 branch head OID，并将两项结果与关闭前快照比较。仅忽略
+   本次运行关闭操作导致的 `state`、`stateReason`、`closedAt` 和 `updatedAt` 的预期变化。
+   如果 head OID 发生变化，或在关闭进行期间其他实质性变化使步骤 7 失效，
+   立即补偿：
    ```bash
    gh issue reopen <parent-issue-url>
    gh issue view <parent-issue-url> --json state,stateReason,closedAt,url
    ```
-   Require the parent to be `OPEN`, then rerun the completion gate. Stop and report the state
-   mismatch if reopening or verification fails. Treat an already closed parent as complete only
-   with reason `COMPLETED`; report any other closed reason as a state mismatch. When the user
-   explicitly asked to leave the parent open, report it as verified ready to close instead. In
-   repository-queue mode, retain per-PR progress on affected parents, but do not infer parent
-   completion from queue exhaustion; skip the parent completion summary and parent closure, then
-   continue selecting within the queue scope.
-9. Stop when the requested scope passes its completion gate and every authorized terminal issue
-   state change is verified, the current issue or PR is blocked, useful splitting is blocked, no
-   suitable work remains in queue mode, a required merge is not authorized, or an iteration leaves
-   an unmerged PR.
+   要求 parent 处于 `OPEN`，然后重新运行完成门禁。如果重新打开或验证失败，停下并报告
+   状态不匹配。仅当关闭原因为 `COMPLETED` 时才把已关闭的 parent 视为完成；
+   把其他任何关闭原因报告为状态不匹配。当用户明确要求保持 parent 开放时，
+   改为报告其已验证为可关闭。在仓库队列模式下，把每个 PR 的进度保留在受影响的
+   parent 上，但不要从队列耗尽推断 parent 完成；跳过 parent 完成总结和 parent 关闭，
+   然后继续在队列范围内选择。
+9. 当请求的范围通过其完成门禁且每个已授权的终态 issue
+   状态变更都已验证时停下；也在当前 issue 或 PR 被阻塞、有用的拆分被阻塞、
+   队列模式下没有合适工作残留、必需的 merge 未获授权，或迭代留下
+   未 merge 的 PR 时停下。
 
 ## Related Skills
 
-- Use `pr-workflow` for each single-PR iteration.
-- Use `issue-select` inside each iteration to choose one PR-sized issue and preserve delivery
-  parent, sibling, and dependency context.
+- 对每个单 PR 迭代使用 `pr-workflow`。
+- 在每次迭代内使用 `issue-select` 选择一个 PR 级 issue，并保留交付
+  parent、sibling 和依赖上下文。
