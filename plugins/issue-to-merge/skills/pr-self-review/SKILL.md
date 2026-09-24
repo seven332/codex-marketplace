@@ -33,8 +33,11 @@ Review the submitted PR, not an unpushed local approximation of it.
       safety, authorization, secrets, and sensitive output.
    6. Check maintainability and structure: unclear shortcuts, over-fitted special cases,
       duplication, unnecessary abstractions, and structural debt.
-5. For an in-scope finding, implement the best supported fix, update tests or docs when relevant,
-   and run the required validation. Use `pr-submit` to commit, push, and update the submitted PR.
+5. For an in-scope finding, diagnose whether code, a test assertion or fixture, documentation,
+   another verification input, or the environment is responsible. Implement the best supported fix
+   in the responsible artifact; report an unresolved environmental blocker rather than weakening a
+   valid test to pass. Run the required validation, then use `pr-submit` to commit, push, and update
+   the submitted PR.
    Re-fetch `headRefOid` and the PR diff, then rerun the same pass against the new head.
 6. For a valid out-of-scope finding, search for a suitable existing issue first. Link it, or create
    one only when the user or active workflow authorized issue recording. If the user requested an

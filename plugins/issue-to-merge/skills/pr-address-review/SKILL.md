@@ -50,9 +50,11 @@ comment needs a local command payload, read and follow the full
 5. Before editing, require a clean working tree and confirm that the current branch matches the PR
    head branch. Stop for cross-repository PRs that cannot be updated safely from the local clone.
 6. Resolve ambiguous product or architecture choices with the user. For clear in-scope findings,
-   implement the best supported fix, update tests and documentation when relevant, and run the
-   repository's required validation.
-7. When a fix changes code, use `pr-submit` to commit, push, and refresh the PR. Re-fetch
+   diagnose whether code, a test assertion or fixture, documentation, another verification input,
+   or the environment is responsible. Fix the responsible artifact and run the repository's
+   required validation; report an unresolved environmental blocker rather than weakening a valid
+   test to pass.
+7. When a fix changes files, use `pr-submit` to commit, push, and refresh the PR. Re-fetch
    `headRefOid` afterward and verify that the submitted diff contains each intended fix. Skip
    `pr-submit` when the resolution requires only a reply and no PR metadata update.
 8. Immediately before replying or resolving, re-fetch `headRefOid` and the target thread state. If
@@ -69,12 +71,12 @@ comment needs a local command payload, read and follow the full
    active workflow authorized issue recording. Do not use a follow-up issue to avoid a fix required
    for the current PR's correctness, tests, documentation, or reviewability.
 10. Re-read review threads, `reviewDecision`, and `headRefOid`. Report what was fixed, answered,
-    resolved, left open, or recorded elsewhere. After a code update, return to `pr-self-review`,
+    resolved, left open, or recorded elsewhere. After a file update, return to `pr-self-review`,
     then `pr-review` and `pr-check` for the new head. After reply-only work on an unchanged head,
     return directly to `pr-check` and feedback inspection.
 
 ## Related Skills
 
-- Use `pr-submit` after making code changes.
+- Use `pr-submit` after making file changes.
 - Use `pr-self-review` and `pr-review` again after the PR head changes.
 - Use `pr-check` to verify CI and review state after feedback is addressed.

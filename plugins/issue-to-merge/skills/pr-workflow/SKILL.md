@@ -122,7 +122,9 @@ new submitted head. Continue only after a full clean loop on an unchanged `headR
 ### 9. Post The Current-Head Review
 
 Use `pr-review`. Require an `lgtm` marker for the current `headRefOid`. For `changes-requested` or
-`needs-discussion`, return to self-review; after any fix, submit it and repeat both review stages.
+`needs-discussion`, return to self-review to address actionable current-PR findings; after any fix,
+validate and submit it, then repeat both review stages. A standalone `pr-review` remains a
+head-specific inspection, not the repair owner.
 
 ### 10. Check CI, Feedback, And Merge State
 
@@ -130,12 +132,16 @@ Run `pr-check` in read-only `check` mode against the reviewed head.
 
 Also run `pr-address-review inspect` to scan top-level and inline feedback from
 people, bots, and GitHub Apps; automated feedback does not always affect `reviewDecision`.
+`pr-check check` and feedback inspection report findings without editing. In this active workflow,
+diagnose actionable current-PR failures and route them to the authorized repair path below.
 
 - For pending checks, report readiness as pending. Use `watch` only when requested.
 - For an explicitly authorized mechanical lint or format fix, use `pr-check fix`, then return to
   step 8 for the new head.
-- For type, test, build, or product failures, return to implementation, submit the fix, and restart
-  at step 8.
+- For type, test, build, or product failures, determine whether code, tests or fixtures,
+  documentation, verification inputs, or the environment caused the failure. Return to
+  implementation to fix the responsible in-scope artifact and rerun relevant validation; do not
+  weaken valid tests merely to pass. Submit the fix through `pr-submit` and restart at step 8.
 - For actionable human, bot, or GitHub App feedback, run `pr-address-review address`. If it changes
   the PR head, restart at step 8; for reply-only work on the same head, repeat step 10.
 - When the PR branch must be updated from the default branch, including for merge conflicts, use
