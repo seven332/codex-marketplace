@@ -118,7 +118,15 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    silently diverge from the approved direction.
 10. Add or update tests for behavior changes.
 11. Update documentation for behavior changes when relevant.
-12. Run documented validation commands.
+12. Run documented validation commands. For each actionable finding needed for this PR, including
+    a validation failure, diagnose whether code, a test assertion or fixture, documentation, a
+    verification input, or the environment is responsible. Fix the responsible in-scope artifact
+    and rerun the relevant checks until the worktree is verified; do not weaken a valid test just
+    to make it pass. If a failure is environmental and cannot be resolved within this work, report
+    the blocker instead of claiming validation passed. Link an existing issue or create an
+    authorized follow-up only for valid work outside this PR, never to defer its correctness,
+    tests, documentation, or reviewability. If the fix changes the challenged direction, return
+    to planning and challenge before continuing.
 13. Report changed files, validation commands and results, remaining risks, the implementation
     issue URL, and its parent issue when present. Hand the verified working tree and that exact
     issue context to `pr-submit`. Do not stage, commit, push, or create a PR in this skill.
