@@ -71,12 +71,12 @@ comment needs a local command payload, read and follow the full
    active workflow authorized issue recording. Do not use a follow-up issue to avoid a fix required
    for the current PR's correctness, tests, documentation, or reviewability.
 10. Re-read review threads, `reviewDecision`, and `headRefOid`. Report what was fixed, answered,
-    resolved, left open, or recorded elsewhere. After a code update, return to `pr-self-review`,
+    resolved, left open, or recorded elsewhere. After a file update, return to `pr-self-review`,
     then `pr-review` and `pr-check` for the new head. After reply-only work on an unchanged head,
     return directly to `pr-check` and feedback inspection.
 
 ## Related Skills
 
-- Use `pr-submit` after making code changes.
+- Use `pr-submit` after making file changes.
 - Use `pr-self-review` and `pr-review` again after the PR head changes.
 - Use `pr-check` to verify CI and review state after feedback is addressed.
