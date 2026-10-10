@@ -32,6 +32,9 @@ request, investigation, or task.
    ```
    Assign every newly created issue to this user. Do not treat authorship as a substitute for
    assignment.
+   Read and follow the [current issue-state contract](../../references/current-issue-state.md).
+   Existing issues are read-only when closed. Record completed prerequisites as satisfied links
+   in the body rather than adding new blocking relationships.
 5. Read and follow the
    [repository work-file contract](../../references/repository-work-files.md). Create a unique issue
    body file under `<codex-work>/tmp/issue-to-merge/issue-create/` according to that contract's
@@ -48,6 +51,8 @@ request, investigation, or task.
    `tech-debt`, or `question`. Omit labels when no suitable label exists.
 7. Create the issue with the form that matches its verified relationships. Pass parent and
    dependency context supplied by `issue-select`; do not infer relationships from similar titles:
+   Immediately before creating a linked issue, re-fetch the parent and native prerequisites,
+   require `OPEN`, and verify they still support this exact slice and dependency direction.
    ```bash
    # Without labels
    gh issue create --title "<title>" --body-file "$ISSUE_BODY_FILE" --assignee "$CURRENT_USER"
@@ -56,17 +61,19 @@ request, investigation, or task.
    gh issue create --title "<title>" --body-file "$ISSUE_BODY_FILE" \
      --assignee "$CURRENT_USER" --label "<label-1>,<label-2>"
 
-   # As a delivery slice; omit --blocked-by when it has no prerequisite
+   # As a delivery slice; omit --blocked-by when it has no open prerequisite
    gh issue create --title "<title>" --body-file "$ISSUE_BODY_FILE" \
      --assignee "$CURRENT_USER" --parent <parent-issue> \
      --blocked-by <prerequisite-issue-numbers>
    ```
 8. Verify GitHub recorded the assignment and any intended relationships:
    ```bash
-   gh issue view <issue-number> --json number,url,assignees,parent,blockedBy
+   gh issue view <issue-number> --json number,url,state,assignees,parent,blockedBy
    ```
-   Stop and repair a missing current-user assignment or authorized relationship before handing the
-   issue to planning. Return the issue number, URL, assignee, parent, and dependencies.
+   Repair a missing current-user assignment or authorized relationship only after rechecking the
+   affected issues are open. If one closed during creation, stop further writes and report the
+   incomplete relationship instead of reopening it. Verify repairs before handing the issue to
+   planning. Return the issue number, URL, state, assignee, parent, and dependencies.
 9. Remove the issue body file after successful creation, or after a failed attempt is no longer
    being retried. Do not leave issue content in transient files unnecessarily.
 
