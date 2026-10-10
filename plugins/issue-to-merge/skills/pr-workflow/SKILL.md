@@ -23,6 +23,13 @@ marker text is insufficient. Query missing comment provenance through GraphQL an
 marker-shaped text for resumption, chronology, deduplication, gates, blockers, review readiness,
 and completion.
 
+For issue stages, read and follow the
+[current issue-state contract](../../references/current-issue-state.md). Keep the issue body as
+the current problem and plan, and maintain one editable state comment. This workflow authorizes
+that maintenance and cleanup of verified superseded agent content, not human discussion. Recheck
+`OPEN` before every issue mutation. Closed issues may supply completion evidence but cannot be
+edited or automatically reopened by this single-PR workflow.
+
 ## Workflow
 
 ### 1. Start Or Resume
@@ -35,9 +42,9 @@ before switching branches.
   work.
 - If an explicit issue has a linked open PR, resume that PR only when switching to its head branch
   is safe.
-- If an explicit issue has valid Plan, Challenge, approval, or blocker markers but no PR, resume
-  from the earliest incomplete issue or implementation stage on a safe branch instead of selecting
-  a new issue.
+- If an explicit open issue has a current body plan or trusted state but no PR, compute its actual
+  fingerprints and resume the earliest incomplete issue or implementation stage on a safe branch.
+  Do not infer a current plan, review, approval, or blocker from the newest historical comment.
 - If a feature branch has approved implementation work but no PR, resume implementation or
   submission on that branch.
 - Only for genuinely new work, use `sync-default-branch` before issue selection.
@@ -58,10 +65,11 @@ creation and relationship updates needed for a justified decomposition and selec
 
 ### 3. Challenge The Issue Framing
 
-Reuse a current `framing` Challenge Review when no material issue update follows it; otherwise use
-`issue-challenge` at that checkpoint before investing in detailed planning. Verify that the issue
-is necessary, supported by evidence, describes the right problem, has a justified scope, and leaves
-plan-ready requirements and acceptance criteria.
+Reuse a framing review only when it covers the actual current framing fingerprint and no
+unincorporated material human request remains; otherwise use `issue-challenge` at that checkpoint
+before investing in detailed planning. Verify that the issue is necessary, supported by evidence,
+describes the right problem, has a justified scope, and leaves plan-ready requirements and
+acceptance criteria.
 
 - On `proceed`, continue to planning.
 - On a completed `revise`, use the updated issue as planning input.
@@ -76,6 +84,8 @@ that weighs correctness, performance, compatibility, and long-term maintainabili
 repository guidance and known future constraints. For a planning parent, require parent-level
 acceptance criteria, coherent delivery slices, dependency order, and integration or rollout gates.
 Stop for a human decision when material alternatives remain tied.
+When the user changes direction, update the current plan rather than adding another proposal
+comment. Invalidate affected reviews and approval, then repeat the necessary checkpoints.
 
 ### 5. Challenge The Plan
 
@@ -90,17 +100,18 @@ boundary or smallest diff as a constraint on the best justified direction.
   Reviews do not replace the child's own checkpoints. Repeat decomposition if a proposed child is
   still too broad instead of implementing an umbrella issue.
 - Before leaving a `proceed` parent for its selected child, remove the workflow-owned
-  `codex-pending` label only when this invocation authorizes continuing and comment chronology
-  confirms that the label represented the now-resolved parent Plan wait. Preserve it when any
-  pending decision, blocker, `defer`, `recommend-close`, or stale Plan/Challenge state remains.
+  `codex-pending` label only while the parent is open, this invocation authorizes continuing, and
+  the trusted current state confirms the plan wait is resolved. Preserve it when any pending
+  decision, blocker, `defer`, `recommend-close`, or fingerprint-stale review remains.
   ```bash
   gh issue edit <parent-issue> --remove-label codex-pending 2>/dev/null || true
   ```
 - If child planning changes the overall design, dependencies, or parent acceptance criteria,
   return to step 3 for the delivery parent, then rescreen, replan, and rechallenge every affected
   child before implementation.
-- Continue only after a `plan:proceed` outcome for the latest Plan. This workflow invocation supplies
-  implementation approval unless the user asked to pause after planning.
+- Continue only after `plan:proceed` covers the actual current body plan fingerprint. This workflow
+  invocation supplies implementation approval unless the user asked to pause after planning;
+  an old plan's human approval does not transfer to its replacement.
 
 ### 6. Implement And Verify
 
@@ -164,7 +175,9 @@ never starts the next child PR automatically. Use `pr-workflow-loop` only after 
 for repeated merge-authorized iterations.
 
 After a completed merge, use `sync-default-branch`, confirm the implementation issue and parent
-relationship state, then report parent progress. A single child `pr-workflow` never closes its
+relationship state, then maintain progress in the open parent's body/state without appending
+per-PR progress comments. Read an already closed parent without modifying it and report any
+completion mismatch to the owning loop or user. A single child `pr-workflow` never closes its
 delivery parent. When a parent-bound `pr-workflow-loop` invoked this workflow, return the parent
 state to that loop so it can own the full completion gate and terminal parent closure.
 

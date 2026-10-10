@@ -13,9 +13,13 @@ destructive cleanup, plain `git push --force`, or history rewrites outside the c
 `rebase-default-branch` flow. That flow may rebase the current PR branch and update the same remote
 branch with `git push --force-with-lease` without separate approval.
 
-If a progress or completion comment needs a local command payload, read and follow the
-[repository work-file contract](../../references/repository-work-files.md) and create it under
-`<codex-work>/tmp/issue-to-merge/pr-workflow-loop/`. Do not create an operating-system temp file.
+Read and follow the [current issue-state contract](../../references/current-issue-state.md).
+Maintain current progress and completion in the body and one state comment, not an append-only
+comment log. All issue mutations require `OPEN`, except reopening the latest close proven to be
+the agent's own operation under that contract. A matching GitHub username is not sufficient.
+Read and follow the [repository work-file contract](../../references/repository-work-files.md)
+for command payloads under `<codex-work>/tmp/issue-to-merge/pr-workflow-loop/` and retained close
+receipts under `<codex-work>/state/issue-to-merge/`. Do not use operating-system temp files.
 
 ## Workflow
 
@@ -30,26 +34,19 @@ If a progress or completion comment needs a local command payload, read and foll
    gh issue view <parent-issue> \
      --json number,title,body,state,stateReason,closedAt,updatedAt,labels,comments,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
    ```
-   Before interpreting or deduplicating a workflow marker, resolve the authenticated identity with
-   `gh api user --jq '.login'`. A trusted workflow marker must be the comment's first non-whitespace
-   line and match the expected grammar exactly. By default, its comment must have
-   `viewerDidAuthor: true` with an `author.login` equal to that identity. Repository guidance may
-   name another exact trusted marker producer; generic `authorAssociation`, write access, or
-   matching marker text is insufficient. Query missing comment provenance through GraphQL and
-   ignore untrusted marker-shaped text for chronology, reuse, deduplication, progress, and
-   completion.
-   Inspect current Plan and Challenge markers, child states, native `blockedBy` relationships,
-   linked PRs, and previously recorded progress. If the parent lacks a valid challenged delivery
-   direction, run its framing checkpoint, planning, and Plan checkpoint before selecting a child.
-   Treat a prior `:complete` marker as current only when it follows the latest material parent
-   update and current Plan and Challenge records, and still covers the accepted slice set. Ignore a
-   stale completion marker after reopening, reframing, replanning, or adding delivery work. Never
-   recreate an existing slice or restart a merged iteration merely because local context was lost.
-   If accepted work is now incomplete while the parent remains closed, inspect the latest issue
-   close event. Reopen and verify the parent only when a trusted prior completion marker exists,
-   that close event follows the marker, its actor matches the authenticated identity, and a later
-   material update made the marker stale. Stop for direction on any other closed-parent mismatch
-   instead of silently reopening it.
+   Inspect the body plan, fingerprint-bound current state, child states, native `blockedBy`
+   relationships, linked PRs, and current progress. A completion record is usable only when it
+   covers the current challenged plan, accepted slice set, and verified evidence; it is not valid
+   merely because it is the newest comment. Never recreate a slice or restart a merged iteration
+   because local context was lost.
+   For an open parent lacking a valid challenged direction, run framing, planning, and the plan
+   checkpoint before selecting a child. For a closed parent, first inspect completion read-only.
+   If accepted work is incomplete or recorded completion is invalid, automatically reopen only
+   after verifying the latest close event against the agent-close receipt rule. Verify `OPEN`,
+   invalidate completion, and return to the affected checkpoints. Missing receipts, a manual
+   close, or any later close event require human direction; do not use an old completion comment
+   or the closing account as proof. An already closed, completed parent that still passes the
+   completion gate needs no new comment or other mutation.
 3. Select the next iteration:
    - In parent-bound mode, use `issue-select` to choose an open, unblocked child whose prerequisites
      are complete. Materialize another supported slice only when no existing child represents it.
@@ -73,24 +70,24 @@ If a progress or completion comment needs a local command payload, read and foll
      criteria, parent, dependencies, `state`, and `stateReason`;
    - when the iteration's recorded closing semantics say the merged PR completes that exact
      implementation issue but it remains open, recheck the target branch, closing reference, and
-     acceptance criteria. Close it with
+     acceptance criteria. While it is still open, prepare and verify the agent-close attempt and
+     receipt described in the shared contract. Close it with
      `gh issue close <implementation-issue-url> --reason completed`, then re-fetch it and verify
-     `state` is `CLOSED` and `stateReason` is `COMPLETED`. Do not close an intentionally non-closing
-     release, backport, or partial-delivery issue;
+     `state` is `CLOSED` and `stateReason` is `COMPLETED`. Capture the successful close result and
+     actual close-event ID in the local receipt. A closing keyword that already closed the issue
+     does not prove an agent-owned explicit close; do not write to that closed issue. Do not close
+     an intentionally non-closing release, backport, or partial-delivery issue;
    - for an iteration recorded as completing its implementation issue, require that exact issue to
      be `CLOSED` with `stateReason` `COMPLETED` before recording parent progress. Treat every other
      close reason as a state mismatch unless the current challenged plan explicitly replaced or
      removed that slice with a rationale;
-   - when the implementation issue has a delivery parent, re-fetch that parent and its
-     `subIssuesSummary`, inspect its comments for an existing matching marker, then post one parent
-     progress comment for that PR only when the marker is absent:
-     ```markdown
-     <!-- codex-marketplace:pr-workflow-loop:issue-<parent>:pr-<pr>:merged -->
-     ## Delivery Progress
-
-     <merged child and PR, validation outcome, completed slices, remaining or blocked slices,
-     and the next eligible slice>
-     ```
+   - when the implementation issue has a delivery parent, re-fetch that parent and its children.
+     While it is open, update the managed Delivery Progress body block and current state with the
+     merged child/PR, validation evidence, completed slices, remaining or blocked slices, and next
+     eligible slice. Preserve the plan and its valid reviews; progress-only changes do not change
+     the plan fingerprint. Skip identical updates and clean up superseded agent progress comments
+     only after verification. If the parent is closed, do not post, edit, label, or clean up it;
+     route a parent-bound mismatch through step 2, or report it in queue mode.
    Skip parent-only actions for a standalone repository-queue issue. Update and rechallenge a
    parent plan only when evidence materially changes its direction, slices, dependencies, or
    acceptance criteria; avoid cosmetic body churn.
@@ -102,51 +99,47 @@ If a progress or completion comment needs a local command payload, read and foll
    - no open or blocked child remains inside the requested delivery scope;
    - the merged result satisfies the parent's acceptance criteria, including cross-slice tests,
      documentation, compatibility, migration, integration, and rollout work where applicable; and
-   - no unresolved parent comment, pending decision, blocker marker, or stale Plan/Challenge state
-     remains.
+   - the current framing and plan reviews cover their actual fingerprints, and no unresolved
+     parent feedback, pending decision, blocker, or stale approval/completion state remains.
    If an acceptance criterion is unmet, return to parent planning and challenge when the delivery
    direction must change, then use `issue-select` for another coherent slice; stop for any required
    human decision instead of marking the parent complete.
 8. In parent-bound mode, after the completion gate passes, immediately re-fetch the remote
-   default-branch head OID and the full parent snapshot from step 2, including its comments, current
-   Plan and Challenge records, children, dependencies, `updatedAt`, `state`, and `stateReason`.
-   Compare them with the completion-gate snapshot on which step 7 passed. If the head OID or any
-   parent snapshot field changed, rerun the completion gate before publishing or reusing a
-   completion marker. Otherwise, inspect existing parent comments and post the completion summary
-   unless a current marker already records the same challenged plan, accepted slice set, and
-   completion evidence. An older marker does not suppress a refreshed summary after a material
-   parent change:
-   ```markdown
-   <!-- codex-marketplace:pr-workflow-loop:issue-<parent>:complete -->
-   ## Delivery Complete
+   default-branch head OID and the full parent snapshot from step 2, including the body, current
+   state, all comments, children, dependencies, `updatedAt`, `state`, and `stateReason`. Compare
+   them with the gate snapshot from step 7. If anything changed, rerun the gate before publishing
+   completion or closing. If the parent is already closed, require reason `COMPLETED` and the
+   verified gate; do not write a summary to it. Report any other closed reason as a mismatch.
 
-   <merged children and PRs, final validation, acceptance evidence, and remaining risks>
-   ```
-   After posting or reusing that summary, immediately re-fetch the remote default-branch head OID
-   and the same full parent snapshot. Ignore only the expected update from a completion comment
-   that this run just posted; if the head OID or anything else changed, rerun the completion gate
-   instead of closing stale state. If the parent is open and the user did not explicitly ask to
-   leave it open, close and verify it:
+   While the parent is open, update the existing progress block and state comment with completion
+   evidence: challenged plan fingerprint, accepted slices, merged children/PRs, default-branch
+   OID, final validation, acceptance evidence, and remaining risks. Do not append a completion
+   comment. Verify the saved body/state, clean up superseded agent comments, and re-fetch the head
+   and full snapshot. Account only for this run's exact verified writes; any other change requires
+   rechecking the gate. When the user asked to leave the parent open, report it as ready to close.
+
+   Otherwise, prepare the unique close-attempt receipt and publish its identifier while the
+   parent is still open, following the shared contract. Recheck the gate snapshot after that
+   expected state update. Immediately before closing, require `OPEN` and unchanged gate inputs:
    ```bash
    gh issue close <parent-issue-url> --reason completed
    gh issue view <parent-issue-url> \
      --json number,title,body,state,stateReason,closedAt,updatedAt,labels,comments,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
    ```
-   Require `state` to be `CLOSED` and `stateReason` to be `COMPLETED`, re-fetch the remote
-   default-branch head OID, and compare both results with the pre-close snapshot. Ignore only the
+   Capture the close result and actual new close-event ID in the retained receipt. Require `state`
+   to be `CLOSED` and `stateReason` to be `COMPLETED`, re-fetch the remote default-branch head OID,
+   and compare both results with the pre-close snapshot. Ignore only the
    expected changes to `state`, `stateReason`, `closedAt`, and `updatedAt` caused by this run's
    close. If the head OID changed or another material change invalidated step 7 while the close was
-   in flight, compensate immediately:
-   ```bash
-   gh issue reopen <parent-issue-url>
-   gh issue view <parent-issue-url> --json state,stateReason,closedAt,url
-   ```
-   Require the parent to be `OPEN`, then rerun the completion gate. Stop and report the state
-   mismatch if reopening or verification fails. Treat an already closed parent as complete only
-   with reason `COMPLETED`; report any other closed reason as a state mismatch. When the user
-   explicitly asked to leave the parent open, report it as verified ready to close instead. In
-   repository-queue mode, retain per-PR progress on affected parents, but do not infer parent
-   completion from queue exhaustion; skip the parent completion summary and parent closure, then
+   in flight, compensate only after verifying that the latest close event is this run's proven
+   agent close. Apply every reopen prerequisite in the shared contract, then reopen, verify
+   `OPEN`, invalidate completion, and rerun the gate. If another close intervened, attribution is
+   ambiguous, or reopening/verification fails, leave the closed issue untouched and report the
+   mismatch for direction. Never add post-close comments or bypass the receipt rule to repair a
+   race.
+
+   In repository-queue mode, retain current progress on affected open parents, but do not infer
+   parent completion from queue exhaustion. Skip parent completion publication and closure, then
    continue selecting within the queue scope.
 9. Stop when the requested scope passes its completion gate and every authorized terminal issue
    state change is verified, the current issue or PR is blocked, useful splitting is blocked, no

@@ -14,7 +14,9 @@ Repo-local marketplace scaffold for Codex plugins.
 │   │   └── skills/code-quality/SKILL.md
 │   ├── issue-to-merge/
 │   │   ├── .codex-plugin/plugin.json
-│   │   ├── references/repository-work-files.md
+│   │   ├── references/
+│   │   │   ├── current-issue-state.md
+│   │   │   └── repository-work-files.md
 │   │   └── skills/
 │   └── research-to-plan/
 │       ├── .codex-plugin/plugin.json
@@ -31,6 +33,8 @@ Repo-local marketplace scaffold for Codex plugins.
 Each `repository-work-files.md` is an internal contract shared by skills in that independently
 installable plugin. It is packaged with the plugin and loaded only when a referencing skill needs
 to create or read workflow-owned files.
+Issue to Merge also packages `current-issue-state.md` for current plans, editable workflow state,
+open-issue write checks, and proof-based reopening of the agent's own latest close.
 
 ## Use Locally
 
@@ -50,8 +54,8 @@ the marketplace from Codex.
 Skills that generate research, review reports, drafts, or command payloads keep them under the
 active repository's ignored `codex-work/` directory. They do not write new artifacts to the
 operating system's temporary directory. Resumable artifacts stay in `research/` or `reviews/`;
-reviewable drafts stay in `drafts/`; short-lived GitHub command payloads use `tmp/` and are removed
-after use.
+reviewable drafts stay in `drafts/`; close receipts stay in `state/`; short-lived GitHub command
+payloads use `tmp/` and are removed after use.
 
 ## Add A Plugin
 
@@ -87,4 +91,7 @@ same validation in GitHub Actions.
 - `issue-to-merge` - GitHub issue and pull request workflows for pre-plan framing challenge,
   planning, post-plan solution challenge, PR-sized decomposition and parent delivery tracking,
   implementation, submission, human and automated review feedback, CI checks, explicit merging,
-  branch updates, and issue maintenance.
+  branch updates, and issue maintenance. Current plans live in open issue bodies with one editable
+  state comment; verified superseded agent comments are removed after consolidation, while human
+  discussion is preserved. Closed issues remain read-only unless the workflow can prove it is
+  undoing the agent's own latest close.

@@ -1,8 +1,8 @@
 # Repository Work Files
 
-Use this contract for every workflow-owned planning artifact, review artifact, draft, or command
-payload created or updated by this plugin. It does not relocate implementation files or outputs
-owned by repository-native tools.
+Use this contract for every workflow-owned planning artifact, review artifact, draft, command
+payload, or operation receipt created or updated by this plugin. It does not relocate
+implementation files or outputs owned by repository-native tools.
 
 ## Work Root
 
@@ -45,6 +45,9 @@ change where files belong, or replace Git and repository-native tools that own t
 ## Layout And Lifetime
 
 - Keep planning phases under `<codex-work>/research/<issue-task>/`.
+- Retain verified close receipts and their attempt records under
+  `<codex-work>/state/issue-to-merge/issue-<number>/`. They distinguish the agent's own latest close
+  from a manual close during workflow resume; transient payload cleanup must not delete them.
 - Keep each user-reviewable issue draft under `<codex-work>/drafts/issue-to-merge/` with an issue
   identifier and a unique attempt identifier while it awaits confirmation or a retry.
 - Create unique command body and comment files under
