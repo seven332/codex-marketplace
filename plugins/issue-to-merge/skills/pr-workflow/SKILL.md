@@ -25,7 +25,9 @@ and completion.
 
 For issue stages, read and follow the
 [current issue-state contract](../../references/current-issue-state.md). Keep the issue body as
-the current problem and plan, and maintain one editable state comment. This workflow authorizes
+the current problem/requirements and maintain three editable Research, Options, and Plan comments
+with phase-local state. Replanning edits those same comments; do not combine them, append another
+set, or create a standalone status comment. This workflow authorizes
 that maintenance and cleanup of verified superseded agent content, not human discussion. Recheck
 `OPEN` before every issue mutation. Closed issues may supply completion evidence but cannot be
 edited or automatically reopened by this single-PR workflow.
@@ -42,8 +44,9 @@ before switching branches.
   work.
 - If an explicit issue has a linked open PR, resume that PR only when switching to its head branch
   is safe.
-- If an explicit open issue has a current body plan or trusted state but no PR, compute its actual
-  fingerprints and resume the earliest incomplete issue or implementation stage on a safe branch.
+- If an explicit open issue has current phase comments or trusted phase-local state but no PR,
+  compute its actual fingerprints and resume the earliest incomplete issue or implementation stage
+  on a safe branch.
   Do not infer a current plan, review, approval, or blocker from the newest historical comment.
 - If a feature branch has approved implementation work but no PR, resume implementation or
   submission on that branch.
@@ -109,7 +112,7 @@ boundary or smallest diff as a constraint on the best justified direction.
 - If child planning changes the overall design, dependencies, or parent acceptance criteria,
   return to step 3 for the delivery parent, then rescreen, replan, and rechallenge every affected
   child before implementation.
-- Continue only after `plan:proceed` covers the actual current body plan fingerprint. This workflow
+- Continue only after `plan:proceed` covers the actual current published plan fingerprint. This workflow
   invocation supplies implementation approval unless the user asked to pause after planning;
   an old plan's human approval does not transfer to its replacement.
 
@@ -175,9 +178,9 @@ never starts the next child PR automatically. Use `pr-workflow-loop` only after 
 for repeated merge-authorized iterations.
 
 After a completed merge, use `sync-default-branch`, confirm the implementation issue and parent
-relationship state, then maintain progress in the open parent's body/state without appending
-per-PR progress comments. Read an already closed parent without modifying it and report any
-completion mismatch to the owning loop or user. A single child `pr-workflow` never closes its
+relationship state, then maintain progress in the open parent's progress block and Plan state
+without appending per-PR progress comments. Read an already closed parent without modifying it
+and report any completion mismatch to the owning loop or user. A single child `pr-workflow` never closes its
 delivery parent. When a parent-bound `pr-workflow-loop` invoked this workflow, return the parent
 state to that loop so it can own the full completion gate and terminal parent closure.
 

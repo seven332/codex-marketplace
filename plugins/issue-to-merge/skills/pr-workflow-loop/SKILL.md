@@ -14,8 +14,9 @@ destructive cleanup, plain `git push --force`, or history rewrites outside the c
 branch with `git push --force-with-lease` without separate approval.
 
 Read and follow the [current issue-state contract](../../references/current-issue-state.md).
-Maintain current progress and completion in the body and one state comment, not an append-only
-comment log. All issue mutations require `OPEN`, except reopening the latest close proven to be
+Maintain three editable phase comments and phase-local state. Keep progress in the body's progress
+block and the Plan Phase state, not an append-only comment log or a separate status comment.
+All issue mutations require `OPEN`, except reopening the latest close proven to be
 the agent's own operation under that contract. A matching GitHub username is not sufficient.
 Read and follow the [repository work-file contract](../../references/repository-work-files.md)
 for command payloads under `<codex-work>/tmp/issue-to-merge/pr-workflow-loop/` and retained close
@@ -34,9 +35,9 @@ receipts under `<codex-work>/state/issue-to-merge/`. Do not use operating-system
    gh issue view <parent-issue> \
      --json number,title,body,state,stateReason,closedAt,updatedAt,labels,comments,parent,subIssues,subIssuesSummary,blockedBy,blocking,url
    ```
-   Inspect the body plan, fingerprint-bound current state, child states, native `blockedBy`
-   relationships, linked PRs, and current progress. A completion record is usable only when it
-   covers the current challenged plan, accepted slice set, and verified evidence; it is not valid
+   Inspect the retained Plan Phase, fingerprint-bound phase-local state, child states, native
+   `blockedBy` relationships, linked PRs, and current progress. A completion record is usable only
+   when it covers the current challenged plan, accepted slice set, and verified evidence; it is not valid
    merely because it is the newest comment. Never recreate a slice or restart a merged iteration
    because local context was lost.
    For an open parent lacking a valid challenged direction, run framing, planning, and the plan
@@ -82,7 +83,7 @@ receipts under `<codex-work>/state/issue-to-merge/`. Do not use operating-system
      close reason as a state mismatch unless the current challenged plan explicitly replaced or
      removed that slice with a rationale;
    - when the implementation issue has a delivery parent, re-fetch that parent and its children.
-     While it is open, update the managed Delivery Progress body block and current state with the
+     While it is open, update the managed Delivery Progress body block and Plan Phase state with the
      merged child/PR, validation evidence, completed slices, remaining or blocked slices, and next
      eligible slice. Preserve the plan and its valid reviews; progress-only changes do not change
      the plan fingerprint. Skip identical updates and clean up superseded agent progress comments
@@ -111,12 +112,13 @@ receipts under `<codex-work>/state/issue-to-merge/`. Do not use operating-system
    completion or closing. If the parent is already closed, require reason `COMPLETED` and the
    verified gate; do not write a summary to it. Report any other closed reason as a mismatch.
 
-   While the parent is open, update the existing progress block and state comment with completion
+   While the parent is open, update the existing progress block and Plan Phase state with completion
    evidence: challenged plan fingerprint, accepted slices, merged children/PRs, default-branch
    OID, final validation, acceptance evidence, and remaining risks. Do not append a completion
-   comment. Verify the saved body/state, clean up superseded agent comments, and re-fetch the head
-   and full snapshot. Account only for this run's exact verified writes; any other change requires
-   rechecking the gate. When the user asked to leave the parent open, report it as ready to close.
+   comment. Verify the saved progress/state, preserve the current three phase comments during
+   superseded-copy cleanup, and re-fetch the head and full snapshot. Account only for this run's
+   exact verified writes; any other change requires rechecking the gate. When the user asked to
+   leave the parent open, report it as ready to close.
 
    Otherwise, prepare the unique close-attempt receipt and publish its identifier while the
    parent is still open, following the shared contract. Recheck the gate snapshot after that
