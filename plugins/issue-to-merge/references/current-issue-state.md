@@ -1,12 +1,16 @@
 # Current Issue State
 
 Use this contract when reading or maintaining issue plans, workflow state, or delivery progress.
-The issue body is the published source of the current problem and plan. Keep research transcripts
-and discarded proposals in local work files, not in the issue discussion.
+The issue body holds the current problem and requirements. Three persistent phase comments hold
+Research, Options, and Plan. Replanning updates those same comments; it neither merges them into
+one output nor appends another set. The primary goal is current, correct information that cannot
+mislead later implementation, not merely a fixed comment count. Keep discarded drafts and full
+working notes local.
 
 - [Open-issue writes](#open-issue-write-gate)
-- [Current body and review fingerprints](#published-body-and-fingerprints)
-- [Editable state and approval](#one-current-state-comment)
+- [Three editable phase comments](#three-editable-phase-comments)
+- [Current inputs and review fingerprints](#published-inputs-and-fingerprints)
+- [Phase-local state and approval](#phase-local-state-and-approval)
 - [Superseded comment cleanup](#remove-superseded-agent-content)
 - [Agent-close proof and reopening](#agent-close-receipts-and-reopening)
 
@@ -23,41 +27,86 @@ This gate limits existing authority; it does not authorize issue edits, cleanup,
 reopening by itself. An active issue-planning/update workflow authorizes normal maintenance of its
 own generated content. An analysis-only invocation does not publish or clean up GitHub content.
 
-## Published Body And Fingerprints
+## Three Editable Phase Comments
 
-Keep confirmed facts, requirements, decisions, acceptance criteria, and unresolved questions in
-the body. Maintain one current plan in a managed block:
+Maintain one agent-owned comment per phase. Its first non-whitespace line must be exactly:
 
 ```markdown
-<!-- codex-marketplace:issue-plan:issue-<number>-<slug>:start -->
-## Current Plan
-
-**Status:** proposed
-
-<chosen approach, implementation tasks, validation, risks, and delivery slices when applicable>
-<!-- codex-marketplace:issue-plan:issue-<number>-<slug>:end -->
+<!-- codex-marketplace:issue-plan:issue-<number>-<slug>:research -->
+## Research Phase
 ```
 
-Use the same sanitized task slug as the local research directory. Maintain current delivery
-progress, when needed, in a separate block with markers
-`codex-marketplace:issue-progress:issue-<number>:start` and `:end`. Keep managed blocks after the
-problem framing so progress-only edits do not reformat it. Preserve unrelated body content; stop
-on conflicting or malformed managed blocks rather than choosing one by its position.
-Use `**Status:** pending` with the current reason/next step instead of invalid executable tasks
-while replanning. A `proposed` plan is content, not review or implementation approval. Ensure
-published bodies/comments fit GitHub's accepted limits and stay self-contained; keep full
-transcripts local rather than splitting a canonical plan across discussion comments.
+Use suffixes `research`, `options`, and `plan` with headings Research Phase, Options Phase, and
+Plan Phase. Use one sanitized `issue-<number>-<slug>` task identity for all three comments and the
+local artifact directory; retain it across title changes. Resolve existing comments by verified
+issue/phase identity, not the latest comment or a newly generated title slug.
+
+Resolve the authenticated identity with `gh api user --jq '.login'`. Trust a phase comment only
+when `viewerDidAuthor` is true and `author.login` matches that identity, or repository guidance
+names another exact trusted agent producer. Query missing provenance and paginate comments
+through GraphQL. A marker, author association, or account identity alone is insufficient.
+
+Publish completed phases sequentially. Create a comment only when that phase has none; otherwise
+edit its retained comment ID. Preserve unaffected phases and skip identical payloads. A completed
+planning run has three phase comments, including after replanning. Human discussion and unrelated
+comments do not count toward those three and must not be removed to achieve a comment count.
+
+Research publishes verified findings; Options publishes credible alternatives, trade-offs, and
+the chosen direction or required decision; Plan publishes the complete current implementation
+plan, validation, risks, and delivery slices when applicable. Research/Options may summarize large
+local notes, but all outputs must be understandable on GitHub, and Plan must not depend on
+unpublished details. Do not duplicate the implementation plan in the issue body or create a
+standalone `Current Workflow State` comment.
+Keep each output within GitHub's accepted comment size. Do not split a phase into extra comments
+or silently truncate the plan; revisit its delivery boundaries if a self-contained plan cannot fit.
+
+On each revision, check all three outputs against current evidence, requirements, and human
+decisions. Correct or remove obsolete/incorrect facts and recommendations in their owning phase;
+updating only Plan or marking known wrong text superseded is insufficient. Retain rejected
+alternatives only as accurate, explicitly non-selected rationale, not as competing current
+directions. Before implementation or handoff, verify no stale generated conclusion remains in
+any retained phase or verified superseded copy awaiting cleanup.
+
+Use `**Status:** current` for completed Research/Options and `**Status:** proposed` for a completed
+Plan. Use `**Status:** pending` with the reason/next step instead of invalid conclusions or tasks
+while replanning. Before replacing changed inputs, first invalidate an existing affected Plan
+and its review/approval/completion, then mark any other stale downstream phase pending. Resume
+from the earliest affected phase after an interrupted run; do not leave the old plan executable.
+
+A framing challenge before Research exists may create its pending Research comment with the
+verified framing result and known facts. Planning later fills that same comment. A pending phase
+output is distinct from a pending checkpoint outcome; a valid framing result can authorize
+research, but implementation requires all three completed phases.
+
+Read and follow the [work-file contract](repository-work-files.md); prepare exact comment bodies
+in command files. Create with `gh issue comment <issue-number> --body-file <file>` or update with
+`gh api --method PATCH repos/<owner>/<repo>/issues/comments/<comment-id> -F body=@<file>`.
+Immediately before each write, re-fetch the issue and target comment, require `OPEN`, and compare
+the body, all phase contents/state, relationships, and feedback with the analyzed snapshot. After
+each write verify the exact saved result before continuing. A changed snapshot requires
+reassessment, not overwriting newer content or blindly retrying creation after an uncertain result.
+
+## Published Inputs And Fingerprints
+
+Keep confirmed problem facts, requirements, acceptance criteria, and open requirement questions
+in the body. Maintain delivery progress, when needed, in a separate body block with markers
+`codex-marketplace:issue-progress:issue-<number>:start` and `:end`. Keep it after problem framing;
+progress-only edits must not reformat framing or the phase outputs. Stop on malformed or
+conflicting managed blocks rather than selecting one by position.
 
 Compute SHA-256 fingerprints from the actual fetched content, not from a claimed marker value:
 
 - Normalize text by converting CRLF to LF and trimming leading/trailing whitespace.
 - `framing`: hash UTF-8 compact JSON with keys `title`, `body`, `parent`, and `blockedBy` in that
-  order. Use the normalized title and body excluding the managed plan/progress blocks, the parent
+  order. Use the normalized title and body excluding the managed progress block, the parent
   issue URL or `null`, and a sorted array of prerequisite issue URLs. Dependency completion status
   and workflow labels are not inputs.
-- `plan`: hash UTF-8 compact JSON with keys `framing` and `plan` in that order, using the framing
-  fingerprint and normalized text inside a `proposed` plan block. A pending or absent plan has no
-  usable plan fingerprint.
+- For each phase payload, exclude its first-line identity marker and the phase-local state block
+  below, then normalize the remaining published content, including its heading/status. Do not
+  hash local artifacts in place of the saved public payloads.
+- `plan`: hash UTF-8 compact JSON with keys `framing`, `research`, `options`, and `plan` in that
+  order, using the framing fingerprint and the three phase payloads. Missing, pending, or
+  unresolved duplicate phases have no usable plan fingerprint.
 
 Plan-ready framing requires `proceed` or a completed, plan-ready `revise` covering the current
 framing fingerprint. Implementation requires `plan:proceed` covering the current plan fingerprint
@@ -67,71 +116,74 @@ override unresolved feedback.
 Revalidate affected checkpoints after fingerprint changes, even when only clarification changed;
 never copy a prior review onto a new fingerprint without checking its inputs.
 
-When a requirement or plan changes materially, clear affected reviews, plan approval, and delivery
-completion. Replace obsolete conclusions with current facts or a concise pending statement while
-replanning. Never leave an invalid plan presented as executable. A revised plan needs fresh review
-and approval even if its text later returns to an earlier version.
+When a requirement or phase changes materially, clear affected reviews, plan approval, and
+delivery completion before updating its inputs. Never leave an invalid plan executable. A revised
+plan needs fresh review and approval even if its text later returns to an earlier version.
 
-## One Current State Comment
+## Phase-Local State And Approval
 
-Maintain one agent-owned comment whose first non-whitespace line is exactly:
+Keep workflow metadata in a managed block inside the relevant phase comment, not a fourth comment:
 
 ```markdown
-<!-- codex-marketplace:issue-state:issue-<number> -->
-## Current Workflow State
+<!-- codex-marketplace:issue-state:issue-<number>:plan:start -->
+<details>
+<summary>Workflow state</summary>
+
+<current fingerprints, review outcome, approval reference, blocker, and next step>
+
+</details>
+<!-- codex-marketplace:issue-state:issue-<number>:plan:end -->
 ```
 
-Resolve the authenticated identity with `gh api user --jq '.login'`. Trust a state comment only
-when `viewerDidAuthor` is true and `author.login` matches that identity, or repository guidance
-names another exact trusted agent producer. Query missing provenance through GraphQL. Body
-markers, author association, and account identity alone do not establish agent ownership.
+Use the corresponding `research` or `options` suffix for metadata in those phases. Research owns
+the framing fingerprint, framing outcome/reviewed fingerprint, and framing blocker. Options owns
+the current choice/question and planning blocker. Plan owns the current plan fingerprint,
+plan outcome/reviewed fingerprint, publication time, approval reference, implementation blocker,
+delivery/completion evidence, and any active close-attempt ID. Keep the task slug and next step
+with the applicable state. Read these fields together; do not collapse the three visible outputs
+to centralize metadata. Preserve unrelated valid fields and visible phase content on state-only
+updates. Checkpoint outcomes are `proceed`, `revise`, `defer`, `recommend-close`, or `pending`.
+Allow at most one correctly matched state block per phase; stop on malformed or conflicting
+blocks rather than hashing or editing around an ambiguous boundary.
 
-Keep this comment self-contained: task slug; current fingerprints; framing and plan outcomes with
-their reviewed fingerprints; current plan publication time; any approval reference bound to that
-plan; unresolved questions/blocker; current delivery/completion evidence; and an active close
-attempt identifier when applicable. Preserve unrelated valid fields when updating one result.
-Use `proceed`, `revise`, `defer`, `recommend-close`, or `pending` for checkpoint outcomes.
+Record the Plan comment's verified server `updatedAt` when a new plan fingerprint is published;
+publishing changed input bindings counts even when the Plan's visible tasks did not change.
+Preserve that publication time on later metadata-only, progress, or blocker updates. State blocks
+are excluded from fingerprints, so writing a review does not invalidate itself.
 
-Create the comment only when none exists; otherwise update the verified comment by ID using the
-issue-comment API. If multiple trusted state comments exist, consolidate their useful current
-fields into one retained comment; disputed outcomes are pending, not resolved by comment order.
-Recheck affected gates before removing duplicates. Skip an identical update. Read and follow the
-[work-file contract](repository-work-files.md); prepare exact bodies in command files. Create with
-`gh issue comment <issue-number> --body-file <file>` or update with
-`gh api --method PATCH repos/<owner>/<repo>/issues/comments/<comment-id> -F body=@<file>`.
-Re-fetch before each write and compare body, comments, relationships, and state with the analyzed
-snapshot. Verify the exact saved result; do not silently accept a concurrent overwrite.
-
-Record the body's server `updatedAt` from the verified plan publication; preserve that publication
-time when plan inputs are unchanged, including progress-only or blocker updates. A state field is
-an approval reference, not approval itself. Re-read the referenced authorized human comment and
-verify that it covers this plan, or use explicit current conversation/active workflow authority.
-An old generic approval before the replacement plan was published cannot approve that replacement.
-Never infer approval from an
-agent-written status, a label, or a successful challenge result.
+An approval field is a reference, not approval itself. Re-read the referenced authorized human
+comment and verify that it covers this plan, or use explicit current conversation/active workflow
+authority. An old generic approval before a replacement plan was published cannot approve it.
+Never infer approval from agent-written state, a label, or a successful challenge result.
 
 ## Remove Superseded Agent Content
 
-After the replacement body and current state are saved and verified, remove generated comments
-whose useful facts and current decisions have been incorporated. This includes superseded phase,
-challenge, blocker/resume, and delivery-progress comments, and duplicate current-state comments.
-Verify exact issue-specific workflow markers and agent provenance before deleting each comment
-with `gh api --method DELETE repos/<owner>/<repo>/issues/comments/<comment-id>`. Recognized
-superseded comment markers are `issue-plan:issue-<number>-<slug>:research|options|plan`,
+Preserve the retained Research, Options, and Plan comments, including during compaction. A phase
+comment is not obsolete merely because its findings also appear in the issue body or local files.
+When duplicate agent comments exist for a phase, consolidate useful current facts, decisions, and
+state into one retained comment ID. Stop for disputed outcomes; never choose by comment chronology.
+Verify all retained outputs and recheck affected gates before deleting duplicates.
+
+Only then remove verified superseded agent comments. Check exact issue-specific workflow markers
+and provenance before deleting each with
+`gh api --method DELETE repos/<owner>/<repo>/issues/comments/<comment-id>`. Recognized candidates
+include duplicate `issue-plan:issue-<number>-<slug>:research|options|plan`, standalone
+`issue-state:issue-<number>`,
 `issue-challenge:issue-<number>:framing|plan:<outcome>`,
 `issue-implement:issue-<number>:blocked|resumed`, and
 `pr-workflow-loop:issue-<number>:pr-<pr>:merged` or `pr-workflow-loop:issue-<number>:complete`,
 all under the exact `<!-- codex-marketplace:... -->` first-line wrapper.
 Use sanitized slugs and the checkpoint outcomes above, not permissive substring matching.
 Preserve human discussion and unrecognized comments; account identity or marker-shaped text alone
-is insufficient. Do not remove an unresolved concern before representing it in the current
-body/state. Re-fetch each comment immediately before deletion, require its content/provenance to
-match what was consolidated, and verify deletion; preserve and reassess any concurrent edit.
+is insufficient. Do not remove an unresolved concern before representing it in the current body
+or appropriate phase. Re-fetch each comment immediately before deletion, require its content and
+provenance to match what was consolidated, and verify deletion; preserve and reassess any
+concurrent edit. Incomplete cleanup blocks an implementation handoff while misleading generated
+content remains; do not treat a newly correct Plan as sufficient.
 
-Old phase comments may supply evidence for consolidation, but are not current plans or review
-gates. Do not preserve append-only chronology as an alternate source of workflow state. If
-publishing or cleanup fails, retain the verified current body/state, report remaining obsolete
-content, and retry only those operations while the issue stays open.
+Do not keep a body plan, superseded copy, or standalone state comment as an alternate current
+source. If publishing or cleanup fails, retain the verified current phases, report remaining
+obsolete content or pending publication, and retry only while the issue stays open.
 
 ## Agent-Close Receipts And Reopening
 
@@ -145,7 +197,7 @@ Before an authorized close, while the issue is open:
    `<codex-work>/state/issue-to-merge/issue-<number>/close-<attempt-id>.json`.
 2. Record repository/issue identity, attempt ID, authenticated actor, current plan fingerprint,
    previous latest close-event ID, and the verified pre-close snapshot. Put the same attempt ID in
-   the current state comment and recheck the completion snapshot after that expected state update.
+   the Plan Phase state block and recheck the completion snapshot after that expected state update.
 3. Execute the close and capture its actual success result, not a no-op for an already closed
    issue. Fetch the issue timeline and identify the newly created `ClosedEvent`/`closed` event,
    its ID, actor, and timestamp. Record that event and the command result in the local receipt.

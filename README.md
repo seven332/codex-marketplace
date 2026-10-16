@@ -33,7 +33,7 @@ Repo-local marketplace scaffold for Codex plugins.
 Each `repository-work-files.md` is an internal contract shared by skills in that independently
 installable plugin. It is packaged with the plugin and loaded only when a referencing skill needs
 to create or read workflow-owned files.
-Issue to Merge also packages `current-issue-state.md` for current plans, editable workflow state,
+Issue to Merge also packages `current-issue-state.md` for three editable phase comments, review state,
 open-issue write checks, and proof-based reopening of the agent's own latest close.
 
 ## Use Locally
@@ -91,7 +91,9 @@ same validation in GitHub Actions.
 - `issue-to-merge` - GitHub issue and pull request workflows for pre-plan framing challenge,
   planning, post-plan solution challenge, PR-sized decomposition and parent delivery tracking,
   implementation, submission, human and automated review feedback, CI checks, explicit merging,
-  branch updates, and issue maintenance. Current plans live in open issue bodies with one editable
-  state comment; verified superseded agent comments are removed after consolidation, while human
-  discussion is preserved. Closed issues remain read-only unless the workflow can prove it is
-  undoing the agent's own latest close.
+  branch updates, and issue maintenance. Planning maintains three Research, Options, and Plan
+  comments on each open issue. Replanning edits those same comments instead of combining them or
+  appending another set; workflow state stays inside the relevant phase. The body holds current
+  requirements and delivery progress. Verified superseded agent copies are removed after
+  consolidation, while the current three phases and human discussion are preserved. Closed issues
+  remain read-only unless the workflow can prove it is undoing the agent's own latest close.

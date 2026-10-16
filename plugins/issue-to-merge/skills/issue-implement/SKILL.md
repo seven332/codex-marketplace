@@ -10,7 +10,7 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
 ## Workflow
 
 1. Identify the issue number from the user request or conversation context. Ask if unclear. Do not
-   require a planning directory before reading the issue; recover it from the current body/state
+   require a planning directory before reading the issue; recover it from the retained phase comments
    or local artifacts when possible.
 2. Read issue updates:
    ```bash
@@ -25,7 +25,7 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    Query `authorAssociation` with `gh api graphql` when it is absent from the CLI projection; never
    infer authority from a display name or writing style.
    Read and follow the [current issue-state contract](../../references/current-issue-state.md).
-   Require an open implementation issue and verify current-state provenance and fingerprints.
+   Require an open implementation issue and verify phase provenance, current state, and fingerprints.
 3. Read and follow the
    [repository work-file contract](../../references/repository-work-files.md). Resolve
    `<codex-work>` inside the active workspace and never use an operating-system temp directory.
@@ -33,10 +33,10 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    - `<codex-work>/research/<issue-task>/research.md`
    - `<codex-work>/research/<issue-task>/innovate.md`
    - `<codex-work>/research/<issue-task>/plan.md`
-   Derive `<issue-task>` from the current body plan block and trusted state. Only use sanitized
+   Derive `<issue-task>` from the retained phase markers and trusted state. Only use sanitized
    planning directories under `<codex-work>/research/`; do not follow symlinked directories or files.
-   The Current Plan block is authoritative. Recover `plan.md` from it when local files are missing,
-   and treat local research/options as supporting evidence. Do not restore an executable plan from
+   The retained Plan Phase is authoritative. Recover missing local artifacts from the corresponding
+   current phase comments; local notes are supporting evidence. Do not restore an executable plan from
    a superseded comment or overwrite the published plan with stale local content.
    Require a framing review for the current framing fingerprint and a `plan:proceed` result for
    the current plan fingerprint. Return to framing and affected planning when requirements change;
@@ -57,12 +57,12 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    are present. If on the repository default branch, create the feature branch before editing files.
 6. Analyze current human feedback for findings, questions, and plan changes not yet incorporated.
    When an authorized human requests plan changes or asks an unresolved question, use `issue-plan`
-   for a necessary revision or answer through the current state, add `codex-pending`, and stop
+   for a necessary revision or answer in the appropriate phase, add `codex-pending`, and stop
    until the current plan is challenged and approved. Do not treat an unauthorized comment as a
    scope decision, or local phase artifact content such as Options open questions as a
    new request unless an authorized human explicitly asks about it.
-7. Inspect the blocker in the current state comment. Require the current request or verified human
-   feedback to resolve it, then clear that blocker in the same comment. Incorporate its useful
+7. Inspect blockers in the phase-local state. Require the current request or verified human
+   feedback to resolve them, then clear each in its owning phase. Incorporate useful
    decisions and remove obsolete agent blocker/resume comments through normal maintenance.
    Treat `codex-pending` as a workflow-owned visual signal. Remove only that label, and only after
    confirming that current state and human feedback contain no unresolved `pending`, `defer`,
@@ -92,7 +92,7 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
     issue URL, and its parent issue when present. Hand the verified working tree and that exact
     issue context to `pr-submit`. Do not stage, commit, push, or create a PR in this skill.
 
-If implementation becomes blocked, update the one current state comment with the blocker,
+If implementation becomes blocked, update the Plan Phase state block with the blocker,
 completed work, and required decision; add `codex-pending` and stop. When that blocker is explicitly
 resolved, update the same comment with the resolution and current next step. Require `OPEN` before
 each write, and remove obsolete agent messages only after verifying their replacement.

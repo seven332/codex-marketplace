@@ -1,6 +1,6 @@
 ---
 name: issue-compact
-description: Consolidate an open GitHub issue into its current body and workflow state, removing superseded agent comments after preserving their useful content.
+description: Consolidate an open GitHub issue while preserving its three current planning phase comments, updating current content in place and removing only verified superseded agent copies.
 ---
 
 # Issue Compact
@@ -26,12 +26,14 @@ Use this skill when the user asks to compact or consolidate an open GitHub issue
    - Technical discoveries and constraints
    - Delivery parent, child slices, dependencies, merged PR progress, and remaining acceptance
      criteria when this is a multi-PR issue
-   - The current plan and status
+   - A link to the retained Plan Phase and its status, not a duplicate implementation plan
    - Next steps
    - Open questions and blockers
 5. Remove superseded proposals and incorrect conclusions from the draft. Preserve unresolved
-   concerns and human decisions; do not settle a disputed plan merely to shorten the issue. Keep
-   a valid current plan unchanged unless revision is part of the request. If consolidation
+   concerns and human decisions; do not settle a disputed plan merely to shorten the issue.
+   Preserve the retained Research, Options, and Plan comments. Consolidate phase-specific facts,
+   choices, and tasks into their corresponding existing comments, not one merged comment or the
+   body. Keep valid phase outputs unchanged unless revision is part of the request. If consolidation
    materially changes framing or the plan, invalidate affected reviews and approval and identify
    the required planning/checkpoint work in current state.
 6. Read and follow the
@@ -49,10 +51,11 @@ Use this skill when the user asks to compact or consolidate an open GitHub issue
    ```bash
    gh issue edit <issue-number> --body-file "$ISSUE_COMPACT_FILE"
    ```
-9. Verify the saved body and update the one current state comment. Remove only superseded
+9. Verify the saved body and any updated phases/state. Remove only superseded
    agent-generated comments whose useful facts, current decisions, and unresolved concerns have
-   been preserved, following the contract's ownership and open-state checks. Keep human discussion
-   and unrecognized comments. Report what remains when cleanup cannot be completed.
+   been preserved, following the contract's ownership and open-state checks. Never delete one of
+   the current three phase comments merely because its content was summarized elsewhere. Keep
+   human discussion and unrecognized comments. Report what remains when cleanup cannot be completed.
 10. Remove the compact draft after a successful update or when the operation is abandoned. Retain it
    only while awaiting the authorized confirmation or retry it was created for.
 
