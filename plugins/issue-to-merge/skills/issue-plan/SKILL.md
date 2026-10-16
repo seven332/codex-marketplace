@@ -52,8 +52,10 @@ Use this skill when the user asks to plan or revise work for an open GitHub issu
    - Prefer an existing directory with artifacts. If none exists, use
      `<codex-work>/research/<issue-task>/`.
    - Before reusing a phase artifact, compare its inputs with current framing, requirements,
-     repository context, and human decisions. Rerun only affected phases. Selecting an already
-     researched option can reuse Research and Options while updating Plan.
+     repository context, human decisions, and the retained phase's latest corrected content.
+     Reconcile substantive differences before reuse; recover current conclusions from the public
+     phase instead of overwriting them with stale local notes. Rerun only affected phases.
+     Selecting an already researched option can reuse Research and Options while updating Plan.
    - Do not split one run across artifact roots. Reuse existing non-stale phase artifacts from the
      selected directory, rerun from the earliest missing or stale phase, and publish each completed
      phase through step 7 before continuing. Do not republish unaffected phases.

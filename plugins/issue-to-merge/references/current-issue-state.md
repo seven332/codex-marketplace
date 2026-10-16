@@ -57,6 +57,9 @@ plan, validation, risks, and delivery slices when applicable. Research/Options m
 local notes, but all outputs must be understandable on GitHub, and Plan must not depend on
 unpublished details. Do not duplicate the implementation plan in the issue body or create a
 standalone `Current Workflow State` comment.
+The retained public outputs are authoritative for resumption. Reconcile local artifacts with
+their latest corrected content and authorized decisions before reuse; never restore a superseded
+fact or recommendation just because an older local file still exists.
 Keep each output within GitHub's accepted comment size. Do not split a phase into extra comments
 or silently truncate the plan; revisit its delivery boundaries if a self-contained plan cannot fit.
 
