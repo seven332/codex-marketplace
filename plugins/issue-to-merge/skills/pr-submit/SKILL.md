@@ -7,6 +7,9 @@ description: Commit and push intended local changes, then create or update the G
 
 Own the boundary between verified local changes and the submitted pull request. Do not review or
 merge the PR in this skill.
+Follow the [current-workspace contract](../../references/current-workspace.md): use the provided
+directory, not another worktree. Earlier-work preparation is separate from submitting this PR;
+never mix unrelated earlier commits or stashed changes into an independent requirement's branch.
 
 ## Workflow
 
@@ -34,7 +37,7 @@ merge the PR in this skill.
    - If the branch belongs to a closed or merged PR, stop and ask whether to reopen it or create a
      new branch. Do not silently reuse completed PR state.
 4. Confirm that the validation required by repository guidance passed for the exact current
-   worktree. Reuse fresh results from `issue-implement`, `pr-self-review`, or another immediately
+   working tree. Reuse fresh results from `issue-implement`, `pr-self-review`, or another immediately
    preceding step; run commands that are missing or stale. If no command is documented, inspect
    package scripts, language tooling, CI, and nearby tests to choose the narrowest credible checks.
 5. Stage only intended files and inspect the staged diff. Commit staged changes with a Conventional

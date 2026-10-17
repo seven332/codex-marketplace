@@ -16,6 +16,7 @@ Repo-local marketplace scaffold for Codex plugins.
 │   │   ├── .codex-plugin/plugin.json
 │   │   ├── references/
 │   │   │   ├── current-issue-state.md
+│   │   │   ├── current-workspace.md
 │   │   │   └── repository-work-files.md
 │   │   └── skills/
 │   └── research-to-plan/
@@ -35,6 +36,8 @@ installable plugin. It is packaged with the plugin and loaded only when a refere
 to create or read workflow-owned files.
 Issue to Merge also packages `current-issue-state.md` for three editable phase comments, review state,
 open-issue write checks, and proof-based reopening of the agent's own latest close.
+Its `current-workspace.md` contract keeps new work in the provided Git directory instead of adding
+worktrees, with context-supported commit/push/stash preparation and recoverable earlier-work state.
 
 ## Use Locally
 
@@ -54,8 +57,8 @@ the marketplace from Codex.
 Skills that generate research, review reports, drafts, or command payloads keep them under the
 active repository's ignored `codex-work/` directory. They do not write new artifacts to the
 operating system's temporary directory. Resumable artifacts stay in `research/` or `reviews/`;
-reviewable drafts stay in `drafts/`; close receipts stay in `state/`; short-lived GitHub command
-payloads use `tmp/` and are removed after use.
+reviewable drafts stay in `drafts/`; close and stash recovery receipts stay in `state/`; short-lived
+GitHub command payloads use `tmp/` and are removed after use.
 
 ## Add A Plugin
 
@@ -97,3 +100,6 @@ same validation in GitHub Actions.
   requirements and delivery progress. Verified superseded agent copies are removed after
   consolidation, while the current three phases and human discussion are preserved. Closed issues
   remain read-only unless the workflow can prove it is undoing the agent's own latest close.
+  New requirements reuse the current directory, preserving earlier work through context-supported
+  commit, push, or recoverable stash before selecting the correct feature branch. No extra worktree
+  is created, and standalone sync or read-only review does not gain publication authority.

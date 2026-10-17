@@ -37,21 +37,27 @@ edited or automatically reopened by this single-PR workflow.
 ### 1. Start Or Resume
 
 Inspect `git status --short --branch`, the current branch, conversation context, and GitHub state
-before switching branches.
+before switching branches. Read and follow the
+[current-workspace contract](../../references/current-workspace.md): reuse this directory, never
+create another worktree, and preserve earlier work before starting an independent requirement.
 
 - If the current branch has an open PR that matches the requested scope, resume at the earliest
-  incomplete PR stage for its current `headRefOid`. Stop for direction when it belongs to different
-  work.
+  incomplete PR stage for its current `headRefOid`. If it belongs to different work and the request
+  clearly starts an independent requirement, preserve it through the shared preparation flow;
+  otherwise ask which scope to continue. Never append independent work to that PR.
 - If an explicit issue has a linked open PR, resume that PR only when switching to its head branch
   is safe.
 - If an explicit open issue has current phase comments or trusted phase-local state but no PR,
   compute its actual fingerprints and resume the earliest incomplete issue or implementation stage
   on a safe branch.
   Do not infer a current plan, review, approval, or blocker from the newest historical comment.
-- If a feature branch has approved implementation work but no PR, resume implementation or
-  submission on that branch.
-- Only for genuinely new work, use `sync-default-branch` before issue selection.
-- Stop rather than overwrite, stash, or mix unrelated uncommitted changes.
+- If a feature branch has approved implementation work matching this request but no PR, resume
+  implementation or submission on that branch.
+- Only for genuinely new work, complete the shared context-supported commit/push/stash preparation,
+  then use `sync-default-branch` before issue selection. Keep any stash recovery receipt and do not
+  restore earlier work onto the new feature branch.
+- Stop for unclear ownership, publication intent, or unsafe preservation; never overwrite or mix
+  unrelated changes, or use another checkout to bypass the decision.
 - When durable state cannot prove that a review or check completed for the current head, rerun that
   stage instead of assuming it passed.
 
