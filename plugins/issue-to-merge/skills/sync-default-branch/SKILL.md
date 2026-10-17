@@ -8,7 +8,11 @@ description: Switch to the repository default branch and fast-forward it to the 
 ## Workflow
 
 1. Check working-tree state with `git status --short --branch`.
-2. If uncommitted changes are present, stop and ask how to handle them.
+2. Read and follow the [current-workspace contract](../../references/current-workspace.md). Stay in
+   this directory; do not create another worktree. When preparing explicitly requested new work,
+   handle earlier work through its context-supported commit/push/stash flow before switching.
+   For an ordinary sync without that context, stop on uncommitted changes and ask; a sync request
+   alone does not authorize committing, publishing, or stashing earlier work.
 3. Detect the default branch:
    ```bash
    DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
@@ -16,6 +20,10 @@ description: Switch to the repository default branch and fast-forward it to the 
    Stop if detection fails or returns an empty value. Do not guess a branch name.
 4. Switch with `git switch "$DEFAULT_BRANCH"`.
 5. Pull with `git pull --ff-only`.
-6. Report the latest commit and whether the branch fast-forwarded.
+6. Report the latest commit, whether the branch fast-forwarded, and any commits still ahead of its
+   verified upstream. A successful fast-forward-only pull does not prove local and remote tips
+   match. Do not reset an ahead/diverged default branch; independent new work must use the shared
+   contract's verified base rather than inherit unpublished commits. Retain and report any earlier-
+   work stash recovery receipt.
 
-Do not stash, discard, amend, reset, or force-push in this skill.
+Do not discard changes, amend, reset, or force-push in this skill.

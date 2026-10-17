@@ -53,8 +53,11 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    Review says the direction requires multiple PRs, treat it as a delivery parent: stop, use
    `issue-select` to choose an open unblocked child, and plan and challenge that child. Never
    implement an umbrella issue directly merely because its overall plan is approved.
-5. Check `git status --short --branch` before branch changes. Stop if unrelated uncommitted changes
-   are present. If on the repository default branch, create the feature branch before editing files.
+5. Read and follow the [current-workspace contract](../../references/current-workspace.md) before
+   branch changes. Reuse the current directory; do not create another worktree. Resume matching
+   approved work, or prepare earlier work through context-supported commit, push, or recoverable
+   stash before an independent requirement. Ask only when that handling is unclear or unsafe;
+   never mix earlier work into this implementation.
 6. Analyze current human feedback for findings, questions, and plan changes not yet incorporated.
    When an authorized human requests plan changes or asks an unresolved question, use `issue-plan`
    for a necessary revision or answer in the appropriate phase, add `codex-pending`, and stop
@@ -72,7 +75,11 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    ```
    Recheck `OPEN` before state, cleanup, or label writes. Never remove a repository's generic
    `pending` label.
-8. Create or switch to a feature branch, for example `feat/issue-<number>-short-name`.
+8. Create or switch to the matching feature branch in this directory, for example
+   `feat/issue-<number>-short-name`, before editing implementation files. For new work, use the
+   verified intended base under the shared contract; do not inherit unrelated PR or unpublished
+   default-branch commits. Retain any earlier-work stash and its recovery receipt without applying
+   it here.
 9. Implement the approved plan in small steps. For direct filesystem operations on repository
    content, follow the
    [filesystem-tool rules](../../references/repository-work-files.md#filesystem-tools). Do not
@@ -90,7 +97,9 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
     to planning and challenge before continuing.
 13. Report changed files, validation commands and results, remaining risks, the implementation
     issue URL, and its parent issue when present. Hand the verified working tree and that exact
-    issue context to `pr-submit`. Do not stage, commit, push, or create a PR in this skill.
+    issue context to `pr-submit` for staging, committing, pushing, and PR creation. The preparation
+    exception above covers only separately authorized earlier-work checkpoints, not submission of
+    this implementation.
 
 If implementation becomes blocked, update the Plan Phase state block with the blocker,
 completed work, and required decision; add `codex-pending` and stop. When that blocker is explicitly

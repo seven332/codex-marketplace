@@ -21,6 +21,10 @@ the agent's own operation under that contract. A matching GitHub username is not
 Read and follow the [repository work-file contract](../../references/repository-work-files.md)
 for command payloads under `<codex-work>/tmp/issue-to-merge/pr-workflow-loop/` and retained close
 receipts under `<codex-work>/state/issue-to-merge/`. Do not use operating-system temp files.
+Follow the [current-workspace contract](../../references/current-workspace.md) for every iteration:
+reuse the provided directory, preserve prior work through authorized preparation, and never create
+another worktree for a sibling PR. Keep stash recovery receipts across iterations; do not apply
+earlier unrelated work to the next slice or discard it when an iteration finishes.
 
 ## Workflow
 

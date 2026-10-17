@@ -48,6 +48,9 @@ change where files belong, or replace Git and repository-native tools that own t
 - Retain verified close receipts and their attempt records under
   `<codex-work>/state/issue-to-merge/issue-<number>/`. They distinguish the agent's own latest close
   from a manual close during workflow resume; transient payload cleanup must not delete them.
+- Retain stash recovery receipts under `<codex-work>/state/issue-to-merge/workspace/` until the
+  preserved earlier work is restored and verified. They identify the stable stash object, original
+  branch, and recovery steps; a new PR or transient cleanup must not remove them.
 - Keep each user-reviewable issue draft under `<codex-work>/drafts/issue-to-merge/` with an issue
   identifier and a unique attempt identifier while it awaits confirmation or a retry.
 - Create unique command body and comment files under
