@@ -1,8 +1,16 @@
 # Current Workspace
 
-Reuse the provided Git directory throughout the workflow. Never create another Git worktree,
-clone, or alternate checkout as implicit preparation or as a workaround for existing work. If the
-provided directory is already a worktree, continue there; do not move or delete it.
+Locate the target checkout before checkout-dependent commands or workflow artifacts. Reuse an
+existing target checkout. If none exists and the task needs local code, clone the identified
+repository into a clear, task-authorized destination that is absent or empty. This first clone is
+normal preparation, not an extra checkout, and needs no additional approval under this policy.
+Actual permission gates still apply. Ask when the repository/path is unclear or the destination
+conflicts with existing files; never overwrite or delete them to make room.
+
+Enter and verify the selected checkout, read its repository instructions, and resolve workflow
+artifacts there. Reuse it throughout the workflow; do not create another worktree, duplicate clone,
+or alternate checkout to start another requirement or bypass existing work. If already in a
+worktree, continue there; do not move or delete it.
 
 Directory reuse does not mean branch reuse. Resume a matching issue/PR on its own branch. For an
 independent requirement, preserve the earlier branch and PR, then use the correct feature branch

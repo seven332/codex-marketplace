@@ -7,7 +7,8 @@ description: Switch to the repository default branch and fast-forward it to the 
 
 ## Workflow
 
-1. Check working-tree state with `git status --short --branch`.
+1. Use an existing target checkout; standalone sync does not infer a repository or clone one.
+   Check its working-tree state with `git status --short --branch`.
 2. Read and follow the [current-workspace contract](../../references/current-workspace.md). Stay in
    this directory; do not create another worktree. When preparing explicitly requested new work,
    handle earlier work through its context-supported commit/push/stash flow before switching.

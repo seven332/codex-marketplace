@@ -36,8 +36,8 @@ installable plugin. It is packaged with the plugin and loaded only when a refere
 to create or read workflow-owned files.
 Issue to Merge also packages `current-issue-state.md` for three editable phase comments, review state,
 open-issue write checks, and proof-based reopening of the agent's own latest close.
-Its `current-workspace.md` contract keeps new work in the provided Git directory instead of adding
-worktrees, with context-supported commit/push/stash preparation and recoverable earlier-work state.
+Its `current-workspace.md` contract allows a needed first clone, then reuses the target checkout
+with context-supported commit/push/stash preparation instead of extra worktrees or duplicate clones.
 
 ## Use Locally
 
@@ -100,6 +100,8 @@ same validation in GitHub Actions.
   requirements and delivery progress. Verified superseded agent copies are removed after
   consolidation, while the current three phases and human discussion are preserved. Closed issues
   remain read-only unless the workflow can prove it is undoing the agent's own latest close.
-  New requirements reuse the current directory, preserving earlier work through context-supported
-  commit, push, or recoverable stash before selecting the correct feature branch. No extra worktree
-  is created, and standalone sync or read-only review does not gain publication authority.
+  Locate or obtain the target checkout before Git checks and artifacts. A needed first clone is
+  normal preparation, not an extra checkout. Reuse existing checkouts and preserve earlier work
+  through context-supported commit, push, or recoverable stash without adding worktrees. Actual
+  permissions still apply; standalone sync requires an existing checkout, and read-only review
+  does not gain publication authority.

@@ -13,6 +13,12 @@ destructive cleanup, plain `git push --force`, or history rewrites outside the c
 `rebase-default-branch` flow. That flow may rebase the current PR branch and update the same remote
 branch with `git push --force-with-lease` without separate approval.
 
+Before checkout-dependent commands or artifact creation, follow the
+[current-workspace contract](../../references/current-workspace.md) to locate or obtain the target
+checkout and read its repository instructions. Reuse it for every iteration without adding a
+worktree. Preserve prior work through authorized preparation and keep stash recovery receipts;
+do not apply unrelated work to the next slice or discard it when an iteration finishes.
+
 Read and follow the [current issue-state contract](../../references/current-issue-state.md).
 Maintain three editable phase comments and phase-local state. Keep progress in the body's progress
 block and the Plan Phase state, not an append-only comment log or a separate status comment.
@@ -21,10 +27,6 @@ the agent's own operation under that contract. A matching GitHub username is not
 Read and follow the [repository work-file contract](../../references/repository-work-files.md)
 for command payloads under `<codex-work>/tmp/issue-to-merge/pr-workflow-loop/` and retained close
 receipts under `<codex-work>/state/issue-to-merge/`. Do not use operating-system temp files.
-Follow the [current-workspace contract](../../references/current-workspace.md) for every iteration:
-reuse the provided directory, preserve prior work through authorized preparation, and never create
-another worktree for a sibling PR. Keep stash recovery receipts across iterations; do not apply
-earlier unrelated work to the next slice or discard it when an iteration finishes.
 
 ## Workflow
 
