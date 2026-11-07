@@ -12,6 +12,9 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
 1. Identify the issue number from the user request or conversation context. Ask if unclear. Do not
    require a planning directory before reading the issue; recover it from the retained phase comments
    or local artifacts when possible.
+   Before checkout-dependent commands or artifact access, follow the
+   [current-workspace contract](../../references/current-workspace.md) to locate or obtain the target
+   checkout and read its repository instructions.
 2. Read issue updates:
    ```bash
    gh issue view <issue-number> \
@@ -53,10 +56,10 @@ Use this skill when the user asks to implement a GitHub issue after planning or 
    Review says the direction requires multiple PRs, treat it as a delivery parent: stop, use
    `issue-select` to choose an open unblocked child, and plan and challenge that child. Never
    implement an umbrella issue directly merely because its overall plan is approved.
-5. Read and follow the [current-workspace contract](../../references/current-workspace.md) before
-   branch changes. Reuse the current directory; do not create another worktree. Resume matching
-   approved work, or prepare earlier work through context-supported commit, push, or recoverable
-   stash before an independent requirement. Ask only when that handling is unclear or unsafe;
+5. Before branch changes, apply the shared contract in the selected checkout; do not create another
+   worktree or duplicate clone. Resume matching approved work, or prepare earlier work through
+   context-supported commit, push, or recoverable stash before an independent requirement.
+   Ask only when that handling is unclear or unsafe;
    never mix earlier work into this implementation.
 6. Analyze current human feedback for findings, questions, and plan changes not yet incorporated.
    When an authorized human requests plan changes or asks an unresolved question, use `issue-plan`

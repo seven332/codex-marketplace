@@ -36,10 +36,11 @@ edited or automatically reopened by this single-PR workflow.
 
 ### 1. Start Or Resume
 
-Inspect `git status --short --branch`, the current branch, conversation context, and GitHub state
-before switching branches. Read and follow the
-[current-workspace contract](../../references/current-workspace.md): reuse this directory, never
-create another worktree, and preserve earlier work before starting an independent requirement.
+Before checkout-dependent commands or artifacts, follow the
+[current-workspace contract](../../references/current-workspace.md) to locate or obtain the target
+checkout and read its repository instructions. Then inspect `git status --short --branch`, the
+current branch, conversation context, and GitHub state before switching branches. Preserve earlier
+work before an independent requirement and reuse this checkout without adding a worktree.
 
 - If the current branch has an open PR that matches the requested scope, resume at the earliest
   incomplete PR stage for its current `headRefOid`. If it belongs to different work and the request
