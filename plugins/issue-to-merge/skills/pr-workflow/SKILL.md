@@ -155,8 +155,10 @@ Also run `pr-address-review inspect` to scan top-level and inline feedback from
 people, bots, and GitHub Apps; automated feedback does not always affect `reviewDecision`.
 `pr-check check` and feedback inspection report findings without editing. In this active workflow,
 diagnose actionable current-PR failures and route them to the authorized repair path below.
+Handle failures before waiting on other checks.
 
-- For pending checks, report readiness as pending. Use `watch` only when requested.
+- For pending CI, use `pr-check watch` by default unless the user asked not to wait. After waiting,
+  repeat this stage on fresh state; restart at step 8 if the head changed.
 - For an explicitly authorized mechanical lint or format fix, use `pr-check fix`, then return to
   step 8 for the new head.
 - For type, test, build, or product failures, determine whether code, tests or fixtures,
