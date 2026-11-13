@@ -105,3 +105,5 @@ same validation in GitHub Actions.
   through context-supported commit, push, or recoverable stash without adding worktrees. Actual
   permissions still apply; standalone sync requires an existing checkout, and read-only review
   does not gain publication authority.
+  Merge requests and active workflows wait for pending CI and recheck readiness afterward;
+  standalone status checks remain one-shot.
